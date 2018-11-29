@@ -10,6 +10,12 @@ git clone https://github.com/sbein/RebalanceAndSmear/
 cd RebalanceAndSmear/
 ```
 
+## run a simple analyzer script
+
+```
+python tools/SimpleAnalyzer.py --fnamekeyword RunIIFall17MiniAODv2.TTJets
+```
+
 ## generate jet response templates and prior distributions
 
 ```
