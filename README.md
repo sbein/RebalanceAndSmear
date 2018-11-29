@@ -12,4 +12,9 @@ cd RebalanceAndSmear/
 
 ## generate jet response templates and prior distributions
 
+```
 python tools/ResponseMaker.py --filenamekey TTJets_Tune
+```
+
+
+
