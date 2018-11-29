@@ -16,7 +16,7 @@ cd RebalanceAndSmear/
 python tools/SimpleAnalyzer.py --fnamekeyword RunIIFall17MiniAODv2.TTJets
 ```
 
-## generate jet response templates and prior distributions
+## generate jet the response templates and prior distributions
 
 ```
 python tools/ResponseMaker.py --filenamekey TTJets_Tune
