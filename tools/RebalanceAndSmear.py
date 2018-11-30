@@ -5,6 +5,12 @@ from array import array
 from glob import glob
 from utils import *
 import time
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("-v", "--verbosity", type=bool, default=0,help="increase output verbosity")
+parser.add_argument("-fin", "--fnamekeyword", type=str,default='Summer16.SMS-T1tttt_mGluino-1200_mLSP-800',help="file")
+args = parser.parse_args()
+fnamekeyword = args.fnamekeyword
 
 year = '2015'
 year = '2016'
@@ -25,8 +31,8 @@ gROOT.ProcessLine(open('src/Met110Mht110FakePho.cpp').read())
 exec('from ROOT import *')
 
 doHybridMet = False
-lhdMhtThresh = 15.0
-thresh = 30.0
+lhdMhtJetPtCut = 15.0
+AnMhtJetPtCut = 30.0
 cutoff = 15.0
 nCuts = 8
 #loadSearchBins2015()
@@ -65,14 +71,7 @@ StressData = {'Neuts': [pwd+'/Templates/TemplatesSFNomNeuts80x.root'],'Nom':[pwd
 StressData['NomNom'] = [pwd+'/Templates/megatemplateNoSF.root']#sam added Nov29
 
 ntries = 1
-try: datasetID = sys.argv[1]
-except: datasetID = 'MC_QCD' #also possible: MC_{QCD, T1qqqq1000-800}
-try: dsId = sys.argv[2]
-except: dsId = '700'
-try: stressdata = sys.argv[3]
-except: stressdata = 'Nom'
-try: quickrun = bool(sys.argv[4])
-except: quickrun = False
+
 
 ifile = 0
 if quickrun:
@@ -83,20 +82,17 @@ if quickrun:
     except: 
         ifile = 0
 
-
-physicsProcess = datasetID[datasetID.find('_')+1:]
-#if 'T1' in physicsProcess: branchonly = False#True
-if physicsProcess in ['ZJetsToNuNu','TTJets','WJetsToNuNu']: branchonly = True#True
-else: branchonly = False
+branchonly = False
 
 
 datamc = datasetID[:datasetID.find('_')]
-temlname = StressData[stressdata][0]
-tfilename = temlname[temlname.rfind('/')+1:temlname.find('.root')].replace('Templates','')
+#templateFileName = StressData[stressdata][0]
+templateFileName = 'usefulthings/ResponseFunctionsMC17.root'
+tfilename = templateFileName[templateFileName.rfind('/')+1:templateFileName.find('.root')].replace('Templates','')
 print tfilename
 
-ftemplate = TFile(temlname)
-print 'using templates from',temlname
+ftemplate = TFile(templateFileName)
+print 'using templates from',templateFileName
 hPtTemplate = ftemplate.Get('hPtTemplate')
 templatePtAxis = hPtTemplate.GetXaxis()
 hEtaTemplate = ftemplate.Get('hEtaTemplate')
@@ -106,7 +102,7 @@ templateHtAxis = hHtTemplate.GetXaxis()
 
 
 if doHybridMet: 
-    newfilename = ('Hybrid'+str(cutoff)+'TruthAndMethodHT'+dsId+temlname.replace(pwd+'/Templates/megatemplate','')+'.root')
+    newfilename = ('Hybrid'+str(cutoff)+'TruthAndMethodHT'+dsId+templateFileName.replace(pwd+'/Templates/megatemplate','')+'.root')
 else:
     newfilename = ('TnmJet'+tfilename+datasetID+'_HT'+dsId+'_f'+str(ifile)+'.root')
 
@@ -283,7 +279,7 @@ else:
     Templates.gGenMhtDPhiTemplatesB1 = gGenMhtDPhiTemplatesB1_CC
     Templates.gGenMhtDPhiTemplatesB2 = gGenMhtDPhiTemplatesB2_CC
     Templates.gGenMhtDPhiTemplatesB3 = gGenMhtDPhiTemplatesB3_CC
-    Templates.lhdMhtThresh = lhdMhtThresh
+    Templates.lhdMhtJetPtCut = lhdMhtJetPtCut
     MakeTemplatesGlobal(Templates)
 
 
@@ -309,7 +305,7 @@ for region in regionCuts:
         histo2dStructDict[hname] = mk2dHistoStruct(hname)
 
 if mktree:
-    treefile = TFile('littletreeLowMht'+physicsProcess+'.root','recreate')
+    treefile = TFile('littletreeLowMht'+fnamekeyword+'.root','recreate')
     littletree = TTree('littletree','littletree')
     prepareLittleTree(littletree)
 
@@ -332,42 +328,10 @@ filefile = open(pwd+'/filelists/filelistKevinV12.txt')
 rawfiles = filefile.readlines()
 filefile.close()
 
-print 'physicsprocess', physicsProcess
+print 'fnamekeyword', fnamekeyword
 filelist = []
 for rawfile in rawfiles: 
-
-    if physicsProcess == 'JetHTb':
-        if not ('Run2016B-03Feb2017_ver2-v2.JetHT'in rawfile): continue
-    elif physicsProcess == 'JetHTc':
-        if not ('Run2016C-03Feb2017-v1.JetHT' in rawfile): continue
-    elif physicsProcess == 'JetHTd':
-        if not ('Run2016D-23Sep2016-v1.JetHT' in rawfile): continue
-    elif physicsProcess == 'JetHTe':
-        if not ('Run2016E-23Sep2016-v1.JetHT' in rawfile): continue
-    elif physicsProcess == 'JetHTf':
-        if not ('Run2016F-03Feb2017-v1.JetHT' in rawfile): continue        
-    elif physicsProcess == 'JetHTg':
-        if not ('Run2016G-03Feb2017-v1.JetHT' in rawfile): continue                
-    elif physicsProcess == 'JetHTh2':
-        if not ('Run2016H-03Feb2017_ver2-v1.JetHT' in rawfile): continue
-    elif physicsProcess == 'JetHTh3':
-        if not ('Run2016H-03Feb2017_ver3-v1.JetHT' in rawfile): continue                                
-    elif physicsProcess=='QCD':
-        if not 'HT'+dsId+'to' in rawfile: continue
-    elif physicsProcess=='T1tttt':
-        gmass = dsId[:dsId.find('_')]
-        lspmass = dsId[dsId.find('_')+1:]
-        if not 'T1tttt_mGluino-'+gmass+'_mLSP-'+lspmass in rawfile: continue
-    elif physicsProcess=='JetHT':
-        if not ('JetHT' in rawfile): continue #well this needs to be updated
-    elif physicsProcess=='TTJets':
-        if not 'TTJets_Tune' in rawfile: continue
-    elif physicsProcess=='WJetsToLNu':
-        if not (('WJetsToLNu_HT-200To' in rawfile) or('WJetsToLNu_HT-400To' in rawfile) or ('WJetsToLNu_HT-600To' in rawfile) or ('WJetsToLNu_HT-800To' in rawfile) or ('WJetsToLNu_HT-1200To' in rawfile) or ('WJetsToLNu_HT-2500To' in rawfile)): continue
-    elif physicsProcess=='ZJetsToNuNu':
-        if not (('ZJetsToNuNu_HT-200To' in rawfile) or ('ZJetsToNuNu_HT-400To' in rawfile) or ('ZJetsToNuNu_HT-600To' in rawfile)): continue
-    else:
-        if not (physicsProcess in rawfile): continue  
+	if not fnamekeyword in rawfile: continue  
     filelist.append(rawfile.strip())
 
 
@@ -380,7 +344,7 @@ if quickrun:
         print 'just added ', thingtoadd
         break
     nevents = min(10000,t.GetEntries())
-    verbosity = 100
+    printevery = 100
 else: 
     for flong in filelist: 
         if isskim: 
@@ -389,13 +353,13 @@ else:
         t.Add(thingtoadd)
         print 'just added ', thingtoadd
     nevents = t.GetEntries() #nevents = 2000
-    verbosity = 1000
+    printevery = 1000
 
 #t.Show(0)
 print 'nevents=', nevents
 t0 = time.time()
 for ientry in range(nevents):
-    if ientry%verbosity==0:
+    if ientry%printevery==0:
         print "processing event", ientry, '/', nevents
         print 'time=',time.time()-t0
     t.GetEntry(ientry)
@@ -426,7 +390,7 @@ for ientry in range(nevents):
         hMht.Fill(t.MHT,1)
         hMhtWeighted.Fill(t.MHT,prescaleweight)
     else:
-        gHt = getHT(t.GenJets,thresh)
+        gHt = getHT(t.GenJets,AnMhtJetPtCut)
         hHt.Fill(gHt,1)
         hHtWeighted.Fill(gHt,t.Weight)
         hMht.Fill(t.MHT,1)
@@ -467,7 +431,7 @@ for ientry in range(nevents):
         #for softjet in softrecojets: softjet.csv = 1.01
         recojets = ConcatenateVectors(recojets, softrecojets)
     #
-        ht5 = getHT(recojets,thresh, 5.0)#Run2016H-PromptReco-v2.MET
+        ht5 = getHT(recojets,AnMhtJetPtCut, 5.0)#Run2016H-PromptReco-v2.MET
     try: htratio = ht5/t.HT
     except: htratio = 5
     if False and t.MHT>300 and t.HT>300:################switched off
@@ -495,13 +459,13 @@ for ientry in range(nevents):
         ##ignore jets that aren't matched!!!
         #recojets = RemoveUnmatchedJets(recojets, genjets)
         #recojets = VetoOnUnmatchedJets100(recojets, genjets)
-        gMhtVec = getMHT(genjets,thresh)
+        gMhtVec = getMHT(genjets,AnMhtJetPtCut)
         gMht, gMhtPhi = gMhtVec.Pt(), gMhtVec.Phi()
         #for jet in genjets: 
         #    if jet.csv==0: jet.csv = 1.01   
         if PrintJets:                
-            gbtags = countBJets_Useful(genjets,thresh)
-            gmht = getMHT(genjets,thresh)
+            gbtags = countBJets_Useful(genjets,AnMhtJetPtCut)
+            gmht = getMHT(genjets,AnMhtJetPtCut)
             print 'GEN: nbtags, mht =' , gbtags, gmht
             for jet in genjets:
                 print 'GEN: pt, csv', jet.Pt(), jet.Eta(), jet.csv    
@@ -548,13 +512,13 @@ for ientry in range(nevents):
 
     if branchonly: continue
 
-    tHt = getHT(recojets,thresh)
-    tHt5 = getHT(recojets,thresh, 5)
-    tMhtVec = getMHT(recojets,thresh)
+    tHt = getHT(recojets,AnMhtJetPtCut)
+    tHt5 = getHT(recojets,AnMhtJetPtCut, 5)
+    tMhtVec = getMHT(recojets,AnMhtJetPtCut)
     tMhtPt, tMhtPhi = tMhtVec.Pt(), tMhtVec.Phi()
-    tNJets = countJets(recojets,thresh)
-    tBTags = countBJets_Useful(recojets,thresh)
-    #csvAve = getAverageCsv(recojets,thresh)
+    tNJets = countJets(recojets,AnMhtJetPtCut)
+    tBTags = countBJets_Useful(recojets,AnMhtJetPtCut)
+    #csvAve = getAverageCsv(recojets,AnMhtJetPtCut)
     redoneMET = redoMET(MetVec, recojets, recojets)
     tMetPt,tMetPhi = redoneMET.Pt(), redoneMET.Phi()
     tDPhi1,tDPhi2,tDPhi3,tDPhi4 = getDPhis(tMhtVec,recojets)
@@ -599,25 +563,25 @@ for ientry in range(nevents):
         rebalancedJets_,csvRebalancedJets, nparams = rebalanceJets(recojets,recojetsCsv,\
                                                                    gRebTemplates,hEtaTemplate,hPtTemplate,\
                                                                    gGenMhtPtTemplates,gGenMhtDPhiTemplates,\
-                                                                   hHtTemplate,cutoff,lhdMhtThresh)
+                                                                   hHtTemplate,cutoff,lhdMhtJetPtCut)
         rebalancedJets = CreateUsefulJetVector(rebalancedJets_,csvRebalancedJets)
 
         #rebalancedJets_,csvRebalancedJets, nparams = rebalanceJets(t.JetSlim,t.JetsSlim_bDiscriminatorCSV,\
         #                                                           gRebTemplates,hEtaTemplate,hPtTemplate,\
         #                                                           gGenMhtPtTemplates,gGenMhtDPhiTemplates,\
-        #                                                           hHtTemplate,cutoff,lhdMhtThresh)
+        #                                                           hHtTemplate,cutoff,lhdMhtJetPtCut)
         #rebalancedJets = CreateUsefulJetVector(rebalancedJets_,csvRebalancedJets)
         #
         _nparams_ = nparams
 
-    mHt = getHT(rebalancedJets,thresh)
-    mHt5 = getHT(rebalancedJets,thresh, 5.0)
-    mMhtVec = getMHT(rebalancedJets,thresh)
+    mHt = getHT(rebalancedJets,AnMhtJetPtCut)
+    mHt5 = getHT(rebalancedJets,AnMhtJetPtCut, 5.0)
+    mMhtVec = getMHT(rebalancedJets,AnMhtJetPtCut)
     mMhtPt, mMhtPhi = mMhtVec.Pt(), mMhtVec.Phi()
 
-    mNJets = countJets(rebalancedJets,thresh)
-    mBTags = countBJets_Useful(rebalancedJets,thresh)###
-    #csvAve = getAverageCsv(rebalancedJets,thresh)
+    mNJets = countJets(rebalancedJets,AnMhtJetPtCut)
+    mBTags = countBJets_Useful(rebalancedJets,AnMhtJetPtCut)###
+    #csvAve = getAverageCsv(rebalancedJets,AnMhtJetPtCut)
     #print "nbjets =", mBTags 
 
     hope = (fitsucceed and mMhtPt<160)# mMhtPt>min(mHt/2,180): #just changed hace 3 minutos was 150
@@ -680,16 +644,16 @@ for ientry in range(nevents):
         else:
             RplusSJets_,csvRplusSJets_=smearJets(rebalancedJets,csvRebalancedJets,hResTemplates,hEtaTemplate,hPtTemplate,nparams)
             RplusSJets = CreateUsefulJetVector(RplusSJets_,csvRplusSJets_)
-        rpsHt = getHT(RplusSJets,thresh)
-        rpsHt5 = getHT(RplusSJets,thresh, 5)
-        rMhtVec = getMHT(RplusSJets,thresh)
+        rpsHt = getHT(RplusSJets,AnMhtJetPtCut)
+        rpsHt5 = getHT(RplusSJets,AnMhtJetPtCut, 5)
+        rMhtVec = getMHT(RplusSJets,AnMhtJetPtCut)
         rpsMht, rpsMhtPhi = rMhtVec.Pt(), rMhtVec.Phi()
-        #csvAve = getAverageCsv(RplusSJets,thresh)
+        #csvAve = getAverageCsv(RplusSJets,AnMhtJetPtCut)
         if rpsMht>2000: 
             print 'DEBUG passing on unusually high R+S event', ientry#this is a safeguard against mystery
             continue
-        rpsNJets = countJets(RplusSJets,thresh)
-        rpsBTags = countBJets_Useful(RplusSJets,thresh)
+        rpsNJets = countJets(RplusSJets,AnMhtJetPtCut)
+        rpsBTags = countBJets_Useful(RplusSJets,AnMhtJetPtCut)
         rpsMhtVec = mkmet(rpsMht,rpsMhtPhi)
         redoneMET = redoMET(MetVec, recojets, RplusSJets)
         rpsMetPt, rpsMetPhi = redoneMET.Pt(), redoneMET.Phi()
@@ -735,16 +699,16 @@ for ientry in range(nevents):
 
     #matchedCsvVec = createMatchedCsvVector(t.GenJets, recojets)
     #genjets = CreateUsefulJetVector(t.GenJets, matchedCsvVec)
-    gMhtVec = getMHT(genjets,thresh)
+    gMhtVec = getMHT(genjets,AnMhtJetPtCut)
     gMht, gMhtPhi = gMhtVec.Pt(), gMhtVec.Phi()
-    csvAve = getAverageCsv(genjets,thresh)
+    csvAve = getAverageCsv(genjets,AnMhtJetPtCut)
     #matchedRebCsvVec = getMatchedCsv(genjets,rebalancedJets,csvRebalancedJets,harryhistosReba)#for Harry!
     weight = t.Weight
-    gHt = getHT(genjets,thresh)
-    gMhtVec = getMHT(genjets,thresh)
+    gHt = getHT(genjets,AnMhtJetPtCut)
+    gMhtVec = getMHT(genjets,AnMhtJetPtCut)
     gMht, gMhtPhi = gMhtVec.Pt(), gMhtVec.Phi()
-    gNJets = countJets(genjets,thresh)
-    gBTags = countBJets_Useful(genjets,thresh)
+    gNJets = countJets(genjets,AnMhtJetPtCut)
+    gBTags = countBJets_Useful(genjets,AnMhtJetPtCut)
     gMhtVec = mkmet(gMht,gMhtPhi)
     if doHybridMet: gMhtVec = getHybridMet(genjets,recojets,genMetVec,cutoff).Pt()
     gMetPt,gMetPhi = genMetVec.Pt(),genMetVec.Phi()
@@ -783,12 +747,12 @@ for ientry in range(nevents):
         if not (gMht<150): continue
         smearedJets = smearJets_CC(genjets,9999)
         #smearedJets,csvSmearedJets = smearJets(genjets,matchedCsvVec,_Templates_.ResponseFunctions,_Templates_.hEtaTemplate,_Templates_.hPtTemplate,999)
-        mHt = getHT(smearedJets,thresh)
-        mMhtVec = getMHT(smearedJets,thresh)
+        mHt = getHT(smearedJets,AnMhtJetPtCut)
+        mMhtVec = getMHT(smearedJets,AnMhtJetPtCut)
         mMhtPt, mMhtPhi = mMhtVec.Pt(), mMhtVec.Phi()
-        #csvAve = getAverageCsv(smearedJets,thresh)
-        mNJets = countJets(smearedJets,thresh)
-        mBTags = countBJets_Useful(smearedJets,thresh)
+        #csvAve = getAverageCsv(smearedJets,AnMhtJetPtCut)
+        mNJets = countJets(smearedJets,AnMhtJetPtCut)
+        mBTags = countBJets_Useful(smearedJets,AnMhtJetPtCut)
         redoneMET = redoMET(genMetVec, genjets, smearedJets)
         mMetPt, mMetPhi = redoneMET.Pt(), redoneMET.Phi()
         mDPhi1,mDPhi2,mDPhi3,mDPhi4 = getDPhis(mMhtVec,smearedJets)
