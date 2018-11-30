@@ -27,20 +27,28 @@ python tools/ResponseMaker.py --filenamekey TTJets_Tune
 If the first time:
 ```
 mkdir output
-mkdir output/smallchunks
 ```
 
-The following script will initiate a large submission 
+Assuming you have a valid proxy, the following script will initiate a large submission 
 
 ```
-python tools/submitjobs.py --analyzer tools/ResponseMaker.py --fnamekeyword Fall17MiniAODv2.TTJets
+python tools/submitjobs.py --analyzer tools/ResponseMaker.py --fnamekeyword Fall17MiniAODv2.TTJets #(for 2017)
+python tools/submitjobs.py --analyzer tools/ResponseMaker.py --fnamekeyword Summer16.QCD_HT #(for 2016)
 ```
 
-Output files will be put in the local output/smallchunks directory. The status of the jobs can be checked with
+Output files will be put in the local output/<keyword> directory matching the specified keyword for the filename. The status of the jobs can be checked with
 
 ```
 condor_q |grep <your user name>
 ```
+
+Once the jobs are done, a wrapper for the hadd routine can be called which also fits a spline to each response function:
+
+```
+python tools/articulateSplines.py ResponseTemplates2017.root "output/Fall17MiniAODv2.TTJets/*Fall17MiniAODv2.TTJets*.root"
+python tools/articulateSplines.py ResponseTemplates2016.root "output/Summer16.QCD_HT/*Summer16.QCD_HT*.root"
+```
+
 
 
  
