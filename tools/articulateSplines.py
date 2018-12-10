@@ -12,8 +12,12 @@ except: bunchofiles = 'xx.root'
 
 print 'hadd '+newfile+' '+bunchofiles
 
+if len(newfile.split('/'))>1: 
+    print 'dangerous to feed in that argument'
+    exit(0)
+
 os.system('rm '+newfile)
-os.system('hadd '+newfile+' '+bunchofiles)
+os.system('python tools/ahadd.py '+newfile+' '+bunchofiles)
 
 f = TFile(newfile,'update')
 keys = f.GetListOfKeys()
@@ -53,5 +57,6 @@ for key in keys:
         #pause()
     g.Write(name+'_graph')
     #func.Write(name+'_spline')
+print 'just created', f.GetName()
 f.Close()
     

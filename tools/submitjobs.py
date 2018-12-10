@@ -25,7 +25,7 @@ elif 'V15a' in fnamekeyword or 'RelVal' in fnamekeyword:
     ntupleV = '15a'
     isdata = False
 elif 'Fall17' in fnamekeyword:
-	ntupleV = '15'
+	ntupleV = '16'
 else: 
     ntupleV = '15'
     isdata = True
@@ -44,9 +44,7 @@ fnamefile.close()
 
 def main():
     for fname in fnamelines:
-		print 'looking in', fname, 'for', fnamekeyword
 		if not (fnamekeyword in fname): continue
-		print 'gonna go ham with', fname
 		job = analyzer.split('/')[-1].replace('.py','').replace('.jdl','')+'-'+fname.strip()
 		#print 'creating jobs:',job
 		newjdl = open('jobs/'+job+'.jdl','w')

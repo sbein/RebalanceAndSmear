@@ -6,7 +6,7 @@ import os, sys
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbosity", type=bool, default=0,help="increase output verbosity")
-parser.add_argument("-fin", "--fnamekeyword", type=str,default='Summer16.SMS-T1tttt_mGluino-1200_mLSP-800',help="file")
+parser.add_argument("-fin", "--fnamekeyword", type=str,default='Summer16.QCD_HT1000to1500',help="file")
 parser.add_argument("-nprint", "--printevery", type=int, default=100,help="print every n(events)")
 parser.add_argument("-jersf", "--JerUpDown", type=str, default='SFNom',help="JER scale factor (SFNom, SFUp, ...)")
 parser.add_argument("-dmcrw", "--DataMcReweight", type=bool, default=False,help="reweight prior")
@@ -30,7 +30,7 @@ elif 'V15a' in fnamekeyword or 'RelVal' in fnamekeyword:
     ntupleV = '15a'
     isdata = False
 elif 'Fall17' in fnamekeyword:
-	ntupleV = '15'
+	ntupleV = '16'
 else: 
     ntupleV = '15'
     isdata = True
@@ -59,9 +59,9 @@ else: AddInNeutrinos = False
 if 'YesLep' in JerUpDown: AddInLeptons = True
 else: AddInLeptons = False    
 
-print fnamekeyword
 physicsProcess = fnamekeyword.split('.')[1]#datasetID[datasetID.find('_')+1:]
-
+print 'fnamekeyword', fnamekeyword
+print 'physicsProcess', physicsProcess
 
 def calcSumPt(jets, obj, conesize=0.6, thresh=10):
     sumpt_ = 0
@@ -201,12 +201,11 @@ for line in lines:
     shortfname = fnamekeyword
     if not shortfname in line: continue
     fname = '/eos/uscms//store/user/lpcsusyhad/SusyRA2Analysis2015/Run2ProductionV'+ntupleV+'/'+line#RelValQCD_FlatPt
-    fname = fname.strip().replace('/eos/uscms/','root://cmsxrootd.fnal.gov//')
+    fname = fname.strip().replace('/eos/uscms/','root://cmseos.fnal.gov//')
     print 'adding', fname
     c.Add(fname)
     filelist.append(fname)
     break
-
 nevents = c.GetEntries()
 c.Show(0)
 print "nevents=", nevents
@@ -246,6 +245,7 @@ for ientry in range(nevents):
     
     if not passesUniversalSelection(c): continue###this is fiducial
     recojets = CreateUsefulJetVector(c.Jets, c.Jets_bDiscriminatorCSV)#fiducial
+    #if ntupleV=='14':
     #softrecojets = CreateUsefulJetVector(c.SoftJets, c.SoftJets_bDiscriminatorCSV)#fidicual
     #recojets = ConcatenateVectors(recojets_, softrecojets)#fiducial
 
@@ -339,7 +339,7 @@ for ientry in range(nevents):
         hResponseVsGenPt.Fill(gpt,response,weight)
         #if nbs==0: hCsvVsC.Fill(response, recoCsv)
 
-    if not ('QCD' in physicsProcess): continue
+    if not ('QCD_HT' in physicsProcess): continue
 
 
     weight = c.Weight

@@ -58,6 +58,7 @@ def histoStyler2d(h):
     return h
 
 
+
 binning = {}
 binning['Mht']=[400,0,2000]
 binning['Met']=binning['Mht']
@@ -274,21 +275,6 @@ units['csvAve']=''
 units['BestDijetMass']='GeV'
 units['MinDeltaM']='GeV'
 
-
-regionCuts = {}
-Inf = 9999
-#regionCuts['Baseline']               = [[300,Inf],[300,Inf],[2,Inf],[0,Inf],[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]]
-#regionCuts['LowDeltaPhiCR']               = [[1000,Inf],[250,300],[2,Inf],[0,Inf],[0,Inf],[0,Inf],[0,Inf],[0,Inf]]#gets help
-#regionCuts['B1Baseline']               = [[300,Inf],[300,Inf],[2,Inf],[1,Inf],[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]]
-regionCuts['LowMhtBaseline']               = [[300,Inf],[150,Inf],[6,Inf],[0,Inf],[0.0,Inf],[0.0,Inf],[0.0,Inf],[0.0,Inf]]
-#regionCuts['HighHtBaseline']               = [[2000,Inf],[300,Inf],[2,Inf],[0,Inf],[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]]
-#regionCuts['BaselineBTags0']         = [[300,Inf],[300,Inf],[2,Inf],[0,0],[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]]
-#regionCuts['BaselineBTags1']         = [[300,Inf],[300,Inf],[2,Inf],[1,1],[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]]
-#regionCuts['BaselineBTags2-Inf']     = [[300,Inf],[300,Inf],[2,Inf],[2,Inf],[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]]
-#regionCuts['LowDeltaPhi']            = [[300,Inf],[300,Inf],[2,Inf],[0,Inf],[0,Inf],[0,Inf],[0,Inf],[0,Inf]]#gets help
-#regionCuts['LowMhtBaseline']            = [[500,Inf],[50,200],[4,Inf],[0,Inf],[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]]
-#regionCuts['HighMhtBaseline']               = [[500,Inf],[300,Inf],[2,Inf],[0,Inf],[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]]
-#regionCuts['GmsbBaseline']               = [[500,Inf],[100,Inf],[2,Inf],[0,Inf],[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]]#photon
 
 def makehist(hname='hist',var='Mht', color = kBlack):
 	if len(binningTrigger[var])==3:
@@ -1444,6 +1430,12 @@ def calcSumPt(jets, obj, conesize=0.6, thresh=10):
 		sumpt_+=jet.Pt()
 	return sumpt_
 
+epsilon = 0.0001
+def fillth1(h,x,weight=1):
+	h.Fill(min(max(x,h.GetXaxis().GetBinLowEdge(1)+epsilon),h.GetXaxis().GetBinLowEdge(h.GetXaxis().GetNbins()+1)-epsilon),weight)
+
+def fillth2(h,x,y,weight=1):
+	h.Fill(min(max(x,h.GetXaxis().GetBinLowEdge(1)+epsilon),h.GetXaxis().GetBinLowEdge(h.GetXaxis().GetNbins()+1)-epsilon), min(max(y,h.GetYaxis().GetBinLowEdge(1)+epsilon),h.GetYaxis().GetBinLowEdge(h.GetYaxis().GetNbins()+1)-epsilon),weight)
 
 '''
 0: HLT_DoubleEle24_22_eta2p1_WPLoose_Gsf_v
