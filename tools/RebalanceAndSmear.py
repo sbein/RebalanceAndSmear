@@ -17,7 +17,7 @@ fnamekeyword = args.fnamekeyword
 printevery = args.printevery
 nametag = ''
 
-quickrun = True
+quickrun = False
 
 
 if 'Summer16' in fnamekeyword: 
