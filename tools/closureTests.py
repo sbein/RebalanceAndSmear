@@ -293,13 +293,12 @@ for key in keys:
         hDen = hDen.Rebin(nbins,'',newxs)
     try: hDen.Scale(norm)
     except: pass   
-    #hFracDiff.Divide(hDen)###
-    hFracDiff.Add(hDen,-1)#####
+    #hFracDiff.Add(hDen,-1)#####    
     hFracDiff.Divide(hDen)
+    hFracDiff.GetYaxis().SetRangeUser(-0.5,3.5)
+    #hFracDiff.GetYaxis().SetRangeUser(-2.5,2.5)####    
 
-    #hFracDiff.GetYaxis().SetRangeUser(-0.0,2.2)###
-    hFracDiff.GetYaxis().SetRangeUser(-0.5,3.5)####
-    hFracDiff.GetYaxis().SetRangeUser(-2.5,2.5)####    
+    
     #hFracDiff.GetYaxis().SetRangeUser(0.08,30)####    
     hFracDiff.SetTitle('')
     hFracDiff.GetXaxis().SetTitle(nicelabel(kinvar)+('bin' not in units[kinvar])*(' ['+units[kinvar]+']'))
