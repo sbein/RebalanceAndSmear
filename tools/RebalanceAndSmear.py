@@ -54,6 +54,9 @@ if 'Run2017' in fnamekeyword or 'Fall17' in fnamekeyword:
 if 'Run2018' in fnamekeyword or 'Fall17' in fnamekeyword: 
     BTAG_CSVv2 = 0.8838
     BTAG_deepCSV = 0.4941
+
+if UseDeep: BTag_Cut = BTAG_deepCSV
+else: BTag_Cut = BTAG_CSVv2
     
 year = '2015'
 year = '2016'
@@ -63,6 +66,15 @@ isskim = False ##thing one to switch xxx
 skiprands = False
 
 pwd = os.getcwd()
+
+
+ujf = open('src/UsefulJet.h.aux')
+ujfdata = ujf.read()
+ujfdata = ujfdata.replace('double BTAG_CSV = XXX;', 'double BTAG_CSV = %f;' % BTag_Cut)
+ujf.close()
+ujfu= open('src/UsefulJet.h', 'w')
+ujfu.write(ujfdata)
+ujfu.close()
 
 gROOT.ProcessLine(open('src/UsefulJet.cc').read())
 exec('from ROOT import *')

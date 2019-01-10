@@ -16,8 +16,6 @@ regularfont = 42
 originalfont = tl.GetTextFont()
 
 
-BTAG_CSV = 0.8484
-
 def histoStyler(h,color):
     h.SetLineWidth(2)
     h.SetLineColor(color)
@@ -211,7 +209,7 @@ def countJets(tlvvec,thresh):
     return count
 
 
-def countBJets(tlvvec, csvvec,thresh):
+def countBJets(tlvvec, csvvec,thresh, BTAG_CSV):
     count = 0
     for j in range(len(tlvvec)):
         if tlvvec[j].Pt()>thresh and abs(tlvvec[j].Eta())<2.4 and csvvec[j]>BTAG_CSV: count+=1
@@ -604,7 +602,7 @@ def rebalanceJets2Met(tlvVec, csvVec, fRTemplates, hEtaTemplate, hPtTemplate, fG
     return tlv_csv
 
 
-def getLeadingGenBJet(GenJets, RecoJets):
+def getLeadingGenBJet(GenJets, RecoJets, BTAG_CSV):
     for gjet in GenJets:
         for rjet in RecoJets:
             dR_ = gjet.tlv.DeltaR(rjet.tlv)
@@ -612,14 +610,14 @@ def getLeadingGenBJet(GenJets, RecoJets):
     emptyvec = UsefulJet()
     return emptyvec
 
-def getLeadingBJet(RecoJets, CsvVec):
+def getLeadingBJet(RecoJets, CsvVec, BTAG_CSV):
     for ireco in range(len(RecoJets)):
         if not RecoJets[ireco].Pt()>30: continue
         if CsvVec[ireco]>BTAG_CSV: return [ireco,RecoJets[ireco]]
     emptyvec = TLorentzVector()
     return [-1,emptyvec]
 
-def getLeadingBJet2(RecoJets, CsvVec):
+def getLeadingBJet2(RecoJets, CsvVec, BTAG_CSV):
     bjetlist = []
     nbjets = 0
     for ireco in range(len(RecoJets)):

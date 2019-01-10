@@ -54,22 +54,19 @@ if 'Run2018' in fnamekeyword or 'Fall17' in fnamekeyword:
 
 if UseDeep: BTag_Cut = BTAG_deepCSV
 else: BTag_Cut = BTAG_CSVv2
-'''
-2016 settings.
-
-            CSV         DeepCSV
-
-2016   0.8484    0.6324
-
-2017  0.8838     0.4941
-
-2018  0.8838     0.4941
-'''
 
 tbool = {True:'Yes', False:'No'}
 UncSign = {'None':0, 'Nom':0, 'Up':1, 'Down':-1}
 uncsign = UncSign[JerUpDown]
 llhdMhtThresh = 15
+
+ujf = open('src/UsefulJet.h.aux')
+ujfdata = ujf.read()
+ujfdata = ujfdata.replace('double BTAG_CSV = XXX;', 'double BTAG_CSV = %f;' % BTag_Cut)
+ujf.close()
+ujfu= open('src/UsefulJet.h', 'w')
+ujfu.write(ujfdata)
+ujfu.close()
 
 gROOT.ProcessLine(open('src/UsefulJet.cc').read())
 exec('from ROOT import *')
@@ -349,17 +346,17 @@ for ientry in range(nevents):
     nGenJets = countJets(genjets, 30)    
     if nbtags>2: 
         if nGenJets>2:
-            genBjet = getLeadingGenBJet(genjets, recojets)
+            genBjet = getLeadingGenBJet(genjets, recojets, BTag_Cut)
             hMhtPtTemplatesB3[iht].Fill(gMhtPt,weight)
             hMhtPhiTemplatesB3[iht].Fill(abs(genBjet.tlv.DeltaPhi(gMhtVec)),weight)
     elif nbtags>1: 
         if nGenJets>1:
-            genBjet = getLeadingGenBJet(genjets, recojets)
+            genBjet = getLeadingGenBJet(genjets, recojets, BTag_Cut)
             hMhtPtTemplatesB2[iht].Fill(gMhtPt,weight)
             hMhtPhiTemplatesB2[iht].Fill(abs(genBjet.tlv.DeltaPhi(gMhtVec)),weight)
     elif nbtags>0: 
         if nGenJets>1:
-            genBjet = getLeadingGenBJet(genjets, recojets)
+            genBjet = getLeadingGenBJet(genjets, recojets, BTag_Cut)
             hMhtPtTemplatesB1[iht].Fill(gMhtPt,weight)
             hMhtPhiTemplatesB1[iht].Fill(abs(genBjet.tlv.DeltaPhi(gMhtVec)),weight)
     elif nGenJets>1:
