@@ -1,14 +1,16 @@
+
 from ROOT import *
 from utils import *
+from ra2blibs import *
 from array import array
 from glob import glob
 import os, sys
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbosity", type=bool, default=0,help="increase output verbosity")
-parser.add_argument("-fin", "--fnamekeyword", type=str,default='Summer16.QCD_HT1000to1500',help="file")
+parser.add_argument("-fin", "--fnamekeyword", type=str,default='RunIIFall17MiniAODv2.QCD_HT',help="file")
 parser.add_argument("-nprint", "--printevery", type=int, default=100,help="print every n(events)")
-parser.add_argument("-jersf", "--JerUpDown", type=str, default='SFNom',help="JER scale factor (SFNom, SFUp, ...)")
+parser.add_argument("-jersf", "--JerUpDown", type=str, default='Nom',help="JER scale factor (SFNom, SFUp, ...)")
 parser.add_argument("-dmcrw", "--DataMcReweight", type=bool, default=False,help="reweight prior")
 args = parser.parse_args()
 fnamekeyword = args.fnamekeyword
@@ -22,9 +24,10 @@ Fall17MiniAODv2.TTJets_DiLept_TuneCP5
 Run2017B-31Mar2018-v1.JetHT
 '''
 
+#let's make this all about CSV's now
 
 if 'Summer16' in fnamekeyword: 
-    ntupleV = '14'
+    ntupleV = '16'
     isdata = False
 elif 'V15a' in fnamekeyword or 'RelVal' in fnamekeyword:
     ntupleV = '15a'
@@ -34,17 +37,38 @@ elif 'Fall17' in fnamekeyword:
 else: 
     ntupleV = '15'
     isdata = True
-    
-if 'Run2016' in fnamekeyword: ntupleV = '14'
-if 'Run2017' in fnamekeyword: ntupleV = '15'
-if 'Run2018' in fnamekeyword: ntupleV = '15'
 
+UseDeep = False
+
+ntupleV = '16'
     
-BTAG_CSV = 0.8484
-BTAG_CSV = 0.8838# new with CMSSW_9
+if 'Run2016' in fnamekeyword or 'Summer16' in fnamekeyword: 
+    BTAG_CSVv2 = 0.8484
+    BTAG_deepCSV = 0.6324
+if 'Run2017' in fnamekeyword or 'Fall17' in fnamekeyword: 
+    BTAG_CSVv2 = 0.8838
+    BTAG_deepCSV = 0.4941
+if 'Run2018' in fnamekeyword or 'Fall17' in fnamekeyword: 
+    BTAG_CSVv2 = 0.8838
+    BTAG_deepCSV = 0.4941
+
+if UseDeep: BTag_Cut = BTAG_deepCSV
+else: BTag_Cut = BTAG_CSVv2
+'''
+2016 settings.
+
+            CSV         DeepCSV
+
+2016   0.8484    0.6324
+
+2017  0.8838     0.4941
+
+2018  0.8838     0.4941
+'''
 
 tbool = {True:'Yes', False:'No'}
-UncSign = {'SFNone':0, 'SFNom':0, 'SFUp':1, 'SFDown':-1}
+UncSign = {'None':0, 'Nom':0, 'Up':1, 'Down':-1}
+uncsign = UncSign[JerUpDown]
 llhdMhtThresh = 15
 
 gROOT.ProcessLine(open('src/UsefulJet.cc').read())
@@ -68,10 +92,11 @@ def calcSumPt(jets, obj, conesize=0.6, thresh=10):
     for jet in jets:
         if not jet.Pt()>thresh:
             continue
-        if not (obj.DeltaR(jet.tlv)<conesize):
+        if not (obj.DeltaR(jet)<conesize):
             continue
         sumpt_+=jet.Pt()
     return sumpt_
+
 
 hHt = TH1F('hHt','hHt',120,0,2500)
 hHt.Sumw2()
@@ -214,7 +239,7 @@ fdatamc = TFile('usefulthings/weights/datamcsyst.root')
 hMhtWeight = fdatamc.Get('rDataOverMC').Clone('hMhtWeight')
 weightax = hMhtWeight.GetXaxis()
 
-newFileName = 'Templates'+filelist[0].split('/')[-1].replace('.root','')+JerUpDown+tbool[AddInNeutrinos]+'Lep'+DataMcReweight*'ModMht'+'.root'
+newFileName = 'Templates'+filelist[0].split('/')[-1].replace('.root','')+'Jer'+JerUpDown+DataMcReweight*'ModMht'+'.root'#tbool[AddInNeutrinos]+'Lep'
 newFileName = newFileName.replace('.root',nametag+'.root')
 fnew = TFile(newFileName,'recreate')
 
@@ -223,31 +248,10 @@ for ientry in range(nevents):
         print "processing event", ientry, '/', nevents
     c.GetEntry(ientry)
 
-    
-    '''#dipping
-    #dip into old samples
-    if not (bool(c.JetID) and  c.NVtx>0): continue
-    if not (c.eeBadScFilter==1 and c.eeBadSc4Filter and c.HBHENoiseFilter and c.HBHEIsoNoiseFilter and c.CSCTightHaloFilter): continue
-    if not (c.Electrons.size()==0 and c.Muons.size()==0 and c.isoElectronTracks==0 and c.isoElectronTracks==0 and
- c.isoPionTracks==0): continue
-    metvec = mkmet(c.METPt, c.METPhi)
-    passfilter = True
-    for ijet, jet in enumerate(c.Jets):
-        if not (jet.Pt() > 200): continue
-        if not (c.Jets_muonEnergyFraction[ijet]>0.5):continue 
-        if (abs(jet.DeltaPhi(metvec)) > (3.14159 - 0.4)):
-            passfilter = False
-            break
-    if not passfilter: continue
-    recojets = CreateUsefulJetVector(c.JetSlim, c.JetsSlim_bDiscriminatorCSV)    
-    #dipped
-    '''
-    
     if not passesUniversalSelection(c): continue###this is fiducial
-    recojets = CreateUsefulJetVector(c.Jets, c.Jets_bDiscriminatorCSV)#fiducial
-    #if ntupleV=='14':
-    #softrecojets = CreateUsefulJetVector(c.SoftJets, c.SoftJets_bDiscriminatorCSV)#fidicual
-    #recojets = ConcatenateVectors(recojets_, softrecojets)#fiducial
+    if UseDeep: recojets = CreateUsefulJetVector(c.Jets, c.Jets_bJetTagDeepCSVBvsAll)#fiducial
+    else: recojets = CreateUsefulJetVector(c.Jets, c.Jets_bDiscriminatorCSV)#fiducial
+
 
     matchedCsvVec = createMatchedCsvVector(c.GenJets, recojets);
     genjets = CreateUsefulJetVector(c.GenJets, matchedCsvVec)
@@ -266,14 +270,6 @@ for ientry in range(nevents):
                 dr = genjets[igen].DeltaR(gen2add)
                 if not (dr<0.4): continue # maybe one day you can use .5 and then put hold that neutrino
                 genjets[igen]+=gen2add
-
-    '''
-    if not (t.eeBadScFilter==1 and t.HBHENoiseFilter and t.HBHEIsoNoiseFilter and t.CSCTightHaloFilter): 
-        print 't.eeBadScFilter', t.eeBadScFilter, 't.HBHENoiseFilter', t.HBHENoiseFilter, 't.HBHEIsoNoiseFilter',t.HBHEIsoNoiseFilter, 't.CSCTightHaloFilter', t.CSCTightHaloFilter
-
-        if not (t.HBHENoiseFilter==1 and t.HBHEIsoNoiseFilter==1 and t.eeBadScFilter==1 and t.EcalDeadCellTriggerPrimitiveFilter==1 and t.BadChargedCandidateFilter and t.BadPFMuonFilter): 
-            print 't.HBHENoiseFilter',t.HBHENoiseFilter , 't.HBHEIsoNoiseFilter',t.HBHEIsoNoiseFilter , 't.eeBadScFilter',t.eeBadScFilter , 't.EcalDeadCellTriggerPrimitiveFilter',t.EcalDeadCellTriggerPrimitiveFilter , 't.BadChargedCandidateFilter',t.BadChargedCandidateFilter , 't.BadPFMuonFilter', t.BadPFMuonFilter
-    '''    
     
     ght = getHT(genjets, 30)# make HT include the neutrinos 
     iht = templateHtAxis.FindBin(ght)      
@@ -295,7 +291,6 @@ for ientry in range(nevents):
         for jet in genjets:
             print 'GEN: pt, eta, csv', jet.Pt(),jet.Eta(), jet.csv            
 
-
     #make response templates
     for gjet in genjets:
         if not (gjet.Pt()>2):continue
@@ -305,7 +300,7 @@ for ientry in range(nevents):
         gpt = gjet.Pt()
         ipt = templatePtAxis.FindBin(gpt)
 
-        sumGpt = calcSumPt(genjets, gjet.tlv, 0.7, 2)
+        sumGpt = calcSumPt(genjets, gjet, 0.7, 2)
         ratioGPtSumpt1 = gjet.Pt()/sumGpt
         if not ratioGPtSumpt1 > 0.98: continue #g-isolation
         matched = False
@@ -313,63 +308,63 @@ for ientry in range(nevents):
         dRbig = 9
         ratioRPtSumpt1 = 1
         recoCsv = -1
-        for ireco, rjet in enumerate(recojets):
-            dR_ = rjet.tlv.DeltaR(gjet.tlv)
+        for ireco, rjet in enumerate(c.Jets):
+            dR_ = rjet.DeltaR(gjet.tlv)
             if dR_<0.5 and dR_<dRbig:
                 dRbig = dR_
                 matched = True
                 pt0 = rjet.Pt()
 
-                sf, sfunc = getScaleFactor80x(abs(rjet.Eta()))
-                variation = 0#UncSign[JerUpDown]*sfunc
+                #sf, sfunc = getScaleFactor80x(abs(rjet.Eta()))
+                #variation = 0#uncsign[JerUpDown]*sfunc
+                if uncsign==1: variation = (c.Jets_jerFactorUp[ireco]-c.Jets_jerFactor[ireco])/c.Jets_jerFactor[ireco]
+                elif uncsign==-1: variation = (c.Jets_jerFactorDown[ireco]-c.Jets_jerFactor[ireco])/c.Jets_jerFactor[ireco]
+                else: variation = 0
+                #print 'c.Jets_jerFactorUp[ireco], c.Jets_jerFactorDown[ireco], c.Jets_jerFactor[ireco]', c.Jets_jerFactorUp[ireco], c.Jets_jerFactorDown[ireco], c.Jets_jerFactor[ireco], variation
                 pt1 = max(0.,gpt+(1+variation)*(pt0-gpt))
                 response = pt1/gpt#cosine did nothing man! * TMath.Cos(rjet.DeltaPhi(gjet))
 
                 #response = pt0/gpt
-                sumpt = calcSumPt(recojets, rjet.tlv, 0.7, 0)
+                sumpt = calcSumPt(c.Jets, rjet, 0.7, 0)
                 ratioRPtSumpt1 = rjet.Pt()/sumpt
-                recoCsv = rjet.csv
+                recoCsv = c.Jets_bDiscriminatorCSV[ireco]
                 if dR_<0.4:  break # if there's not one within 0.4, keep looking
         if ratioRPtSumpt1 > 0.98: isolated = True
         if not isolated: continue
         if not matched: continue
-        if recoCsv<BTAG_CSV:
+        if recoCsv<BTag_Cut:
             hResGenTemplates[ieta][ipt].Fill(response,weight)
         else:   hResGenTemplatesB[ieta][ipt].Fill(response,weight)
         hResponseVsGenPt.Fill(gpt,response,weight)
         #if nbs==0: hCsvVsC.Fill(response, recoCsv)
 
-    if not ('QCD_HT' in physicsProcess): continue
 
+    if not ('QCD_HT' in physicsProcess): continue
 
     weight = c.Weight
     if gMhtPt<200 and DataMcReweight:
         weight*=hMhtWeight.GetBinContent(weightax.FindBin(gMhtPt))
 
-    nbtags = countBJets_Useful(recojets, llhdMhtThresh)###
+    nbtags = countBJets_Useful(recojets, llhdMhtThresh, BTag_Cut)###
     nGenJets = countJets(genjets, 30)    
     if nbtags>2: 
         if nGenJets>2:
             genBjet = getLeadingGenBJet(genjets, recojets)
             hMhtPtTemplatesB3[iht].Fill(gMhtPt,weight)
             hMhtPhiTemplatesB3[iht].Fill(abs(genBjet.tlv.DeltaPhi(gMhtVec)),weight)
-
     elif nbtags>1: 
         if nGenJets>1:
             genBjet = getLeadingGenBJet(genjets, recojets)
             hMhtPtTemplatesB2[iht].Fill(gMhtPt,weight)
             hMhtPhiTemplatesB2[iht].Fill(abs(genBjet.tlv.DeltaPhi(gMhtVec)),weight)
-
     elif nbtags>0: 
         if nGenJets>1:
             genBjet = getLeadingGenBJet(genjets, recojets)
             hMhtPtTemplatesB1[iht].Fill(gMhtPt,weight)
             hMhtPhiTemplatesB1[iht].Fill(abs(genBjet.tlv.DeltaPhi(gMhtVec)),weight)
-
     elif nGenJets>1:
         hMhtPtTemplatesB0[iht].Fill(gMhtPt,weight)
         hMhtPhiTemplatesB0[iht].Fill(abs(genjets[0].tlv.DeltaPhi(gMhtVec)),weight)
-
 
 
 fnew.cd()

@@ -7,21 +7,34 @@ from utils import *
 from ra2blibs import *
 import time
 
+mhtjetetacut = 5.0 # also needs be be changed in UsefulJet.h
+
+debugmode = False
+
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbosity", type=bool, default=0,help="increase output verbosity")
 parser.add_argument("-nprint", "--printevery", type=int, default=100,help="print every n(events)")
-parser.add_argument("-fin", "--fnamekeyword", type=str,default='RunIIFall17MiniAODv2.QCD',help="file")
+parser.add_argument("-fin", "--fnamekeyword", type=str,default='RunIIFall17MiniAODv2.QCD_HT200to',help="file")
+parser.add_argument("-jersf", "--JerUpDown", type=str, default='Nom',help="JER scale factor (JerNom, JerUp, ...)")
 args = parser.parse_args()
-fnamekeyword = args.fnamekeyword
 printevery = args.printevery
-nametag = ''
+fnamekeyword = args.fnamekeyword
+JerUpDown = args.JerUpDown
+nametag = {'Nom':'', 'JerUp': 'JerUp'}
 
-quickrun = False
+
+
+UseDeep = False
+
+#Delta phis need some attention - only use central jets
+
+chasedown200 = False
+quickrun = True
 
 
 if 'Summer16' in fnamekeyword: 
-    ntupleV = '14'
+    ntupleV = '16'
     isdata = False
 elif 'V15a' in fnamekeyword or 'RelVal' in fnamekeyword:
     ntupleV = '15a'
@@ -29,18 +42,25 @@ elif 'V15a' in fnamekeyword or 'RelVal' in fnamekeyword:
 elif 'Fall17' in fnamekeyword:
 	ntupleV = '16'
 else: 
-    ntupleV = '15'
+    ntupleV = '16'
     isdata = True
-if 'Run2016' in fnamekeyword: ntupleV = '14'
-if 'Run2017' in fnamekeyword: ntupleV = '15'
-if 'Run2018' in fnamekeyword: ntupleV = '15'
+
+if 'Run2016' in fnamekeyword or 'Summer16' in fnamekeyword: 
+    BTAG_CSVv2 = 0.8484
+    BTAG_deepCSV = 0.6324
+if 'Run2017' in fnamekeyword or 'Fall17' in fnamekeyword: 
+    BTAG_CSVv2 = 0.8838
+    BTAG_deepCSV = 0.4941
+if 'Run2018' in fnamekeyword or 'Fall17' in fnamekeyword: 
+    BTAG_CSVv2 = 0.8838
+    BTAG_deepCSV = 0.4941
     
 year = '2015'
 year = '2016'
 if year=='2015':loadSearchBins2015()
 if year=='2016':loadSearchBins2016()
 isskim = False ##thing one to switch xxx
-
+skiprands = False
 
 pwd = os.getcwd()
 
@@ -61,16 +81,48 @@ nCuts = 8
 #loadSearchBins2015()
 mktree = False
 PrintJets = False
+if debugmode: PrintJets = True
 CuttingEdge = True
 
-print 'hello'
 
 #varlist = ['Ht','Mht','NJets','BTags','DPhi1','DPhi2','DPhi3','DPhi4','Jet1Pt','Jet1Eta','Jet2Pt','Jet2Eta','Jet3Pt','Jet3Eta','Jet4Pt','Jet4Eta','Met','MhtPhi','SearchBins','Odd','MvaLowMht','MvaLowHt']
-varlist = ['Ht','Mht','NJets','BTags','DPhi1','DPhi2','DPhi3','DPhi4','SearchBins']
+varlist = ['Ht','Mht','NJets','BTags','SearchBins', 'MaxDPhi', 'MaxForwardPt']
 indexVar = {}
 for ivar, var in enumerate(varlist): indexVar[var] = ivar
+indexVar[''] = -1
+varlistDPhi = ['DPhi1','DPhi2','DPhi3','DPhi4']
+indexVarDPhi = {}
+for ivar, var in enumerate(varlistDPhi): indexVarDPhi[var] = ivar
+indexVarDPhi['']=-1
+nmain = len(varlist)
 
+def selectionFeatureVector(fvector, regionkey='', omitcuts='', omitcuts_dphi=''):
+    fvmain, fvdphi = fvector
+    if not fvmain[1]>150: return False
+    iomits, iomits_dphi = [], []    
+    if fvmain[0]<fvmain[1]: return False
+    for cut in omitcuts.split('Vs'): iomits.append(indexVar[cut])
+    for i, feature in enumerate(fvmain):
+        if i==nmain: break
+        if i in iomits: continue
+        if not (feature>=regionCuts[regionkey][1][i][0] and feature<=regionCuts[regionkey][1][i][1]): return False
+        
+    for cut in omitcuts_dphi.split('Vs'): iomits_dphi.append(indexVarDPhi[cut])    
+    if regionCuts[regionkey][0]==0:#high delta phi
+        for i, feature in enumerate(fvdphi[:fvmain[2]]):
+            if i in iomits_dphi: continue
+            if not (feature>=regionCuts[regionkey][2][i][0] and feature<=regionCuts[regionkey][2][i][1]): return False
+        return True
 
+    if regionCuts[regionkey][0]==1:#low delta phi
+        for i, feature in enumerate(fvdphi[:fvmain[2]]):
+            if i in iomits_dphi: continue
+            if not (feature>=regionCuts[regionkey][2][i][0] and feature<=regionCuts[regionkey][2][i][1]): return True
+        return False    
+    print 'should never see this'
+    return passmain 
+
+'''
 def selectionFeatureVector(fvector, regionkey='', omitcuts=''):
     iomits = []
     for cut in omitcuts.split('Vs'): iomits.append(indexVar[cut])
@@ -79,15 +131,17 @@ def selectionFeatureVector(fvector, regionkey='', omitcuts=''):
     for i, feature in enumerate(fvector):
         if i>=nCuts_: break #make selections except for nonexistant jets
         if i in iomits: continue
-        if not (feature>=regionCuts[regionkey][0][i][0] and feature<=regionCuts[regionkey][0][i][1]): return False
-    if regionkey[1]==1:# this is the help you were looking for
+        if not (feature>=regionCuts[regionkey][1][i][0] and feature<=regionCuts[regionkey][1][i][1]):
+            return False
+    if 'LowDeltaPhi' in regionkey:# this is the help you were looking for
         for ijet in range(min(4,fvector[2])):
-            if (fvector[4+ijet]<=regionCuts['LowMhtBaseline'][4+ijet][0]): 
+            if (fvector[4+ijet]<=regionCuts['LowMhtBaseline'][1][4+ijet][0]): 
                 return True #inverted dPhi selection
         return False
     #if 'Odd' in regionkey:
     #    if not fvector[-3]==True: return False
-    return True 
+    return True
+'''
 
 StressData = {'Neuts': [pwd+'/Templates/TemplatesSFNomNeuts80x.root'],'Nom':[pwd+'/Templates/TemplatesSFNom80x.root'], 'CoreUp': [pwd+'/Templates/Templates80xCoreUp.root'], 'CoreDown': [pwd+'/Templates/Templates80xCoreDown.root'], 'TailUp': [pwd+'/Templates/Templates80xTailUp.root'], 'TailDown': [pwd+'/Templates/Templates80xTailDown.root'], 'ModPrior': [pwd+'/Templates/Templates80xModPrior.root'], 'NomFine': [pwd+'/Templates/TemplatesSFNom80xFine.root'], 'NomUltraFine':[pwd+'/Templates/TemplatesSFNom80xUltraFine.root'], 'NomV12':[pwd+'/Templates/TemplatesCoreNomTailNomV12.root'], 'NoSFV12':[pwd+'/Templates/TemplatesSFNomV12.root'], 'CoreUpCoarse':[pwd+'/Templates/TemplatesCoreUpTailNomV12coarse.root'], 'CoreDownCoarse':[pwd+'/Templates/TemplatesCoreDownTailNomV12coarse.root'], 'TailUpCoarse':[pwd+'/Templates/TemplatesCoreNomTailUpV12coarse.root'], 'TailDownCoarse':[pwd+'/Templates/TemplatesCoreNomTailDownV12coarse.root'], 'NomCoarse':[pwd+'/Templates/TemplatesCoreNomTailNomV12coarse.root'], 'NomNotProcessed':[pwd+'/Templates/TemplatesSFNomV12.root'], 'NomNotProcessedCoarse':[pwd+'/Templates/TemplatesSFNomV12coarse.root'], 'NomMoriond':[pwd+'/Templates/TemplatesSFNomV12Moriond.root'], 'NomMoriondCodeV11':[pwd+'/Templates/TemplatesSFNomV11MoriondCode.root'],'NomMoriondCodeV11Csvp8':[pwd+'/Templates/TemplatesSFNomV11MoriondCodeCsvp8.root'],'NomAncientMoriondCodeCsvp8':[pwd+'/Templates/TemplatesSFNomAncientMoriondCodeCsvp8.root'],'NomV11MoriondBitFiner':[pwd+'/Templates/TemplatesSFNomV11MoriondBitFiner.root'],'NomV12MoriondGuts':[pwd+'/Templates/TemplatesSFNomV12FixPriorGutEta.root'], 'NomV12MoriondNoFilters':[pwd+'/Templates/TemplatesSFNomV12NoFilters.root']}
 StressData['NomNom'] = [pwd+'/Templates/megatemplateNoSF.root']#sam added Nov29
@@ -98,9 +152,12 @@ if 'Run20' in fnamekeyword: isdata = True
 else: isdata = False
 
 #templateFileName = StressData[stressdata][0]
-templateFileName = 'usefulthings/ResponseFunctionsMC17.root'
-tfilename = templateFileName[templateFileName.rfind('/')+1:templateFileName.find('.root')].replace('Templates','')
-print tfilename
+if ('Summer16' in fnamekeyword or 'Run2016' in fnamekeyword): 
+    templateFileName = 'usefulthings/ResponseFunctionsMC16'+nametag[JerUpDown]+'.root'
+if ('Fall17' in fnamekeyword or 'Run2017' in fnamekeyword or 'Run2018' in fnamekeyword): 
+    if UseDeep: templateFileName = 'usefulthings/ResponseFunctionsMC17'+nametag[JerUpDown]+'_deepCsv.root'
+    else: templateFileName = 'usefulthings/ResponseFunctionsMC17'+nametag[JerUpDown]+'.root'
+
 
 ftemplate = TFile(templateFileName)
 print 'using templates from',templateFileName
@@ -129,14 +186,13 @@ for line in lines:
     print 'adding', fname
     c.Add(fname)
     filelist.append(fname)
-    break
+    if not chasedown200: break
 nevents = c.GetEntries()
-if quickrun: nevents = min(1000,nevents)
+if quickrun: nevents = min(5000,nevents)
 c.Show(0)
 print "nevents=", nevents
 
 newFileName = 'RandS_'+filelist[0].split('/')[-1].replace('.root','')+'.root'
-newFileName = newFileName.replace('.root',nametag+'.root')
 fnew = TFile(newFileName,'recreate')
 print 'creating new file:',fnew.GetName()
 
@@ -166,13 +222,8 @@ hLeadJetEtaVsNeutralFraction_NonBlob = TH2F('hLeadJetEtaVsNeutralFraction_NonBlo
 hLeadJetEta_Blob = TH1F('hLeadJetEta_Blob','hLeadJetEta_Blob',200,-5,5)
 hLeadJetEta_NonBlob = TH1F('hLeadJetEta_NonBlob','hLeadJetEta_NonBlob',200,-5,5)
 
-hJet1RecoResponse = TH1F('hJet1RecoResponse','hJet1RecoResponse',300,0,3)
-hJet2RecoResponse = TH1F('hJet2RecoResponse','hJet2RecoResponse',300,0,3)
-harryhistosReco = [hJet1RecoResponse,hJet2RecoResponse]
-hJet1RebaResponse = TH1F('hJet1RebaResponse','hJet1RebaResponse',300,0,3)
-hJet2RebaResponse = TH1F('hJet2RebaResponse','hJet2RebaResponse',300,0,3)
-harryhistosReba = [hJet1RebaResponse,hJet2RebaResponse]
 
+hCaloMetRatio = TH1F('hCaloMetRatio', 'hCaloMetRatio', 50,0,10)
 
 if CuttingEdge: GleanTemplatesFromFile(ftemplate)
 else:
@@ -315,10 +366,13 @@ histoStructDict = {}
 for region in regionCuts:
     for var in varlist:
         histname = region+'_'+var
-        histoStructDict[histname] = mkHistoStruct(histname)
+        histoStructDict[histname] = mkHistoStruct(histname, binning)
+    for var in varlistDPhi:
+        histname = region+'_'+var
+        histoStructDict[histname] = mkHistoStruct(histname, binning)        
 
 #varlist2d
-var_pairs = []#[['Mht','Ht'],['Mht','BTags'],['Mht','NJets'],['Mht','DPhi1'],['Mht','DPhi2'],['Mht','DPhi3'],['Mht','DPhi4']]
+var_pairs = []#[['Mht','Ht'],['Mht',''],['Mht','NJets'],['Mht','DPhi1'],['Mht','DPhi2'],['Mht','DPhi3'],['Mht','DPhi4']]
 histo2dStructDict = {}
 for region in regionCuts:
     for var_pair in var_pairs:
@@ -344,6 +398,8 @@ if mktree:
 print 'nevents=', nevents
 t0 = time.time()
 for ientry in range(nevents):
+    if debugmode:
+        if ientry<54369: continue    
     if ientry%printevery==0:
         print "processing event", ientry, '/', nevents
         print 'time=',time.time()-t0
@@ -372,6 +428,7 @@ for ientry in range(nevents):
         fillth1(hMhtWeighted, c.MHT,c.CrossSection)    
         prescaleweight = 1
 
+    if c.MHT>200: fillth1(hCaloMetRatio, c.PFCaloMETRatio)
     if isdata: 
         if isskim:
             if not passesUniversalSkimSelection(c): continue
@@ -381,26 +438,24 @@ for ientry in range(nevents):
         if not passesUniversalSelection(c): continue
 
 
-    #if datamc=='MC' and (c.HT>5*c.GenHT):
-    #    print 'DEBUG suspicious event', ientry, c.HT, c.GenHT
-    #    if c.HT>5*c.GenHT: continue
+    if (not isdata) and (c.HT>5*c.GenHT and c.GenHT>10):
+        print 'DEBUG suspicious event', ientry, c.HT, c.GenHT
+        #if c.HT>5*c.GenHT: continue
 
     MetVec = mkmet(c.MET, c.METPhi)
     MhtVec = mkmet(c.MHT,c.MHTPhi)
     
-    ntries = 1
+    nsmears = 1
     if isdata: weight = 1.0*prescaleweight
     else: weight = c.CrossSection        
 
     if PrintJets: 
         print '===gen particles==='*5
         for igp, gp in enumerate(c.GenParticles):
-            if gp.Pt()>1: print gp.Pt(), gp.Eta(), c.GenParticles_PdgId[igp]
+            if gp.Pt()>1: print igp, gp.Pt(), gp.Eta(), gp.Phi(), c.GenParticles_PdgId[igp]
         print 'MHT, GenMHT = ', c.MHT, c.GenMHT
 
-
-    recojets = CreateUsefulJetVector(c.Jets, c.Jets_bDiscriminatorCSV)
-
+    
     '''
     if not isskim:
         softrecojets = CreateUsefulJetVector(c.SoftJets, c.SoftJets_bDiscriminatorCSV)
@@ -408,6 +463,20 @@ for ientry in range(nevents):
         recojets = ConcatenateVectors(recojets, softrecojets)
     '''
 
+
+
+
+    ##recojets = CreateUsefulJetVector(c.Jets, c.Jets_bDiscriminatorCSV)
+
+    if UseDeep: recojets = CreateUsefulJetVector(c.Jets, c.Jets_bJetTagDeepCSVBvsAll)#fiducial
+    else: recojets = CreateUsefulJetVector(c.Jets, c.Jets_bDiscriminatorCSV)#fiducial    
+
+    if not len(recojets)>0: continue
+    #if not abs(recojets[0].Eta())<2.4: continue
+    #if len(recojets)>1: 
+    #    if not abs(recojets[1].Eta())<2.4: continue
+
+        
     ht5 = getHT(recojets,AnMhtJetPtCut, 5.0)#Run2016H-PromptReco-v2.MET
     try: htratio = ht5/c.HT
     except: htratio = 5
@@ -436,16 +505,16 @@ for ientry in range(nevents):
         ##ignore jets that aren't matched!!!
         #recojets = RemoveUnmatchedJets(recojets, genjets)
         #recojets = VetoOnUnmatchedJets100(recojets, genjets)
-        gMhtVec = getMHT(genjets,AnMhtJetPtCut)
+        gMhtVec = getMHT(genjets,AnMhtJetPtCut, mhtjetetacut)
         gMht, gMhtPhi = gMhtVec.Pt(), gMhtVec.Phi()
         #for jet in genjets: 
         #    if jet.csv==0: jet.csv = 1.01   
         if PrintJets:                
             gbtags = countBJets_Useful(genjets,AnMhtJetPtCut)
-            gmht = getMHT(genjets,AnMhtJetPtCut)
+            gmht = getMHT(genjets,AnMhtJetPtCut, mhtjetetacut)
             print 'GEN: nbtags, mht =' , gbtags, gmht
-            for jet in genjets:
-                print 'GEN: pt, csv', jet.Pt(), jet.Eta(), jet.csv    
+            for ijet, jet in enumerate(genjets):
+                print 'GEN: pt, csv', ijet, jet.Pt(), jet.Eta(), jet.Phi(), jet.csv    
     ###     
 
     #branch
@@ -453,75 +522,96 @@ for ientry in range(nevents):
     bMetPt = c.MET
 
 
-
-    bDPhi1,bDPhi2,bDPhi3,bDPhi4 = getDPhis(bMhtVec, recojets)
+    dphijets = []
+    for jet in recojets:
+        if abs(jet.Eta())<2.4: dphijets.append(jet)
+    bDPhi1,bDPhi2,bDPhi3,bDPhi4 = abs(c.DeltaPhi1), abs(c.DeltaPhi2), abs(c.DeltaPhi3), abs(c.DeltaPhi4)
     bJet1Pt,bJet1Eta,bJet2Pt,bJet2Eta,bJet3Pt,bJet3Eta,bJet4Pt,bJet4Eta = getJetKinematics(recojets)
     jetPhis = getPhis(recojets,bMhtVec)
-    fv = [c.HT,c.MHT,c.NJets,c.BTags,bDPhi1,bDPhi2,bDPhi3,bDPhi4]#,bJet1Pt,bJet1Eta,\
+    fv = ([c.HT,c.MHT,c.NJets,c.BTags],[bDPhi1,bDPhi2,bDPhi3,bDPhi4])#,bJet1Pt,bJet1Eta,\
           #bJet2Pt,bJet2Eta,bJet3Pt,bJet3Eta,bJet4Pt,bJet4Eta,c.MET,c.MHTPhi]#must be synchronized with varlist 
     #if ientry==47: print 'fv', fv
-    binNumber = getBinNumber(fv)
-    fv.append(binNumber)
-    fv.append(-1)
-    fv.append(ientry%2==0)    
-    if PrintJets:
-        print 'RECO: nbtags =' , c.BTags
-        print fv
-        for jet in recojets:
-            print 'RECO: pt, csv', jet.Pt(),jet.Eta(), jet.csv    
+    binNumber = getBinNumber(fv[0])    
+    fv[0].append(binNumber)        
+    fv[0].append(max([bDPhi1,bDPhi2,bDPhi3,bDPhi4]))
+    fv[0].append(GetHighestPtForwardPt_prefiring(recojets))
+    fv[0].append(-1)
+    fv[0].append(ientry%2==0)    
+                                               
     for regionkey in regionCuts:
         for ivar, varname in enumerate(varlist):
             hname = regionkey+'_'+varname
-            if selectionFeatureVector(fv,regionkey,varname): 
-                fillth1(histoStructDict[hname].Branch, fv[ivar],weight)
-        for varpair in var_pairs:
-            varY, varX = varpair
-            hname = regionkey+'_'+varY+'Vs'+varX
-            ivarX, ivarY = indexVar[varX], indexVar[varY]
-            if selectionFeatureVector(fv,regionkey,varY+'Vs'+varX): 
-                fillth1(histo2dStructDict[hname].Branch, fv[ivarX],fv[ivarY],weight)
+            if selectionFeatureVector(fv,regionkey,varname,''): 
+                fillth1(histoStructDict[hname].Branch, fv[0][ivar],weight)
+        for ivar, varname in enumerate(varlistDPhi):
+            hname = regionkey+'_'+varname
+            if selectionFeatureVector(fv,regionkey,'',varname): 
+                fillth1(histoStructDict[hname].Branch, fv[1][ivar],weight)
     if mktree and 'T1' in fnamekeyword:
         if fv[1]>=150 and fv[1]<=200 and fv[0]>500 and fv[2]>3:# and ientry>nevents/2:
             growTree(littletree, fv, jetPhis, weight)            
-
-
-    if branchonly: continue
-
+    
     tHt = getHT(recojets,AnMhtJetPtCut)
     tHt5 = getHT(recojets,AnMhtJetPtCut, 5)
-    tMhtVec = getMHT(recojets,AnMhtJetPtCut)
+    tMhtVec = getMHT(recojets,AnMhtJetPtCut, mhtjetetacut)
     tMhtPt, tMhtPhi = tMhtVec.Pt(), tMhtVec.Phi()
     tNJets = countJets(recojets,AnMhtJetPtCut)
     tBTags = countBJets_Useful(recojets,AnMhtJetPtCut)
     redoneMET = redoMET(MetVec, recojets, recojets)
     tMetPt,tMetPhi = redoneMET.Pt(), redoneMET.Phi()
-    tDPhi1,tDPhi2,tDPhi3,tDPhi4 = getDPhis(tMhtVec,recojets)
+    dphijets = []
+    for jet in recojets:
+        if abs(jet.Eta())<2.4: dphijets.append(jet)    
+    tDPhi1,tDPhi2,tDPhi3,tDPhi4 = getDPhis(tMhtVec,dphijets)
     tJet1Pt,tJet1Eta,tJet2Pt,tJet2Eta,tJet3Pt,tJet3Eta,tJet4Pt,tJet4Eta = getJetKinematics(recojets)
     jetPhis = getPhis(recojets,tMhtVec)
     #fv = [tHt,tMhtPt,tNJets,tBTags,tDPhi1,tDPhi2,tDPhi3,tDPhi4,tJet1Pt,tJet1Eta,\
     #      tJet2Pt,tJet2Eta,tJet3Pt,tJet3Eta,tJet4Pt,tJet4Eta,tMetPt,tMhtPhi]
-    fv = [tHt,tMhtPt,tNJets,tBTags,tDPhi1,tDPhi2,tDPhi3,tDPhi4]          
-    binNumber = getBinNumber(fv)
-    fv.append(binNumber)     
-    fv.append(ientry%2==0)    
-    fv.append(True)
+    fv = ([tHt,tMhtPt,tNJets,tBTags],[tDPhi1,tDPhi2,tDPhi3,tDPhi4])
+    binNumber = getBinNumber(fv[0])
+    fv[0].append(binNumber)     
+    fv[0].append(max([tDPhi1,tDPhi2,tDPhi3,tDPhi4]))
+    fv[0].append(GetHighestPtForwardPt_prefiring(recojets))
+    fv[0].append(ientry%2==0)    
+    fv[0].append(True)
+
+    if PrintJets:
+        print 'RECO: nbtags =' , c.BTags
+        print fv
+        for ijet, jet in enumerate(recojets):
+            print 'RECO: pt, csv', ijet, jet.Pt(),jet.Eta(), jet.Phi(), jet.csv 
+        print 'RECO[0] Jets_chargedEmEnergyFraction=', c.Jets_chargedEmEnergyFraction[0]
+        print 'RECO[0] Jets_chargedHadronEnergyFraction=', c.Jets_chargedHadronEnergyFraction[0]
+        print 'RECO[0] Jets_chargedHadronMultiplicity=', c.Jets_chargedHadronMultiplicity[0]
+        print 'RECO[0] Jets_chargedMultiplicity=', c.Jets_chargedMultiplicity[0]
+        print 'RECO[0] Jets_electronEnergyFraction=', c.Jets_electronEnergyFraction[0]
+        print 'RECO[0] Jets_electronMultiplicity=', c.Jets_electronMultiplicity[0] 
+        print 'RECO[0] Jets_hadronFlavor=', c.Jets_hadronFlavor[0] 
+        print 'RECO[0] Jets_ID=', bool(c.Jets_ID[0])
+        print 'RECO[0] Jets_jecFactor=', c.Jets_jecFactor[0]
+        print 'RECO[0] Jets_jerFactor=', c.Jets_jerFactor[0] 
+        
     if isdata: wtrig_nom = Eff_Met110Mht110FakePho_CenterUpDown(fv[0], fv[1], fv[2])[0]
     else:  wtrig_nom = 1.0   
     if (tHt>0 and tHt5/tHt<2):        
       for regionkey in regionCuts:
         for ivar, varname in enumerate(varlist):
             hname = regionkey+'_'+varname
-            if selectionFeatureVector(fv,regionkey,varname): 
-                fillth1(histoStructDict[hname].Truth, fv[ivar],wtrig_nom*weight)
-        for varpair in var_pairs:
-            varY, varX = varpair
-            hname = regionkey+'_'+varY+'Vs'+varX
-            ivarX, ivarY = indexVar[varX], indexVar[varY]
-            if selectionFeatureVector(fv,regionkey,varY+'Vs'+varX): 
-                fillth1(histo2dStructDict[hname].Truth, fv[ivarX],fv[ivarY],wtrig_nom*weight)
+            if selectionFeatureVector(fv,regionkey,varname,''): 
+                fillth1(histoStructDict[hname].Truth, fv[0][ivar],wtrig_nom*weight)
+        for ivar, varname in enumerate(varlistDPhi):
+            hname = regionkey+'_'+varname
+            if selectionFeatureVector(fv,regionkey,'',varname): 
+                fillth1(histoStructDict[hname].Truth, fv[1][ivar],wtrig_nom*weight)
 
-    if isdata: weight = 1.0*prescaleweight/ntries                
-    else: weight = c.CrossSection/ntries
+    if tMhtPt>300: 
+        print ientry, 'here is an interesting event', fv
+        
+    if branchonly: continue
+    #if chasedown200: continue
+    
+    if isdata: weight = 1.0*prescaleweight
+    else: weight = c.CrossSection
 
 
     fitsucceed = True
@@ -547,24 +637,29 @@ for ientry in range(nevents):
 
     mHt = getHT(rebalancedJets,AnMhtJetPtCut)
     mHt5 = getHT(rebalancedJets,AnMhtJetPtCut, 5.0)
-    mMhtVec = getMHT(rebalancedJets,AnMhtJetPtCut)
+    mMhtVec = getMHT(rebalancedJets,AnMhtJetPtCut, mhtjetetacut)
     mMhtPt, mMhtPhi = mMhtVec.Pt(), mMhtVec.Phi()
 
     mNJets = countJets(rebalancedJets,AnMhtJetPtCut)
     mBTags = countBJets_Useful(rebalancedJets,AnMhtJetPtCut)###
 
-    hope = (fitsucceed and mMhtPt<160)# mMhtPt>min(mHt/2,180):
-
+    hope = (fitsucceed and mMhtPt<160)# mMhtPt>min(mHt/2,180):# was 160
+    
     redoneMET = redoMET(MetVec,recojets,rebalancedJets)
     mMetPt,mMetPhi = redoneMET.Pt(), redoneMET.Phi()
-    mDPhi1,mDPhi2,mDPhi3,mDPhi4 = getDPhis(mMhtVec,rebalancedJets)
+    dphijets = []
+    for jet in rebalancedJets:
+        if abs(jet.Eta())<2.4: dphijets.append(jet)        
+    mDPhi1,mDPhi2,mDPhi3,mDPhi4 = getDPhis(mMhtVec,dphijets)
     mJet1Pt,mJet1Eta,mJet2Pt,mJet2Eta,mJet3Pt,mJet3Eta,mJet4Pt,mJet4Eta = getJetKinematics(rebalancedJets)
     jetPhis = getPhis(rebalancedJets,mMhtVec)
-    fv = [mHt,mMhtPt,mNJets,mBTags,mDPhi1,mDPhi2,mDPhi3,mDPhi4]#mJet1Pt,mJet1Eta,\
+    fv = ([mHt,mMhtPt,mNJets,mBTags],[mDPhi1,mDPhi2,mDPhi3,mDPhi4])#mJet1Pt,mJet1Eta,\
           #mJet2Pt,mJet2Eta,mJet3Pt,mJet3Eta,mJet4Pt,mJet4Eta,mMetPt,mMhtPhi]
-    binNumber = getBinNumber(fv)
-    fv.append(binNumber)
-    fv.append(ientry%2==0)
+    binNumber = getBinNumber(fv[0])
+    fv[0].append(binNumber)
+    fv[0].append(max([mDPhi1,mDPhi2,mDPhi3,mDPhi4]))
+    fv[0].append(GetHighestPtForwardPt_prefiring(rebalancedJets))
+    fv[0].append(ientry%2==0)
 
     if PrintJets:
         print 'Rebalanced'
@@ -575,36 +670,34 @@ for ientry in range(nevents):
     if isdata: wtrig_nom = Eff_Met110Mht110FakePho_CenterUpDown(fv[0], fv[1], fv[2])[0]
     else:  wtrig_nom = 1.0
     if (mHt>0 and mHt5/mHt<2):                
-      for regionkey in regionCuts:        
+      for regionkey in regionCuts:      
         for ivar, varname in enumerate(varlist):
             hname = regionkey+'_'+varname
-            if selectionFeatureVector(fv,regionkey,varname): 
-                fillth1(histoStructDict[hname].Rebalanced, fv[ivar],wtrig_nom*weight)
-        for varpair in var_pairs:
-            varY, varX = varpair
-            hname = regionkey+'_'+varY+'Vs'+varX
-            ivarX, ivarY = indexVar[varX], indexVar[varY]
-            if selectionFeatureVector(fv,regionkey,varY+'Vs'+varX): 
-                fillth1(histo2dStructDict[hname].Rebalanced, fv[ivarX],fv[ivarY],wtrig_nom*weight)
+            if selectionFeatureVector(fv,regionkey,varname,''): 
+                fillth1(histoStructDict[hname].Rebalanced, fv[0][ivar],weight)
+        for ivar, varname in enumerate(varlistDPhi):
+            hname = regionkey+'_'+varname
+            if selectionFeatureVector(fv,regionkey,'',varname): 
+                fillth1(histoStructDict[hname].Rebalanced, fv[1][ivar],weight)
 
-    fillth1(hTotFit, fv[3], weight)
-    fillth1(hTotFar2big, fv[3], weight)    
+    fillth1(hTotFit, fv[0][3], weight)
+    fillth1(hTotFar2big, fv[0][3], weight)    
     if fitsucceed: 
-        fillth1(hPassFit, fv[3], weight)
+        fillth1(hPassFit, fv[0][3], weight)
     if fv[1]<200:
-        fillth1(hPassFar2big, fv[3], weight)
-    if not fitsucceed: print ientry, 'fit failed with mht, btags = ', fv[1], fv[3]
-    if fnamekeyword=='TTJets' or fnamekeyword=='WJetsToLNu' or fnamekeyword=='ZJetsToNuNu':upfactor = 2000
+        fillth1(hPassFar2big, fv[0][3], weight)
+    if PrintJets:
+        if not fitsucceed:  print ientry, 'fit failed with mht, btags = ', fv[1], fv[3]
+    #if fnamekeyword=='TTJets' or fnamekeyword=='WJetsToLNu' or fnamekeyword=='ZJetsToNuNu':upfactor = 2000
     else: upfactor = 200
-    if not isdata: 
-        upfactor = 2
-        ntries = upfactor
-        weight = c.CrossSection/ntries
     if isdata: 
-        ntries = min(int(upfactor*prescaleweight),200)
-        weight = prescaleweight/ntries
+        nsmears = min(int(upfactor*prescaleweight),200)
+        weight = prescaleweight/nsmears        
+    else:
+        nsmears = 3
+        weight = c.CrossSection/nsmears
+    for i in range(nsmears):
 
-    for i in range(ntries):
         if not hope: break
         if CuttingEdge:
             RplusSJets = smearJets_CC(rebalancedJets,99+_Templates_.nparams)#this is one key difference between the golden and space ages (this script currenlty has 99+nparams here.)
@@ -613,7 +706,7 @@ for ientry in range(nevents):
             RplusSJets = CreateUsefulJetVector(RplusSJets_,csvRplusSJets_)
         rpsHt = getHT(RplusSJets,AnMhtJetPtCut)
         rpsHt5 = getHT(RplusSJets,AnMhtJetPtCut, 5)
-        rMhtVec = getMHT(RplusSJets,AnMhtJetPtCut)
+        rMhtVec = getMHT(RplusSJets,AnMhtJetPtCut, mhtjetetacut)
         rpsMht, rpsMhtPhi = rMhtVec.Pt(), rMhtVec.Phi()
         if rpsMht>2000: 
             print 'DEBUG passing on unusually high R+S event', ientry#this is a safeguard against mystery
@@ -623,15 +716,20 @@ for ientry in range(nevents):
         rpsMhtVec = mkmet(rpsMht,rpsMhtPhi)
         redoneMET = redoMET(MetVec, recojets, RplusSJets)
         rpsMetPt, rpsMetPhi = redoneMET.Pt(), redoneMET.Phi()
-        rpsDPhi1,rpsDPhi2,rpsDPhi3,rpsDPhi4 = getDPhis(rpsMhtVec,RplusSJets)
+        dphijets = []
+        for jet in RplusSJets:
+            if abs(jet.Eta())<2.4: dphijets.append(jet)           
+        rpsDPhi1,rpsDPhi2,rpsDPhi3,rpsDPhi4 = getDPhis(rpsMhtVec,dphijets)
         rpsJet1Pt,rpsJet1Eta,rpsJet2Pt,rpsJet2Eta,rpsJet3Pt,rpsJet3Eta,rpsJet4Pt,rpsJet4Eta = getJetKinematics(RplusSJets)
         jetPhis = getPhis(RplusSJets,rpsMhtVec)
         #fv = [rpsHt,rpsMht,rpsNJets,rpsBTags,rpsDPhi1,rpsDPhi2,rpsDPhi3,rpsDPhi4,rpsJet1Pt,rpsJet1Eta,\
         #      rpsJet2Pt,rpsJet2Eta,rpsJet3Pt,rpsJet3Eta,rpsJet4Pt,rpsJet4Eta,rpsMetPt,rpsMhtPhi]
-        fv = [rpsHt,rpsMht,rpsNJets,rpsBTags,rpsDPhi1,rpsDPhi2,rpsDPhi3,rpsDPhi4]              
-        binNumber = getBinNumber(fv)     
-        fv.append(binNumber)
-        fv.append(ientry%2==0)
+        fv = ([rpsHt,rpsMht,rpsNJets,rpsBTags],[rpsDPhi1,rpsDPhi2,rpsDPhi3,rpsDPhi4])
+        binNumber = getBinNumber(fv[0])     
+        fv[0].append(binNumber)
+        fv[0].append(max([rpsDPhi1,rpsDPhi2,rpsDPhi3,rpsDPhi4]))
+        fv[0].append(GetHighestPtForwardPt_prefiring(RplusSJets))
+        fv[0].append(ientry%2==0)
 
         if isdata: wtrig_nom = Eff_Met110Mht110FakePho_CenterUpDown(fv[0], fv[1], fv[2])[0]
         else:  wtrig_nom = 1.0        
@@ -640,14 +738,12 @@ for ientry in range(nevents):
           for regionkey in regionCuts:     
             for ivar, varname in enumerate(varlist):
                 hname = regionkey+'_'+varname
-                if selectionFeatureVector(fv,regionkey,varname): 
-                    fillth1(histoStructDict[hname].RplusS, fv[ivar],wtrig_nom*weight)
-            for varpair in var_pairs:
-                varY, varX = varpair
-                hname = regionkey+'_'+varY+'Vs'+varX
-                ivarX, ivarY = indexVar[varX], indexVar[varY]
-                if selectionFeatureVector(fv,regionkey,varY+'Vs'+varX): 
-                    fillth1(histo2dStructDict[hname].RplusS, fv[ivarX],fv[ivarY],wtrig_nom*weight)
+                if selectionFeatureVector(fv,regionkey,varname,''):
+                    fillth1(histoStructDict[hname].RplusS, fv[0][ivar],wtrig_nom*weight)
+            for ivar, varname in enumerate(varlistDPhi):
+                hname = regionkey+'_'+varname
+                if selectionFeatureVector(fv,regionkey,'',varname): 
+                    fillth1(histoStructDict[hname].RplusS, fv[1][ivar],wtrig_nom*weight)
         if mktree and 'JetHT' in physicsProcess and fv[1]>=150 and fv[1]<200 and fv[0]>=500 and fv[2]>=4: 
             growTree(littletree, fv, jetPhis, weight)
 
@@ -664,76 +760,77 @@ for ientry in range(nevents):
 
     #matchedCsvVec = createMatchedCsvVector(t.GenJets, recojets)
     #genjets = CreateUsefulJetVector(t.GenJets, matchedCsvVec)
-    gMhtVec = getMHT(genjets,AnMhtJetPtCut)
+    gMhtVec = getMHT(genjets,AnMhtJetPtCut, mhtjetetacut)
     gMht, gMhtPhi = gMhtVec.Pt(), gMhtVec.Phi()
     #matchedRebCsvVec = getMatchedCsv(genjets,rebalancedJets,csvRebalancedJets,harryhistosReba)#for Harry!
     weight = c.CrossSection
     gHt = getHT(genjets,AnMhtJetPtCut)
-    gMhtVec = getMHT(genjets,AnMhtJetPtCut)
+    gMhtVec = getMHT(genjets,AnMhtJetPtCut, mhtjetetacut)
     gMht, gMhtPhi = gMhtVec.Pt(), gMhtVec.Phi()
     gNJets = countJets(genjets,AnMhtJetPtCut)
     gBTags = countBJets_Useful(genjets,AnMhtJetPtCut)
     gMhtVec = mkmet(gMht,gMhtPhi)
     if doHybridMet: gMhtVec = getHybridMet(genjets,recojets,genMetVec,cutoff).Pt()
     gMetPt,gMetPhi = genMetVec.Pt(),genMetVec.Phi()
-    gDPhi1,gDPhi2,gDPhi3,gDPhi4 = getDPhis(gMhtVec,genjets)
+    dphijets = []
+    for jet in genjets:
+        if abs(jet.Eta())<2.4: dphijets.append(jet)             
+    gDPhi1,gDPhi2,gDPhi3,gDPhi4 = getDPhis(gMhtVec,dphijets)
     gJet1Pt,gJet1Eta,gJet2Pt,gJet2Eta,gJet3Pt,gJet3Eta,gJet4Pt,gJet4Eta = getJetKinematics(genjets)
     jetPhis = getPhis(genjets,gMhtVec)
-    fv = [gHt,gMht,gNJets,gBTags,gDPhi1,gDPhi2,gDPhi3,gDPhi4]
-    binNumber = getBinNumber(fv)##for good measure, do some debugging here. it'd be nice to have an understand for why rebalance mht != generator-level mht
-    fv.append(binNumber)
-    fv.append(ientry%2==0)
-    if PrintJets:                
-        print 'GEN: nbtags =' , mBTags
-        print fv
-        for jet in genjets:
-            print 'GEN: pt, csv', jet.Pt(), jet.Eta(), jet.csv        
+    fv = ([gHt,gMht,gNJets,gBTags],[gDPhi1,gDPhi2,gDPhi3,gDPhi4])
+    binNumber = getBinNumber(fv[0])##for good measure, do some debugging here. it'd be nice to have an understand for why rebalance mht != generator-level mht
+    fv[0].append(binNumber)
+    fv[0].append(max([gDPhi1,gDPhi2,gDPhi3,gDPhi4]))
+    fv[0].append(GetHighestPtForwardPt_prefiring(genjets))
+    fv[0].append(ientry%2==0)
     for regionkey in regionCuts:
         for ivar, varname in enumerate(varlist):
             hname = regionkey+'_'+varname
-            if selectionFeatureVector(fv,regionkey,varname): 
-                fillth1(histoStructDict[hname].Gen, fv[ivar],weight)
-        for varpair in var_pairs:
-            varY, varX = varpair
-            hname = regionkey+'_'+varY+'Vs'+varX
-            ivarX, ivarY = indexVar[varX], indexVar[varY]
-            if selectionFeatureVector(fv,regionkey,varY+'Vs'+varX): 
-                fillth1(histo2dStructDict[hname].Gen, fv[ivarX],fv[ivarY],weight)
+            if selectionFeatureVector(fv,regionkey,varname,''): 
+                fillth1(histoStructDict[hname].Gen, fv[0][ivar],weight)
+        for ivar, varname in enumerate(varlistDPhi):
+            hname = regionkey+'_'+varname
+            if selectionFeatureVector(fv,regionkey,'',varname): 
+                fillth1(histoStructDict[hname].Gen, fv[1][ivar],weight)
 
     #Gen-smearing
-    continue
-    ntries = 50
-    if isdata: weight = 1.0*prescaleweight/ntries    
-    else: weight = c.CrossSection/ntries
-    for i in range(ntries):
-        if not (gMht<150): continue
+    #continue
+    nsmears = 3
+    if isdata: weight = 1.0*prescaleweight/nsmears    
+    else: weight = c.CrossSection/nsmears
+    for i in range(nsmears):
+        if not (gMht<150): break
         smearedJets = smearJets_CC(genjets,9999)
         #smearedJets,csvSmearedJets = smearJets(genjets,matchedCsvVec,_Templates_.ResponseFunctions,_Templates_.hEtaTemplate,_Templates_.hPtTemplate,999)
         mHt = getHT(smearedJets,AnMhtJetPtCut)
-        mMhtVec = getMHT(smearedJets,AnMhtJetPtCut)
+        mMhtVec = getMHT(smearedJets,AnMhtJetPtCut, mhtjetetacut)
         mMhtPt, mMhtPhi = mMhtVec.Pt(), mMhtVec.Phi()
         mNJets = countJets(smearedJets,AnMhtJetPtCut)
         mBTags = countBJets_Useful(smearedJets,AnMhtJetPtCut)
         redoneMET = redoMET(genMetVec, genjets, smearedJets)
         mMetPt, mMetPhi = redoneMET.Pt(), redoneMET.Phi()
-        mDPhi1,mDPhi2,mDPhi3,mDPhi4 = getDPhis(mMhtVec,smearedJets)
+        dphijets = []
+        for jet in smearedJets:
+            if abs(jet.Eta())<2.4: dphijets.append(jet)                
+        mDPhi1,mDPhi2,mDPhi3,mDPhi4 = getDPhis(mMhtVec,dphijets)
         mJet1Pt,mJet1Eta,mJet2Pt,mJet2Eta,mJet3Pt,mJet3Eta,mJet4Pt,mJet4Eta = getJetKinematics(smearedJets)
         jetPhis = getPhis(smearedJets,mMhtVec)
-        fv = [mHt,mMhtPt,mNJets,mBTags,mDPhi1,mDPhi2,mDPhi3,mDPhi4]
-        binNumber = getBinNumber(fv)
-        fv.append(binNumber)
-        fv.append(ientry%2==0)
+        fv = ([mHt,mMhtPt,mNJets,mBTags],[mDPhi1,mDPhi2,mDPhi3,mDPhi4])
+        binNumber = getBinNumber(fv[0])
+        fv[0].append(binNumber)
+        fv[0].append(max([mDPhi1,mDPhi2,mDPhi3,mDPhi4]))
+        fv[0].append(GetHighestPtForwardPt_prefiring(smearedJets))
+        fv[0].append(ientry%2==0)
         for regionkey in regionCuts:
             for ivar, varname in enumerate(varlist):
                 hname = regionkey+'_'+varname
-                if selectionFeatureVector(fv,regionkey,varname): 
-                    fillth1(histoStructDict[hname].GenSmeared, fv[ivar],weight)
-            for varpair in var_pairs:
-                varY, varX = varpair
-                hname = regionkey+'_'+varY+'Vs'+varX
-                ivarX, ivarY = indexVar[varX], indexVar[varY]
-                if selectionFeatureVector(fv,regionkey,varY+'Vs'+varX):
-                    fillth1(histo2dStructDict[hname].GenSmeared, fv[ivarX],fv[ivarY],weight)
+                if selectionFeatureVector(fv,regionkey,varname,''): 
+                    fillth1(histoStructDict[hname].GenSmeared, fv[0][ivar],wtrig_nom*weight)
+            for ivar, varname in enumerate(varlistDPhi):
+                hname = regionkey+'_'+varname
+                if selectionFeatureVector(fv,regionkey,'',varname): 
+                    fillth1(histoStructDict[hname].GenSmeared, fv[1][ivar],wtrig_nom*weight)
         if PrintJets:                
             print 'GEN smeared: nbtags =' , mBTags   
             print fv  
@@ -755,15 +852,12 @@ hLeadJetEtaVsNeutralFraction_NonBlob.Write()
 hLeadJetEta_Blob.Write()
 hLeadJetEta_NonBlob.Write()
 
-for histo in harryhistosReco:
-    histo.Write()
-for histo in harryhistosReba:
-    histo.Write()
 
 hPassFit.Write()
 hTotFit.Write()
 hPassFar2big.Write()
 hTotFar2big.Write()
+hCaloMetRatio.Write()
 print 'just created', fnew.GetName()
 fnew.Close()
 

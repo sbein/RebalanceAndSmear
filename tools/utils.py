@@ -14,10 +14,7 @@ cmsTextSize = 0.75
 cmsTextOffset = 0.1
 regularfont = 42
 originalfont = tl.GetTextFont()
-diempt = 'sqrt(pow(Electrons[0].Px()+Electrons[1].Px(),2)+pow(Electrons[0].Py()+Electrons[1].Py(),2))'
-dimupt = 'sqrt(pow(Muons[0].Px()+Muons[1].Px(),2)+pow(Muons[0].Py()+Muons[1].Py(),2))'
-diemmass = 'sqrt(pow(Electrons[0].P()+Electrons[1].P(),2)-pow(Electrons[0].Px()+Electrons[1].Px(),2)-pow(Electrons[0].Py()+Electrons[1].Py(),2)-pow(Electrons[0].Pz()+Electrons[1].Pz(),2))'
-dimumass = 'sqrt(pow(Muons[0].P()+Muons[1].P(),2)-pow(Muons[0].Px()+Muons[1].Px(),2)-pow(Muons[0].Py()+Muons[1].Py(),2)-pow(Muons[0].Pz()+Muons[1].Pz(),2))'
+
 
 BTAG_CSV = 0.8484
 
@@ -59,183 +56,26 @@ def histoStyler2d(h):
 
 
 
-binning = {}
-binning['Mht']=[400,0,2000]
-binning['Met']=binning['Mht']
-binning['Ht']=[50,0,2500]
-binning['NJets']=[14,0,14]
-binning['BTags']=[0,1,2,3,4,5,6,7]
-binning['Jet1Pt']=[50,0,800]
-binning['Jet1Eta']=[30,-3,3]
-binning['Jet2Pt']=[50,0,800]
-binning['Jet2Eta']=[30,-3,3]
-binning['Jet3Pt']=[50,0,800]
-binning['Jet3Eta']=[30,-3,3]
-binning['Jet4Pt']=[50,0,800]
-binning['Jet4Eta']=[30,-3,3]
-binning['MhtPhi']=[16,0,3.2]
-binning['DPhi1']=[16,0,3.2]
-binning['DPhi2']=[16,0,3.2]
-binning['DPhi3']=[16,0,3.2]
-binning['DPhi4']=[16,0,3.2]
-binning['SearchBins']=[174,1,175]
-binning['MvaLowMht']=[240,-1.2,1.2]
-binning['MvaLowHt']=[140,-1.2,1.2]
-binning['2015 search bins_RplusS'] = [72,1,73]
-binning['2016 search bins_RplusS'] = [174,1,175]
-binning['Odd'] = [2,0,2]
-binning['csvAve']=[20,0,1]
-binning['BestDijetMass']=[30,0,4500]
-binning['MinDeltaM']=[30,0,3]
 
-binningTemplate = {}
-binningTemplate['Mht']=[300,0,600]
-binningTemplate['Mht']=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,102,104,106,108,110,112,114,116,118,120,122,124,126,128,130,132,134,136,138,140,142,144,146,148,150,155,160,165,170,175,180,185,190,195,200,220,240,260,280,300,400,500,800]
-binningTemplate['Met']=binningTemplate['Mht']
-binningTemplate['Ht']=[0,300,500,700,1000,1500,2000,10000]
-binningTemplate['Ht']=[0,200,300,500,700,1000,1500,2000,10000]#NOV2016 removed "400"
-binningTemplate['NJets']=[10,0,10]
-binningTemplate['BTags']=[0,1,2,5]
-binningTemplate['Jet1Pt']=[20,0,800]
-binningTemplate['Jet1Eta']=[20,-3,3]
-binningTemplate['Jet2Pt']=[20,0,800]
-binningTemplate['Jet2Eta']=[20,-3,3]
-binningTemplate['Jet3Pt']=[20,0,800]
-binningTemplate['Jet3Eta']=[20,-3,3]
-binningTemplate['Jet4Pt']=[20,0,800]
-binningTemplate['Jet4Eta']=[20,-3,3]
-binningTemplate['DPhi1']=[126,0,3.15]
-#binningTemplate['DPhi1']=[126,-3.15,3.15]
-binningTemplate['DPhi2']=binningTemplate['DPhi1']
-binningTemplate['DPhi3']=binningTemplate['DPhi1']
-binningTemplate['DPhi4']=binningTemplate['DPhi1']
-
-
-binningUser = {}#
-binningUser['Mht']=[60,0,1800]#
-binningUser['Mht']=[0,50,100,150,200,250,300,350,400,450,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,2000]#good
-binningUser['Mht']=[0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,300,500,800,1500,2000]#
-binningUser['Mht']=[50,0,2000]
-binningUser['Met']=binningUser['Mht']#
-binningUser['Ht']=[60,0,3000]#
-binningUser['NJets']=[12,2,14]#
-binningUser['BTags']=[7,0,7]#
-binningUser['DPhi1']=[16,0,3.2]
-binningUser['DPhi2']=[16,0,3.2]
-binningUser['DPhi3']=[16,0,3.2]
-binningUser['DPhi4']=[16,0,3.2]
-binningUser['Jet1Pt']=binning['Jet1Pt']
-binningUser['Jet1Eta']=binning['Jet1Eta']
-binningUser['Jet2Pt']=binning['Jet2Pt']
-binningUser['Jet2Eta']=binning['Jet2Eta']
-binningUser['Jet3Pt']=binning['Jet3Pt']
-binningUser['Jet3Eta']=binning['Jet3Eta']
-binningUser['Jet4Pt']=binning['Jet4Pt']
-binningUser['Jet4Eta']=binning['Jet4Eta']
-binningUser['MhtPhi']=[16,0,3.2]
-binningUser['SearchBins']=[174,1,175]#[72,1,73]#[175,-1,174]#[174,1,175]#174 bins, really check this #[72,1,73]
-binningUser['MvaLowMht']=[52,-1.04,1.04]
-binningUser['2015 search bins_RplusS'] = [72,1,73]
-binningUser['2016 search bins_RplusS'] = [174,1,175]#scootch this up one to be like the above
-binningUser['Odd'] = [2,0,2]
-binningUser['MvaLowHt']=[5,-1,1]
-binningUser['csvAve']=[20,0,1]
-binningUser['BestDijetMass']=binning['BestDijetMass']
-binningUser['MinDeltaM']=binning['MinDeltaM']
-
-binningAnalysis = {}#
-binningAnalysis['Mht']=[0,200,500,750,1200]
-binningAnalysis['Met']=binningAnalysis['Mht']#
-binningAnalysis['Ht']=[0,300,500,800,1200,3000]#
-binningAnalysis['NJets']=[0,4,7,9,15]#
-binningAnalysis['BTags']=[0,1,2,3,10]#
-binningAnalysis['Jet1Pt']=[20,0,800]#
-binningAnalysis['Jet1Eta']=[20,-3,3]#
-binningAnalysis['Jet2Pt']=[20,0,800]#
-binningAnalysis['Jet2Eta']=[20,-3,3]#
-binningAnalysis['Jet3Pt']=[20,0,800]#
-binningAnalysis['Jet3Eta']=[20,-3,3]#
-binningAnalysis['Jet4Pt']=[20,0,800]#
-binningAnalysis['Jet4Eta']=[20,-3,3]#
-binningAnalysis['MhtPhi']=[16,0,3.2]
-binningAnalysis['DPhi1']=[16,0,3.2]
-binningAnalysis['DPhi2']=[16,0,3.2]
-binningAnalysis['DPhi3']=[16,0,3.2]
-binningAnalysis['DPhi4']=[16,0,3.2]
-binningAnalysis['Odd'] = [2,0,2]
-binningAnalysis['SearchBins']=[174,1,175]#174 bins, really check this
-binningAnalysis['MvaLowHt']=[5,-1,1]
-binningAnalysis['MvaLowMht']=[52,-1.04,1.04]
-binningAnalysis['csvAve']=[20,0,1]
-binningAnalysis['BestDijetMass']=binning['BestDijetMass']
-binningAnalysis['MinDeltaM']=binning['MinDeltaM']
-
-
-binning2d = {}
-binning2d['Mht']=[0,20,40,60,80,100,120,140,160,180,200,220,240,260,280,300,340,380,420,460,500,550,600]
-binning2d['Met']=binning2d['Mht']
-binning2d['Ht']=[0,100,200,300,400,500,600,700,800,900,1000,1200,1400,1600,1800,2000]
-binning2d['NJets']=[6,2,14]
-binning2d['BTags']=[6,0,6]
-binning2d['Jet1Pt']=[60,0,2000]
-binning2d['Jet1Eta']=[40,-3,3]
-binning2d['Jet2Pt']=[40,0,800]
-binning2d['Jet2Eta']=[40,-3,3]
-binning2d['Jet3Pt']=[40,0,800]
-binning2d['Jet3Eta']=[40,-3,3]
-binning2d['Jet4Pt']=[40,0,800]
-binning2d['Jet4Eta']=[40,-3,3]
-binning2d['MhtPhi']=[16,0,3.2]
-binning2d['DPhi1']=[16,0,3.2]
-binning2d['DPhi2']=[16,0,3.2]
-binning2d['DPhi3']=[16,0,3.2]
-binning2d['DPhi4']=[16,0,3.2]
-binning2d['Odd'] = [2,0,2]
-
-binningTemplate = {}
-binningTemplate['Mht']=[300,0,600]
-binningTemplate['Mht']=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,102,104,106,108,110,112,114,116,118,120,122,124,126,128,130,132,134,136,138,140,142,144,146,148,150,155,160,165,170,175,180,185,190,195,200,220,240,260,280,300,400,500,800]
-binningTemplate['Met']=binningTemplate['Mht']
-binningTemplate['Ht']=[0,300,500,700,1000,1500,2000,10000]
-binningTemplate['Ht']=[0,200,300,500,700,1000,1500,2000,10000]#NOV2016 removed "400"
-binningTemplate['NJets']=[10,0,10]
-binningTemplate['BTags']=[0,1,2,5]
-binningTemplate['Jet1Pt']=[20,0,800]
-binningTemplate['Jet1Eta']=[20,-3,3]
-binningTemplate['Jet2Pt']=[20,0,800]
-binningTemplate['Jet2Eta']=[20,-3,3]
-binningTemplate['Jet3Pt']=[20,0,800]
-binningTemplate['Jet3Eta']=[20,-3,3]
-binningTemplate['Jet4Pt']=[20,0,800]
-binningTemplate['Jet4Eta']=[20,-3,3]
-binningTemplate['DPhi1']=[126,0,3.15]
-#binningTemplate['DPhi1']=[126,-3.15,3.15]
-binningTemplate['DPhi2']=binningTemplate['DPhi1']
-binningTemplate['DPhi3']=binningTemplate['DPhi1']
-binningTemplate['DPhi4']=binningTemplate['DPhi1']
-
-binningTrigger = {}
-binningTrigger['MHT']=[100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,260,270,280,290,300,310,320,350,380,410,450,500,600,1000]
-binningTrigger['MHTclean']=binningTrigger['MHT']
-binningTrigger['HT']=[7,0,2100]
-binningTrigger['HTclean']=[7,0,2100]
-binningTrigger['Electrons[0].Pt()']=[20,0,500]
-binningTrigger['Muons[0].Pt()']=[20,0,500]
-binningTrigger['Photons[0].Pt()']=binningTrigger['MHT']
-binningTrigger['NJets']=[10,1,11]
-binningTrigger[diempt] = binningTrigger['MHT']
-binningTrigger[dimupt] = binningTrigger['MHT']
-binningTrigger['Photons_hadTowOverEM[0]'] = [20,0,0.05]
-binningTrigger['Photons_sigmaIetaIeta[0]'] = [20,0,0.015]
 baseline = {}
-baseline['Mht'] = 150
-baseline['Ht'] = 1000
+baseline['Mht'] = 300
+baseline['Ht'] = 300
 baseline['NJets'] = 2
 baseline['BTags'] = 0
 baseline['DPhi1'] = 0.5
 baseline['DPhi2'] = 0.5
 baseline['DPhi3'] = 0.3
 baseline['DPhi4'] = 0.3
+
+baselineLowMht = {}
+baselineLowMht['Mht'] = 200
+baselineLowMht['Ht'] = 300
+baselineLowMht['NJets'] = 2
+baselineLowMht['BTags'] = 0
+baselineLowMht['DPhi1'] = 0.5
+baselineLowMht['DPhi2'] = 0.5
+baselineLowMht['DPhi3'] = 0.3
+baselineLowMht['DPhi4'] = 0.3
 
 baselineStr = {}
 baselineStr['Mht']='H_{T}^{miss} > '+str(baseline['Mht'])+' GeV'
@@ -246,6 +86,16 @@ baselineStr['DPhi1']='#Delta#phi_{1}'
 baselineStr['DPhi2']='#Delta#phi_{2}'
 baselineStr['DPhi3']='#Delta#phi_{3}'
 baselineStr['DPhi4']='#Delta#phi_{4}'
+
+baselineStrLowMht = {}
+baselineStrLowMht['Mht']='H_{T}^{miss} > '+str(baselineLowMht['Mht'])+' GeV'
+baselineStrLowMht['Ht']='H_{T} > '+str(baselineLowMht['Ht'])+' GeV'
+baselineStrLowMht['NJets']='N_{jets} #geq '+str(baselineLowMht['NJets'])
+baselineStrLowMht['BTags']=''
+baselineStrLowMht['DPhi1']='#Delta#phi_{1}'
+baselineStrLowMht['DPhi2']='#Delta#phi_{2}'
+baselineStrLowMht['DPhi3']='#Delta#phi_{3}'
+baselineStrLowMht['DPhi4']='#Delta#phi_{4}'
 
 
 units = {}
@@ -274,6 +124,8 @@ units['Odd']='modulo false'
 units['csvAve']=''
 units['BestDijetMass']='GeV'
 units['MinDeltaM']='GeV'
+units['MaxDPhi']='rad'
+units['MaxForwardPt'] = 'GeV'
 
 
 def makehist(hname='hist',var='Mht', color = kBlack):
@@ -302,7 +154,7 @@ def Struct(*args, **kwargs):
     kwargs.update(dict((k, None) for k in args))
     return type(name, (object,), {'__init__': init, '__slots__': kwargs.keys()})
 
-def mkHistoStruct(hname):
+def mkHistoStruct(hname, binning):
     if '_' in hname: var = hname[hname.find('_')+1:]
     else: var =  hname
     histoStruct = Struct('Branch','Truth','GenSmeared','Gen','Rebalanced','RplusS')
@@ -982,15 +834,15 @@ def mkmet(metPt, metPhi):
     return met
 
 
-def mkCutsLabel(kinvar,regionselect=''):
+def mkCutsLabel(kinvar,regionselect='', baselineStr_ = baselineStr):
     str_ = ''
     for key in baselineStr:
         if kinvar in key: continue
-        if baselineStr[key]=='': continue
-        if kinvar=='Met' and 'miss' in baselineStr[key]: continue
+        if baselineStr_[key]=='': continue
+        if kinvar=='Met' and 'miss' in baselineStr_[key]: continue
         if 'Phi' in key and 'LowDeltaPhi' in regionselect: continue
         if 'Jet' in kinvar and 'Jets' not in kinvar and 'Mht' in key: continue
-        str_+= baselineStr[key]+', '
+        str_+= baselineStr_[key]+', '
     if len(str_)>1:
         if str_[-2:]==', ':
             str_=str_[:-2]
@@ -1003,6 +855,7 @@ templateNJetsAndBTags = []
 templateHtAndMht = []
 def loadSearchBins2016():
     SearchBinNumbers['Ht-1,Mht-1,NJets-1,BTags-1']=-1
+    SearchBinNumbers['Underflow']=0
     SearchBinNumbers['Ht300,Mht300,NJets2,BTags0']=1
     SearchBinNumbers['Ht500,Mht300,NJets2,BTags0']=2
     SearchBinNumbers['Ht1000,Mht300,NJets2,BTags0']=3
@@ -1176,7 +1029,8 @@ def loadSearchBins2016():
     SearchBinNumbers['Ht500,Mht500,NJets9,BTags3']=171
     SearchBinNumbers['Ht1000,Mht500,NJets9,BTags3']=172
     SearchBinNumbers['Ht750,Mht750,NJets9,BTags3']=173
-    SearchBinNumbers['Ht1500,Mht750,NJets9,BTags3']=174    
+    SearchBinNumbers['Ht1500,Mht750,NJets9,BTags3']=174 
+    SearchBinNumbers['Ht9999,Mht999,NJets9,BTags9']=175       
 templateHtAndMht = [[[300,500],[300,350]],[[500,1000],[300,350]],[[1000,9999],[300,350]],[[350,500],[350,500]],[[500,1000],[350,500]],[[1000,9999],[350,500]],[[500,1000],[500,750]],[[1000,9999],[500,750]],[[750,1500],[750,9999]],[[1500,9999],[750,9999]]]
 templateNJetsAndBTags = [[[2,2],[0,0]],[[2,2],[1,1]],[[2,2],[2,2]],[[3,4],[0,0]],[[3,4],[1,1]],[[3,4],[2,2]],[[3,4],[3,9999]],[[5,6],[0,0]],[[5,6],[1,1]],[[5,6],[2,2]],[[5,6],[3,9999]],[[7,8],[0,0]],[[7,8],[1,1]],[[7,8],[2,2]],[[7,8],[3,9999]],[[9,9999],[0,0]],[[9,9999],[1,1]],[[9,9999],[2,2]],[[9,9999],[3,9999]]]
 
@@ -1284,6 +1138,7 @@ def makeSearchBinString(fv):
 def getBinNumber(fv):# a bit dangerous, so the binning better be right.
     #sb = makeSearchBinString(fv)
     #return SearchBinNumbers[sb]
+    if fv[1]<300: return -1
     try: 
         sb = makeSearchBinString(fv)
         return SearchBinNumbers[sb]
@@ -1320,9 +1175,27 @@ def passQCDHighMETFilter(t):
 
 def passesUniversalSelection(t):
     if not (bool(t.JetID) and  t.NVtx>0): return False
-    if not (t.Electrons.size()==0 and t.Muons.size()==0 and t.isoElectronTracks==0 and t.isoMuonTracks==0 and t.isoPionTracks==0): return False
+    if not (t.NElectrons==0 and t.NMuons==0 and t.isoElectronTracks==0 and t.isoMuonTracks==0 and t.isoPionTracks==0): return False
     if not  passQCDHighMETFilter(t): return False
     if not t.PFCaloMETRatio<5: return False
+
+    #featuring:
+    #if not t.globalTightHalo2016Filter: return False ##this alone was good # only these comments weren't saved on last submission
+    if not t.globalSuperTightHalo2016Filter: return False
+    if not t.HBHEIsoNoiseFilter: return False
+    if not t.HBHENoiseFilter: return False
+    if not t.BadChargedCandidateFilter: return False
+    if not t.BadPFMuonFilter: return False
+    if not t.CSCTightHaloFilter: return False
+    if not t.eeBadScFilter: return False         
+    
+    '''#first half filters up edge
+    if not t.EcalDeadCellTriggerPrimitiveFilter: return False        
+    if not t.EcalDeadCellTriggerPrimitiveFilter: return False    
+    #first half filters low edge           
+    ####if not t.ecalBadCalibFilter: return False #this says it's deprecated
+
+    '''#second half filters low edge               
     return True
 
 
@@ -1437,6 +1310,15 @@ def fillth1(h,x,weight=1):
 def fillth2(h,x,y,weight=1):
 	h.Fill(min(max(x,h.GetXaxis().GetBinLowEdge(1)+epsilon),h.GetXaxis().GetBinLowEdge(h.GetXaxis().GetNbins()+1)-epsilon), min(max(y,h.GetYaxis().GetBinLowEdge(1)+epsilon),h.GetYaxis().GetBinLowEdge(h.GetYaxis().GetNbins()+1)-epsilon),weight)
 
+def GetHighestPtForwardPt_prefiring(jets):
+    highestPt = 0
+    for jet in jets:
+        if abs(jet.Eta())>2.25 and abs(jet.Eta())<5.0:#prefiring upper eta is 3.0
+            if jet.Pt()>highestPt:
+                highestPt = jet.Pt()
+    return highestPt
+    
+    
 '''
 0: HLT_DoubleEle24_22_eta2p1_WPLoose_Gsf_v
 1: HLT_DoubleEle8_CaloIdM_Mass8_PFHT300_v

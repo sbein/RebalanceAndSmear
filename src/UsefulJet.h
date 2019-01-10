@@ -13,7 +13,7 @@
 
 //using namespace std;
 
-double BTAG_CSV = 0.8484;
+double BTAG_CSV = 0.8484;//could this have been cauing the ldp plot to look so good by accident?
 
 struct UsefulJet
 { 
@@ -260,13 +260,13 @@ int countJets(std::vector<UsefulJet> jets, double thresh){
 double JET_PT_THRESH = 30;
 double lhdMhtThresh = 15;
 
-TLorentzVector getMHT(std::vector<UsefulJet> jets, double thresh)
+TLorentzVector getMHT(std::vector<UsefulJet> jets, double thresh, double etathresh=5.0)
 {
   TLorentzVector mhtvec;
   for(unsigned int i=0; i < jets.size(); i++)
     {
       if (! (jets.at(i).Pt()>thresh)) continue;
-      if (! (abs(jets.at(i).Eta())<5.0)) continue;
+      if (! (abs(jets.at(i).Eta())<etathresh)) continue;
       mhtvec-=jets.at(i).tlv;
     }
   return mhtvec;
@@ -292,7 +292,7 @@ double getHT(std::vector<TLorentzVector> jets, double thresh, double etathresh =
   return ht;
 }
 
-int countBJets_Useful(std::vector<UsefulJet> jets, double thresh){
+int countBJets_Useful(std::vector<UsefulJet> jets, double thresh, double btagvalue=BTAG_CSV){
   int count = 0;
   for (unsigned int j=0; j<jets.size(); j++){
     if (!(jets.at(j).Pt()>thresh)) continue;

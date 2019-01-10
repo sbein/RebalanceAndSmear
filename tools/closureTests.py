@@ -1,5 +1,6 @@
 from ROOT import *
 from utils import *
+from ra2blibs import *
 import os,sys
 gROOT.SetBatch(1)
 
@@ -8,15 +9,14 @@ datamc = 'MC'
 lumi = 2.3
 lumi = 24.7
 lumi = 36.3
-
-lumi = 0.001
+lumi = 135
 
 loadSearchBins2016()
 SearchBinNames = {v: k for k, v in SearchBinNumbers.iteritems()}
 
 redoBinning = binningAnalysis
 redoBinning = binningUser
-redoBinning = binning
+#redoBinning = binning
 
 gStyle.SetOptStat(0)
 gROOT.ForceStyle()
@@ -24,9 +24,9 @@ gROOT.ForceStyle()
 def applyCorrections(hmethod, SearchBinNames):
     hMethod = hmethod.Clone(hmethod.GetName())
     xax = hMethod.GetXaxis()
-    for ibin in range(1, xax.GetNbins()+1):
-        nb = int(SearchBinNames[ibin][-1])
-        nj = int(SearchBinNames[ibin][-8])
+    for ibin in range(2, xax.GetNbins()+1):
+        nb = int(SearchBinNames[ibin-1][-1])
+        nj = int(SearchBinNames[ibin-1][-8])
         if (nj==2 and nb==2) or (nj>2 and nb==3): 
             hMethod.SetBinError(ibin,TMath.Sqrt(pow(hMethod.GetBinContent(ibin), 2)+pow(hMethod.GetBinError(ibin),2)))
             try: fracerr = hMethod.GetBinError(ibin)/hMethod.GetBinContent(ibin)
@@ -53,9 +53,9 @@ def mkLabel(str_,kinvar,selection=''):
     if newstr[0]=='h':newstr = newstr[1:]
     newstr = newstr.replace('GenSmeared',' gen-smeared ')
     newstr = newstr.replace('Rebalanced',' rebalanced ')
-    newstr = newstr.replace('RplusS',' R+S prediction')
+    newstr = newstr.replace('RplusS',' Fall17 QCD R&S')
     if datamc=='Data': newstr = newstr.replace('Truth','Data')
-    newstr = newstr.replace('Truth',' QCD truth ')
+    newstr = newstr.replace('Truth',' Fall17 QCD (truth) ')
     if datamc == 'Data': newstr = newstr.replace('Truth',' Data ')
     newstr = newstr.replace(kinvar,'')
     newstr = newstr.replace('_b','').replace('_','')
@@ -96,9 +96,9 @@ newfile = TFile('closure_rands.root','recreate')
 #newfile.ls()
 
 norm = 1000*lumi
-hNormNum = fileA.Get('hLowMhtBaseline_MhtTruth').Clone('hNormNum')
-hNormNum.Scale(norm)
-hNormDen = fileA.Get('hLowMhtBaseline_MhtRplusS').Clone('hNormDen')
+#hNormNum = fileA.Get('hLowMhtBaseline_MhtTruth').Clone('hNormNum')
+#hNormNum.Scale(norm)
+#hNormDen = fileA.Get('hLowMhtBaseline_MhtRplusS').Clone('hNormDen')
 #normNum = hNormNum.Integral(hNormNum.GetXaxis().FindBin(100),hNormNum.GetXaxis().FindBin(150))
 #normDen = hNormDen.Integral(hNormDen.GetXaxis().FindBin(100),hNormDen.GetXaxis().FindBin(150))
 #norm = 1.0*normNum/normDen 
@@ -109,15 +109,16 @@ print 'your normalization is', norm
 #for Pair in PairsToCompare:
 for key in keys:
     #if not ('GenSmeared' in key.GetName() or 'Rebalanced' in key.GetName() or 
-    if not ('RplusS' in key.GetName()): continue
-    if 'Vs' in key.GetName(): continue
+    #if not ('RplusS' in key.GetName()): continue
+    if not ('GenSmeared' in key.GetName() or 'RplusS' in key.GetName()): continue
+    #if 'Vs' in key.GetName(): continue
     #if not 'Mht' in key.GetName(): continue
     kinvar = key.GetName().replace('GenSmeared','').replace('Rebalanced','').replace('RplusS','')
     selection = kinvar[1:kinvar.find('_')]
     kinvar = kinvar[kinvar.find('_')+1:]
-    #kinvar = kinvar[1:]
     if '_' in kinvar: continue
     print 'kinvar=', kinvar
+    print 'here'    
     #if not 'DPhiJet1Mht' in kinvar: continue
     if 'GenSmeared' in key.GetName(): 
         method = 'GenSmeared'
@@ -133,6 +134,8 @@ for key in keys:
             method = 'RplusS'
             standard = 'Truth'
     hTruth = fileA.Get('h'+selection+'_'+kinvar+standard).Clone('h'+selection+'_'+kinvar+standard+'')
+
+    print 'mucking in truth', hTruth.GetName()
     hTruth.Scale(norm)
     hMethod = fileA.Get('h'+selection+'_'+kinvar+method).Clone('h'+selection+'_'+kinvar+method+'')
     if 'SearchBins' in key.GetName(): hMethod = applyCorrections(hMethod, SearchBinNames)    
@@ -151,6 +154,7 @@ for key in keys:
     hMethod.SetFillColor(col-5)
     hMethod.SetFillStyle(1002)
 
+    
     cGold = TCanvas('cEnchilada','cEnchilada', 800, 800)
     if len(redoBinning[kinvar])>3: ##this should be reinstated
         nbins = len(redoBinning[kinvar])-1
@@ -165,6 +169,7 @@ for key in keys:
         newxs = array('d',newbinning)
         hTruth = hTruth.Rebin(nbins,'',newxs)
         hMethod = hMethod.Rebin(nbins,'',newxs)
+            
     pad1 = TPad("pad1", "pad1", 0, 0.3, 1, 1.0)
     pad1.SetBottomMargin(0.0)
     pad1.SetLeftMargin(0.12)
@@ -174,11 +179,12 @@ for key in keys:
     pad1.Draw()
     pad1.cd()
 
-    l = mklegend(x1=.5, y1=.64, x2=.97, y2=.79)
+    l = mklegend(x1=.5, y1=.64, x2=.93, y2=.79)
 
 
     #hTruth.SetMarkerStyle(21)
-    print key.GetName()
+    name = key.GetName() 
+    print name
     hTruth.SetTitle('')
     try:
         vallow = baseline[kinvar]
@@ -192,15 +198,19 @@ for key in keys:
         hTruth.Scale(1,'width')
     if datamc == 'Data': units_ = 'bin'
     units_ = units[kinvar]
-    hMethod.GetYaxis().SetTitle('Events/'+units_)
+    #hMethod.GetYaxis().SetTitle('Events/'+units_)
+    hMethod.GetYaxis().SetTitle('Events/bin')
 
-    low = 0.1*hTruth.GetBinContent(hTruth.GetXaxis().GetNbins())
-    high = 100*hTruth.GetMaximum()
+    low = 0.01*hTruth.GetBinContent(hTruth.GetXaxis().GetNbins())
+    high = 1000*hTruth.GetMaximum()
     #if 'Jet4Pt' in kinvar or 'Jet3Pt' in kinvar: high = 10*high
     if 'DPhi' in kinvar: 
-        high = 2.5*hTruth.GetMaximum()
-        low = 0.1*hTruth.GetBinContent(hTruth.GetXaxis().GetNbins())
+        high = 100*hTruth.GetMaximum()
+        low = 0.1*hTruth.GetBinContent(hTruth.GetXaxis().GetNbins()/2)
+    if 'Mht' in kinvar:
+        low = 0.001
     if low<0.0000005:low=0.0000005
+
     hMethod.GetYaxis().SetRangeUser(low,high)
 
     hTruth.SetMarkerColor(1)
@@ -232,7 +242,10 @@ for key in keys:
     else: xlab = 0.22
     tl.DrawLatex(xlab,0.84, ('MC' in datamc)*' simulation '+'preliminary')
     tl.SetTextFont(regularfont)
-    cutlabel = mkCutsLabel(kinvar,selection)
+    if 'LowMht' in name: cutlabel = mkCutsLabel(kinvar,selection, baselineStrLowMht)
+    else: cutlabel = mkCutsLabel(kinvar,selection, baselineStr)
+        
+    if 'LowDeltaPhi' in selection: cutlabel = cutlabel.replace('200','300')
     print kinvar, 'cutlabel=', cutlabel
     xpos = binning[kinvar][1]+(0.05*(binning[kinvar][-1]-binning[kinvar][1]))######
     #tl.DrawLatex(xpos+0.0, ypos/15.0, cutlabel)
@@ -251,6 +264,7 @@ for key in keys:
     pad2.SetLeftMargin(0.12)
     pad2.SetGridx()
     pad2.SetGridy()
+    #pad2.SetLogy()
     pad2.Draw()
     pad2.cd()
 
@@ -280,14 +294,15 @@ for key in keys:
     try: hDen.Scale(norm)
     except: pass   
     #hFracDiff.Divide(hDen)###
-    hFracDiff.Add(hDen,-1)#####
+    #hFracDiff.Add(hDen,-1)#####
     hFracDiff.Divide(hDen)
 
     #hFracDiff.GetYaxis().SetRangeUser(-0.0,2.2)###
-    hFracDiff.GetYaxis().SetRangeUser(-1.3,1.3)####
+    hFracDiff.GetYaxis().SetRangeUser(-0.5,3.5)####
+    #hFracDiff.GetYaxis().SetRangeUser(0.08,30)####    
     hFracDiff.SetTitle('')
     hFracDiff.GetXaxis().SetTitle(nicelabel(kinvar)+('bin' not in units[kinvar])*(' ['+units[kinvar]+']'))
-    hFracDiff.GetYaxis().SetTitle('(Pred-MC)/MC')
+    hFracDiff.GetYaxis().SetTitle('pred./expectation')
     hFracDiff.GetXaxis().SetTitleSize(0.165)
     hFracDiff.GetXaxis().SetLabelSize(0.165)
     hFracDiff.GetYaxis().SetTitleSize(0.13)
@@ -298,88 +313,12 @@ for key in keys:
     hFracDiff.GetXaxis().SetTitle(nicelabel(hFracDiff.GetXaxis().GetTitle()))
     hFracDiff.Draw()
     cGold.Update()   
-    #pause()
 
     cname = (hMethod.GetName()+'_And_'+hTruth.GetName()).replace(' ','')
     cGold.Write(cname)
-    print 'trying:','pdfs/ClosureTests/'+method+'And'+standard+'_'+kinvar+'.pdf'
-    cGold.Print('pdfs/ClosureTests/'+method+'And'+standard+'_'+kinvar+'.pdf')
+    print 'trying:','pdfs/ClosureTests/'+selection+'_'+method+'And'+standard+'_'+kinvar+'.pdf'
+    cGold.Print('pdfs/ClosureTests/'+selection+'_'+method+'And'+standard+'_'+kinvar+'.pdf')
 
 
 print 'just created', newfile.GetName()
 exit(0)
-##########################################2D
-###########################################
-for key in keys:
-    print '2dkey', key
-    if not ('GenSmeared' in key.GetName() or 'Rebalanced' in key.GetName() or 'RplusS' in key.GetName()): 
-        continue
-    if 'Vs' not in key.GetName(): continue
-    kinvar = key.GetName().replace('GenSmeared','').replace('Rebalanced','').replace('RplusS','')
-    selection = kinvar[1:kinvar.find('_')]
-    kinvar = kinvar[kinvar.find('_')+1:]
-    #if '_' in kinvar: continue
-    print '2dkinvar=', kinvar
-
-
-    if 'GenSmeared' in key.GetName(): 
-        method = 'GenSmeared'
-        standard = 'Truth'
-    if 'Rebalanced' in key.GetName(): 
-        method = 'Rebalanced'
-        standard = 'Gen'
-    if 'RplusS' in key.GetName():
-        method = 'RplusS'
-        #standard = 'GenSmeared'
-        standard = 'Truth'
-
-    hMethod = fileA.Get('h'+selection+'_'+kinvar+method).Clone('h'+selection+'_'+kinvar+method+'')
-    hTruth = fileA.Get('h'+selection+'_'+kinvar+standard).Clone('h'+selection+'_'+kinvar+standard+' ')
-
-    cEnchilada = TCanvas('cEnchilada','cEnchilada', 800, 800)
-    cEnchilada.SetTopMargin(0.07)
-    cEnchilada.SetBottomMargin(0.15)
-    cEnchilada.SetLeftMargin(0.19)
-    histoStyler2d(hMethod)
-    histoStyler2d(hTruth)
-
-    if datamc == 'MC':
-        hMethod.Scale(norm)
-        hTruth.Scale(norm)
-        print 'scaled to lumi'
-    if 'RplusS' in key.GetName(): 
-        try: hMethod.Scale(fileA.Get('hTotFit').Integral()/fileA.Get('hPassFit').Integral())        
-        except: pass
-    hMethod.Scale(1.0,'width')
-    hTruth.Scale(1.0,'width')        
-    hRatio = hMethod.Clone('hRatio')
-    hRatio.Divide(hTruth)
-    hRatio.GetZaxis().SetRangeUser(0.2,1.8)
-    hRatio.SetTitle(method+'/(MC Truth)')
-    hRatio.SetTitleOffset(0.2)
-    title = nicelabel(kinvar)
-    xtit = title.split(' vs ')[1]
-    ytit = title.split(' vs ')[0]
-    hRatio.GetYaxis().SetTitle(ytit)
-    hRatio.GetXaxis().SetTitle(xtit)
-    hRatio.GetXaxis().SetTitleSize(0.055)
-    hRatio.GetXaxis().SetLabelSize(0.043)
-    hRatio.GetYaxis().SetTitleSize(0.055)
-    hRatio.GetYaxis().SetLabelSize(0.043)
-    #hRatio.GetYaxis().SetNdivisions(7)
-    cEnchilada.cd()
-    histoStyler2d(hRatio)
-    if '_{T}' in ytit: hRatio.GetYaxis().SetTitleOffset(1.25)
-    hRatio.Draw('COLZ text e')
-    cEnchilada.Update()    
-    #pause()
-    cname = (hMethod.GetName()+'_And_'+hTruth.GetName()).replace(' ','')
-    #cEnchilada.Write(hMethod.GetName()+'_And_'+hTruth.GetName())
-    cEnchilada.Write(cname)
-    print 'trying:','ClosureTests/'+method.replace(' ','')+'/'+method+'And'+standard+'_'+kinvar+'.pdf'
-    cEnchilada.Print('ClosureTests/'+method.replace(' ','')+'/'+method+'And'+standard+'_'+kinvar+'.pdf')
-    del hMethod, hTruth
-
-
-
-newfile.Close()
