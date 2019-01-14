@@ -38,7 +38,7 @@ else:
     ntupleV = '15'
     isdata = True
 
-UseDeep = False
+UseDeep = True
 
 ntupleV = '16'
     
@@ -250,6 +250,9 @@ for ientry in range(nevents):
     else: recojets = CreateUsefulJetVector(c.Jets, c.Jets_bDiscriminatorCSV)#fiducial
 
 
+    if not (len(c.Jets)>0): continue
+    if not c.Jets_neutralEmEnergyFraction[0]>0.02: continue
+            
     matchedCsvVec = createMatchedCsvVector(c.GenJets, recojets);
     genjets = CreateUsefulJetVector(c.GenJets, matchedCsvVec)
 

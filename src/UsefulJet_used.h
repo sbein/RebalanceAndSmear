@@ -13,7 +13,9 @@
 
 //using namespace std;
 
-double BTAG_CSV = 0.494100;
+//double BTAG_CSV = 0.8484;
+
+double BTAG_CSV = 0.632400
 
 struct UsefulJet
 { 
@@ -292,12 +294,12 @@ double getHT(std::vector<TLorentzVector> jets, double thresh, double etathresh =
   return ht;
 }
 
-int countBJets_Useful(std::vector<UsefulJet> jets, double thresh, double btagvalue=BTAG_CSV){
+int countBJets_Useful(std::vector<UsefulJet> jets, double thresh, double btagvalue){
   int count = 0;
   for (unsigned int j=0; j<jets.size(); j++){
     if (!(jets.at(j).Pt()>thresh)) continue;
     if (!(abs(jets.at(j).Eta())<2.4)) continue;;
-    if (!(jets.at(j).csv>BTAG_CSV)) continue;
+    if (!(jets.at(j).csv>btagvalue)) continue;
     count+=1;
   }
   return count;

@@ -43,15 +43,18 @@ triggerIndecesV16['HtTrain'] = [67,68,69,72,73,74,80,84,88,91,92,93,95,96,99,102
 regionCuts = {}
 pi = 3.14159
 Inf = 9999
-#varlist =                           ['Ht',    'Mht',    'NJets','BTags','SearchBins','MaxDPhi',  'MaxForwardPt']
-regionCuts['Baseline']          = (0,[[300,Inf],[300,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
-regionCuts['LowMhtBaseline']    = (0,[[300,Inf],[200,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
-regionCuts['LowMhtBaseFpt']     = (0,[[300,Inf],[200,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,100]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
-regionCuts['LowMhtBaseFptDp']   = (0,[[300,Inf],[200,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,pi-0.3], [0,100]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
-regionCuts['BaselineMaxFpt']    = (0,[[300,Inf],[300,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,100]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
-regionCuts['BaselineMaxFptDp']  = (0,[[300,Inf],[300,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,pi-0.3], [0,100]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
-regionCuts['LowDeltaPhi']       = (1,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
-regionCuts['LowDPhiMaxFptDp']   = (1,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,pi-0.3], [0,100]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+#varlist =                           ['Ht',    'Mht',    'NJets','BTags','SearchBins','MaxDPhi', 'MaxForwardPt','HtRatio']]
+regionCuts['Baseline']          = (0,[[300,Inf],[300,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['BaselineHtr']       = (0,[[300,Inf],[300,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,1.3]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['LowMhtBaseline']    = (0,[[300,Inf],[200,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['LowMhtBaseFpt']     = (0,[[300,Inf],[200,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,100],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['LowMhtBaseHtr']     = (0,[[300,Inf],[200,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,1.3]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['LowMhtBaseFptHtr']  = (0,[[300,Inf],[200,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,100],      [0,1.3]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['LowDeltaPhi']       = (1,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['LowDPhiFptHtr']     = (1,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,100],      [0,1.3]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['LowDPhiHtr']        = (1,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,1.3]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['LowDPhiFpt']        = (1,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,100],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+
 #regionCuts['LowDeltaPhiCR']               = [[1000,Inf],[250,300],[2,Inf],[0,Inf],[0,Inf],[0,Inf],[0,Inf],[0,Inf]]#gets help
 #regionCuts['B1Baseline']               = [[300,Inf],[300,Inf],[2,Inf],[1,Inf],[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]]
 #regionCuts['LowMhtBaseline']            = ([[300,Inf],[200,Inf],[2,Inf],[0,Inf],[0.0,Inf],[0.0,Inf],[0.0,Inf],[0.0,Inf]], 0)
@@ -94,7 +97,7 @@ binning['BestDijetMass']=[30,0,4500]
 binning['MinDeltaM']=[30,0,3]
 binning['MaxDPhi']=[32,0,3.2]
 binning['MaxForwardPt']=[30,20,320]
-
+binning['HtRatio']=[30,1,4]
 
 binningTemplate = {}
 binningTemplate['Mht']=[300,0,600]
@@ -118,6 +121,7 @@ binningTemplate['DPhi2']=binningTemplate['DPhi1']
 binningTemplate['DPhi3']=binningTemplate['DPhi1']
 binningTemplate['DPhi4']=binningTemplate['DPhi1']
 binningTemplate['MaxForwardPt'] = binning['MaxForwardPt']
+binningTemplate['HtRatio']=binning['HtRatio']
 
 binningAnalysis = {}#
 binningAnalysis['Mht']=[0,250,300,350,500,750,2000]
@@ -147,7 +151,7 @@ binningAnalysis['BestDijetMass']=binning['BestDijetMass']
 binningAnalysis['MinDeltaM']=binning['MinDeltaM']
 binningAnalysis['MaxDPhi']=binning['MaxDPhi']
 binningAnalysis['MaxForwardPt'] = binning['MaxForwardPt']
-
+binningAnalysis['HtRatio']=binning['HtRatio']
 
 binning2d = {}
 binning2d['Mht']=[0,20,40,60,80,100,120,140,160,180,200,220,240,260,280,300,340,380,420,460,500,550,600]
@@ -169,6 +173,7 @@ binning2d['DPhi2']=[16,0,3.2]
 binning2d['DPhi3']=[16,0,3.2]
 binning2d['DPhi4']=[16,0,3.2]
 binning2d['Odd'] = [2,0,2]
+binning2d['HtRatio']=binning['HtRatio']
 
 binningTemplate = {}
 binningTemplate['Mht']=[300,0,600]
@@ -190,6 +195,7 @@ binningTemplate['DPhi1']=[126,0,3.15]
 binningTemplate['DPhi2']=binningTemplate['DPhi1']
 binningTemplate['DPhi3']=binningTemplate['DPhi1']
 binningTemplate['DPhi4']=binningTemplate['DPhi1']
+binningTemplate['HtRatio']=binning['HtRatio']
 
 binningTrigger = {}
 binningTrigger['MHT']=[100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,260,270,280,290,300,310,320,350,380,410,450,500,600,1000]
@@ -204,10 +210,12 @@ binningTrigger[diempt] = binningTrigger['MHT']
 binningTrigger[dimupt] = binningTrigger['MHT']
 binningTrigger['Photons_hadTowOverEM[0]'] = [20,0,0.05]
 binningTrigger['Photons_sigmaIetaIeta[0]'] = [20,0,0.015]
+binningTrigger['HtRatio']=binning['HtRatio']
 
 binningUser = {}#
 binningUser['Mht']=[60,0,1200]#
 binningUser['Mht']=[50,200,1200]#
+binningUser['Mht']=[20,200,1200]#
 #binningUser['Mht']=[0,50,100,150,200,250,300,350,400,450,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,2000]#good
 #binningUser['Mht']=[0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,300,500,800,1500,2000]#
 #binningUser['Mht']=[55,100,1200]
@@ -240,3 +248,4 @@ binningUser['BestDijetMass']=binning['BestDijetMass']
 binningUser['MinDeltaM']=binning['MinDeltaM']
 binningUser['MaxDPhi']=binning['MaxDPhi']
 binningUser['MaxForwardPt'] = binning['MaxForwardPt']
+binningUser['HtRatio']=binning['HtRatio']

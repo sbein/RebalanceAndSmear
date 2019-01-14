@@ -213,7 +213,7 @@ bool RebalanceJets_BayesFitter(std::vector<UsefulJet> originalJets){
   gMinuit->mnexcm( "MINIMIZE", arglist, 2, ierflg );
   //cout << "minimized" << endl;
   if (ierflg!=0){
-    cout << "failed fit" << endl;
+    cout << "ierflg!=0" << endl;
     TLorentzVector omhtVec = getMHT(originalJets, JET_PT_THRESH);
     TLorentzVector rmhtVec = getMHT(_Templates_.dynamicJets, JET_PT_THRESH);
     return false;

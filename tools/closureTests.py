@@ -4,8 +4,8 @@ from ra2blibs import *
 import os,sys
 gROOT.SetBatch(1)
 
-datamc = 'Data'
 datamc = 'MC'
+datamc = 'Data'
 lumi = 2.3
 lumi = 24.7
 lumi = 36.3
@@ -23,6 +23,7 @@ gROOT.ForceStyle()
 
 def applyCorrections(hmethod, SearchBinNames):
     hMethod = hmethod.Clone(hmethod.GetName())
+    return hMethod
     xax = hMethod.GetXaxis()
     for ibin in range(2, xax.GetNbins()+1):
         nb = int(SearchBinNames[ibin-1][-1])
@@ -109,7 +110,7 @@ print 'your normalization is', norm
 #for Pair in PairsToCompare:
 for key in keys:
     #if not ('GenSmeared' in key.GetName() or 'Rebalanced' in key.GetName() or 
-    #if not ('RplusS' in key.GetName()): continue
+    if not ('RplusS' in key.GetName()): continue
     if not ('GenSmeared' in key.GetName() or 'RplusS' in key.GetName()): continue
     #if 'Vs' in key.GetName(): continue
     #if not 'Mht' in key.GetName(): continue
@@ -293,16 +294,17 @@ for key in keys:
         hDen = hDen.Rebin(nbins,'',newxs)
     try: hDen.Scale(norm)
     except: pass   
-    #hFracDiff.Add(hDen,-1)#####    
+    ###hFracDiff.Add(hDen,-1)#####    
     hFracDiff.Divide(hDen)
     hFracDiff.GetYaxis().SetRangeUser(-0.5,3.5)
-    #hFracDiff.GetYaxis().SetRangeUser(-2.5,2.5)####    
+    ###hFracDiff.GetYaxis().SetRangeUser(-2.1,2.1)####    
 
     
     #hFracDiff.GetYaxis().SetRangeUser(0.08,30)####    
     hFracDiff.SetTitle('')
     hFracDiff.GetXaxis().SetTitle(nicelabel(kinvar)+('bin' not in units[kinvar])*(' ['+units[kinvar]+']'))
-    hFracDiff.GetYaxis().SetTitle('pred./expectation')
+    #hFracDiff.GetYaxis().SetTitle('pred./expectation')
+    hFracDiff.GetYaxis().SetTitle('(pred-exp)/exp')
     hFracDiff.GetXaxis().SetTitleSize(0.165)
     hFracDiff.GetXaxis().SetLabelSize(0.165)
     hFracDiff.GetYaxis().SetTitleSize(0.13)
@@ -311,7 +313,7 @@ for key in keys:
     hFracDiff.GetYaxis().SetTitleOffset(0.42)
     hFracDiff.GetXaxis().SetTitleOffset(1.0)
     hFracDiff.GetXaxis().SetTitle(nicelabel(hFracDiff.GetXaxis().GetTitle()))
-    hFracDiff.Draw()
+    hFracDiff.Draw('e0')
     cGold.Update()   
 
     cname = (hMethod.GetName()+'_And_'+hTruth.GetName()).replace(' ','')

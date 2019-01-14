@@ -124,6 +124,7 @@ units['BestDijetMass']='GeV'
 units['MinDeltaM']='GeV'
 units['MaxDPhi']='rad'
 units['MaxForwardPt'] = 'GeV'
+units['HtRatio'] = 'bin'
 
 
 def makehist(hname='hist',var='Mht', color = kBlack):
@@ -849,6 +850,192 @@ def mkCutsLabel(kinvar,regionselect='', baselineStr_ = baselineStr):
 
 
 SearchBinNumbers = {}
+def loadSearchBins2018():
+	SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (1.0, 3.0), (-1.0, 0.0)] = 1
+	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (1.0, 3.0), (-1.0, 0.0)] = 2
+	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (1.0, 3.0), (-1.0, 0.0)] = 3
+	SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (1.0, 3.0), (-1.0, 0.0)] = 4
+	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (1.0, 3.0), (-1.0, 0.0)] = 5
+	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (1.0, 3.0), (-1.0, 0.0)] = 6
+	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (1.0, 3.0), (-1.0, 0.0)] = 7
+	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (1.0, 3.0), (-1.0, 0.0)] = 8
+	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (1.0, 3.0), (-1.0, 0.0)] = 9
+	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (1.0, 3.0), (-1.0, 0.0)] = 10
+	SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (1.0, 3.0), (0.0, 1.0)] = 11
+	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (1.0, 3.0), (0.0, 1.0)] = 12
+	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (1.0, 3.0), (0.0, 1.0)] = 13
+	SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (1.0, 3.0), (0.0, 1.0)] = 14
+	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (1.0, 3.0), (0.0, 1.0)] = 15
+	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (1.0, 3.0), (0.0, 1.0)] = 16
+	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (1.0, 3.0), (0.0, 1.0)] = 17
+	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (1.0, 3.0), (0.0, 1.0)] = 18
+	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (1.0, 3.0), (0.0, 1.0)] = 19
+	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (1.0, 3.0), (0.0, 1.0)] = 20
+	SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (1.0, 3.0), (1.0, 99.0)] = 21
+	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (1.0, 3.0), (1.0, 99.0)] = 22
+	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (1.0, 3.0), (1.0, 99.0)] = 23
+	SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (1.0, 3.0), (1.0, 99.0)] = 24
+	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (1.0, 3.0), (1.0, 99.0)] = 25
+	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (1.0, 3.0), (1.0, 99.0)] = 26
+	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (1.0, 3.0), (1.0, 99.0)] = 27
+	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (1.0, 3.0), (1.0, 99.0)] = 28
+	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (1.0, 3.0), (1.0, 99.0)] = 29
+	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (1.0, 3.0), (1.0, 99.0)] = 30
+	SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (3.0, 5.0), (-1.0, 0.0)] = 31
+	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (3.0, 5.0), (-1.0, 0.0)] = 32
+	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (3.0, 5.0), (-1.0, 0.0)] = 33
+	SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (3.0, 5.0), (-1.0, 0.0)] = 34
+	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (3.0, 5.0), (-1.0, 0.0)] = 35
+	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (3.0, 5.0), (-1.0, 0.0)] = 36
+	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (3.0, 5.0), (-1.0, 0.0)] = 37
+	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (3.0, 5.0), (-1.0, 0.0)] = 38
+	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (3.0, 5.0), (-1.0, 0.0)] = 39
+	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (3.0, 5.0), (-1.0, 0.0)] = 40
+	SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (3.0, 5.0), (0.0, 1.0)] = 41
+	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (3.0, 5.0), (0.0, 1.0)] = 42
+	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (3.0, 5.0), (0.0, 1.0)] = 43
+	SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (3.0, 5.0), (0.0, 1.0)] = 44
+	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (3.0, 5.0), (0.0, 1.0)] = 45
+	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (3.0, 5.0), (0.0, 1.0)] = 46
+	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (3.0, 5.0), (0.0, 1.0)] = 47
+	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (3.0, 5.0), (0.0, 1.0)] = 48
+	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (3.0, 5.0), (0.0, 1.0)] = 49
+	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (3.0, 5.0), (0.0, 1.0)] = 50
+	SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (3.0, 5.0), (1.0, 2.0)] = 51
+	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (3.0, 5.0), (1.0, 2.0)] = 52
+	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (3.0, 5.0), (1.0, 2.0)] = 53
+	SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (3.0, 5.0), (1.0, 2.0)] = 54
+	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (3.0, 5.0), (1.0, 2.0)] = 55
+	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (3.0, 5.0), (1.0, 2.0)] = 56
+	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (3.0, 5.0), (1.0, 2.0)] = 57
+	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (3.0, 5.0), (1.0, 2.0)] = 58
+	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (3.0, 5.0), (1.0, 2.0)] = 59
+	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (3.0, 5.0), (1.0, 2.0)] = 60
+	SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (3.0, 5.0), (2.0, 99.0)] = 61
+	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (3.0, 5.0), (2.0, 99.0)] = 62
+	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (3.0, 5.0), (2.0, 99.0)] = 63
+	SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (3.0, 5.0), (2.0, 99.0)] = 64
+	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (3.0, 5.0), (2.0, 99.0)] = 65
+	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (3.0, 5.0), (2.0, 99.0)] = 66
+	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (3.0, 5.0), (2.0, 99.0)] = 67
+	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (3.0, 5.0), (2.0, 99.0)] = 68
+	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (3.0, 5.0), (2.0, 99.0)] = 69
+	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (3.0, 5.0), (2.0, 99.0)] = 70
+	SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (5.0, 7.0), (-1.0, 0.0)] = 71
+	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (5.0, 7.0), (-1.0, 0.0)] = 72
+	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (5.0, 7.0), (-1.0, 0.0)] = 73
+	SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (5.0, 7.0), (-1.0, 0.0)] = 74
+	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (5.0, 7.0), (-1.0, 0.0)] = 75
+	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (5.0, 7.0), (-1.0, 0.0)] = 76
+	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (5.0, 7.0), (-1.0, 0.0)] = 77
+	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (5.0, 7.0), (-1.0, 0.0)] = 78
+	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (5.0, 7.0), (-1.0, 0.0)] = 79
+	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (5.0, 7.0), (-1.0, 0.0)] = 80
+	SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (5.0, 7.0), (0.0, 1.0)] = 81
+	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (5.0, 7.0), (0.0, 1.0)] = 82
+	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (5.0, 7.0), (0.0, 1.0)] = 83
+	SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (5.0, 7.0), (0.0, 1.0)] = 84
+	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (5.0, 7.0), (0.0, 1.0)] = 85
+	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (5.0, 7.0), (0.0, 1.0)] = 86
+	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (5.0, 7.0), (0.0, 1.0)] = 87
+	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (5.0, 7.0), (0.0, 1.0)] = 88
+	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (5.0, 7.0), (0.0, 1.0)] = 89
+	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (5.0, 7.0), (0.0, 1.0)] = 90
+	SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (5.0, 7.0), (1.0, 2.0)] = 91
+	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (5.0, 7.0), (1.0, 2.0)] = 92
+	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (5.0, 7.0), (1.0, 2.0)] = 93
+	SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (5.0, 7.0), (1.0, 2.0)] = 94
+	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (5.0, 7.0), (1.0, 2.0)] = 95
+	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (5.0, 7.0), (1.0, 2.0)] = 96
+	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (5.0, 7.0), (1.0, 2.0)] = 97
+	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (5.0, 7.0), (1.0, 2.0)] = 98
+	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (5.0, 7.0), (1.0, 2.0)] = 99
+	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (5.0, 7.0), (1.0, 2.0)] = 100
+	SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (5.0, 7.0), (2.0, 99.0)] = 101
+	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (5.0, 7.0), (2.0, 99.0)] = 102
+	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (5.0, 7.0), (2.0, 99.0)] = 103
+	SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (5.0, 7.0), (2.0, 99.0)] = 104
+	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (5.0, 7.0), (2.0, 99.0)] = 105
+	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (5.0, 7.0), (2.0, 99.0)] = 106
+	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (5.0, 7.0), (2.0, 99.0)] = 107
+	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (5.0, 7.0), (2.0, 99.0)] = 108
+	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (5.0, 7.0), (2.0, 99.0)] = 109
+	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (5.0, 7.0), (2.0, 99.0)] = 110
+	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (7.0, 9.0), (-1.0, 0.0)] = 111
+	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (7.0, 9.0), (-1.0, 0.0)] = 112
+	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (7.0, 9.0), (-1.0, 0.0)] = 113
+	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (7.0, 9.0), (-1.0, 0.0)] = 114
+	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (7.0, 9.0), (-1.0, 0.0)] = 115
+	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (7.0, 9.0), (-1.0, 0.0)] = 116
+	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (7.0, 9.0), (-1.0, 0.0)] = 117
+	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (7.0, 9.0), (-1.0, 0.0)] = 118
+	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (7.0, 9.0), (0.0, 1.0)] = 119
+	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (7.0, 9.0), (0.0, 1.0)] = 120
+	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (7.0, 9.0), (0.0, 1.0)] = 121
+	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (7.0, 9.0), (0.0, 1.0)] = 122
+	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (7.0, 9.0), (0.0, 1.0)] = 123
+	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (7.0, 9.0), (0.0, 1.0)] = 124
+	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (7.0, 9.0), (0.0, 1.0)] = 125
+	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (7.0, 9.0), (0.0, 1.0)] = 126
+	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (7.0, 9.0), (1.0, 2.0)] = 127
+	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (7.0, 9.0), (1.0, 2.0)] = 128
+	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (7.0, 9.0), (1.0, 2.0)] = 129
+	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (7.0, 9.0), (1.0, 2.0)] = 130
+	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (7.0, 9.0), (1.0, 2.0)] = 131
+	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (7.0, 9.0), (1.0, 2.0)] = 132
+	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (7.0, 9.0), (1.0, 2.0)] = 133
+	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (7.0, 9.0), (1.0, 2.0)] = 134
+	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (7.0, 9.0), (2.0, 99.0)] = 135
+	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (7.0, 9.0), (2.0, 99.0)] = 136
+	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (7.0, 9.0), (2.0, 99.0)] = 137
+	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (7.0, 9.0), (2.0, 99.0)] = 138
+	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (7.0, 9.0), (2.0, 99.0)] = 139
+	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (7.0, 9.0), (2.0, 99.0)] = 140
+	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (7.0, 9.0), (2.0, 99.0)] = 141
+	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (7.0, 9.0), (2.0, 99.0)] = 142
+	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (9.0, 99.0), (-1.0, 0.0)] = 143
+	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (9.0, 99.0), (-1.0, 0.0)] = 144
+	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (9.0, 99.0), (-1.0, 0.0)] = 145
+	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (9.0, 99.0), (-1.0, 0.0)] = 146
+	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (9.0, 99.0), (-1.0, 0.0)] = 147
+	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (9.0, 99.0), (-1.0, 0.0)] = 148
+	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (9.0, 99.0), (-1.0, 0.0)] = 149
+	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (9.0, 99.0), (-1.0, 0.0)] = 150
+	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (9.0, 99.0), (0.0, 1.0)] = 151
+	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (9.0, 99.0), (0.0, 1.0)] = 152
+	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (9.0, 99.0), (0.0, 1.0)] = 153
+	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (9.0, 99.0), (0.0, 1.0)] = 154
+	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (9.0, 99.0), (0.0, 1.0)] = 155
+	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (9.0, 99.0), (0.0, 1.0)] = 156
+	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (9.0, 99.0), (0.0, 1.0)] = 157
+	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (9.0, 99.0), (0.0, 1.0)] = 158
+	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (9.0, 99.0), (1.0, 2.0)] = 159
+	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (9.0, 99.0), (1.0, 2.0)] = 160
+	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (9.0, 99.0), (1.0, 2.0)] = 161
+	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (9.0, 99.0), (1.0, 2.0)] = 162
+	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (9.0, 99.0), (1.0, 2.0)] = 163
+	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (9.0, 99.0), (1.0, 2.0)] = 164
+	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (9.0, 99.0), (1.0, 2.0)] = 165
+	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (9.0, 99.0), (1.0, 2.0)] = 166
+	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (9.0, 99.0), (2.0, 99.0)] = 167
+	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (9.0, 99.0), (2.0, 99.0)] = 168
+	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (9.0, 99.0), (2.0, 99.0)] = 169
+	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (9.0, 99.0), (2.0, 99.0)] = 170
+	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (9.0, 99.0), (2.0, 99.0)] = 171
+	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (9.0, 99.0), (2.0, 99.0)] = 172
+	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (9.0, 99.0), (2.0, 99.0)] = 173
+	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (9.0, 99.0), (2.0, 99.0)] = 174
+
+def getBinNumber2018(fvmain):# a bit dangerous, so the binning better be right.
+    if fvmain[1]<300: print 'hello'
+    for binkey in SearchBinNumbers.keys():
+        isbin = True
+        for iwindow, window in enumerate(SearchBinNumbers[binkey]):
+            if not (window[0]<fvmain[iwindow] and fvmain[iwindow]<=window[1]): 
+                isbin = False
+                break
+        if isbin: return SearchBinNumbers[binkey]
+    return -1
 templateNJetsAndBTags = []
 templateHtAndMht = []
 def loadSearchBins2016():
@@ -1171,25 +1358,34 @@ def passQCDHighMETFilter(t):
         if (abs(jet.DeltaPhi(metvec)) > (3.14159 - 0.4)): return False
     return True
 
+
+def passQCDHighMETFilter2(t):
+    if len(t.Jets)>0:
+        metvec = TLorentzVector()
+        metvec.SetPtEtaPhiE(t.MET, 0, t.METPhi,0)
+        if abs(t.Jets[0].DeltaPhi(metvec))>(3.14159-0.5) and t.Jets_neutralEmEnergyFraction[0]<0.05:
+            return False
+    return True
+
+#globalSuperTightHalo2016Filter==1 && HBHENoiseFilter==1 && HBHEIsoNoiseFilter==1 && eeBadScFilter==1 && EcalDeadCellTriggerPrimitiveFilter==1 && BadChargedCandidateFilter && BadPFMuonFilter && NVtx > 0
 def passesUniversalSelection(t):
     if not (bool(t.JetID) and  t.NVtx>0): return False
     if not (t.NElectrons==0 and t.NMuons==0 and t.isoElectronTracks==0 and t.isoMuonTracks==0 and t.isoPionTracks==0): return False
     if not  passQCDHighMETFilter(t): return False
+    if not passQCDHighMETFilter2(t): return False
     if not t.PFCaloMETRatio<5: return False
-
     #featuring:
     #if not t.globalTightHalo2016Filter: return False ##this alone was good # only these comments weren't saved on last submission
     if not t.globalSuperTightHalo2016Filter: return False
+    if not t.HBHENoiseFilter: return False    
     if not t.HBHEIsoNoiseFilter: return False
-    if not t.HBHENoiseFilter: return False
+    if not t.eeBadScFilter: return False      
     if not t.BadChargedCandidateFilter: return False
     if not t.BadPFMuonFilter: return False
     if not t.CSCTightHaloFilter: return False
-    if not t.eeBadScFilter: return False         
-    
-    '''#first half filters up edge
-    if not t.EcalDeadCellTriggerPrimitiveFilter: return False        
-    if not t.EcalDeadCellTriggerPrimitiveFilter: return False    
+    if not passesPhotonVeto(t): return False    
+    if not t.EcalDeadCellTriggerPrimitiveFilter: return False            
+    '''#first half filters up edge    
     #first half filters low edge           
     ####if not t.ecalBadCalibFilter: return False #this says it's deprecated
 
@@ -1197,7 +1393,9 @@ def passesUniversalSelection(t):
     return True
 
 
-def passesUniversalDataSelection(t):#first figure out why crashing, then run with isomuon tracks
+
+
+def passesUniversalDataSelectionOld(t):#first figure out why crashing, then run with isomuon tracks
     if not (bool(t.JetID) and  t.NVtx>0): return False
     #from jack
     if not (t.HBHENoiseFilter==1 and t.HBHEIsoNoiseFilter==1 and t.eeBadScFilter==1 and t.EcalDeadCellTriggerPrimitiveFilter==1 and t.BadChargedCandidateFilter and t.BadPFMuonFilter): return False #might need CSCTightHaloFilter
@@ -1205,6 +1403,30 @@ def passesUniversalDataSelection(t):#first figure out why crashing, then run wit
     if not (t.Electrons.size()==0 and t.Muons.size()==0 and t.isoElectronTracks==0 and t.isoMuonTracks==0 and t.isoPionTracks==0): return False
     if not  passQCDHighMETFilter(t): return False
     if not t.PFCaloMETRatio<5: return False
+    return True
+
+def passesUniversalDataSelection(t):#first figure out why crashing, then run with isomuon tracks
+    if not (bool(t.JetID) and  t.NVtx>0): return False
+    if not (t.NElectrons==0 and t.NMuons==0 and t.isoElectronTracks==0 and t.isoMuonTracks==0 and t.isoPionTracks==0): return False
+    if not  passQCDHighMETFilter(t): return False
+    if not passQCDHighMETFilter2(t): return False
+    if not t.PFCaloMETRatio<5: return False
+    #featuring:
+    #if not t.globalTightHalo2016Filter: return False ##this alone was good # only these comments weren't saved on last submission
+    if not t.globalSuperTightHalo2016Filter: return False
+    if not t.HBHENoiseFilter: return False    
+    if not t.HBHEIsoNoiseFilter: return False
+    if not t.eeBadScFilter: return False      
+    if not t.BadChargedCandidateFilter: return False
+    if not t.BadPFMuonFilter: return False
+    if not t.CSCTightHaloFilter: return False
+    if not passesPhotonVeto(t): return False    
+    if not t.EcalDeadCellTriggerPrimitiveFilter: return False            
+    '''#first half filters up edge    
+    #first half filters low edge           
+    ####if not t.ecalBadCalibFilter: return False #this says it's deprecated
+
+    '''#second half filters low edge               
     return True
 
 
@@ -1226,6 +1448,45 @@ def passesForwardJetID(t):
     return True
 
 
+def passesPhotonVeto(c):
+    for p, pho in enumerate(c.Photons):
+        if c.Photons_fullID[p] and pho.Pt()>100 and c.Photons_hasPixelSeed[p]==0: return False
+    return True
+
+
+def EcalNoiseFilter(jets, mhtphi):
+    counter = 0
+    goodJet = (True, True)
+    for j, jet in enumerate(jets):
+        if counters>=2: break
+        if c.Jets_MHTMask[j]:
+            dphi = abs(kMath.DeltaPhi(jet.Phi(_), mhtphi))
+            if jet.Pt()>250 and (abs(jet.Eta())>2.4 and abs(jet.Eta())<5.0) and (dphi>2.6 or dphi<0.1): goodJet[counter] = False
+            counter+=1
+    return goodJet[0] and goodJet[1]
+
+def passAndrewsHtRatio(dphi1, ht5, ht):
+    if ht==0: return False
+    if not dphi1 >= ((1.025 * ht5/ht)-0.5875): return False
+    else: return True
+
+def passAndrewsTightHtRatio(dphi1, ht5, ht):
+    if ht==0: return False
+    if not dphi1 >= ((5.3 * ht5/ht)-4.78): return False
+    else: return True        
+
+def FastSimFakeJetVeto(c):
+    noFakeJet = True
+    for j, jet in enumerate(c.Jets):
+        if(jet.Pt() <= 20 or fabs(jet.Eta())>=2.5): continue
+        genMatched = False
+        for g, genjet in enumerate(GenJets):
+            if genjet.DeltaR(jet) < 0.3:
+                genMatched = True
+                break
+        if (not genMatched) and c.Jets_chargedHadronEnergyFraction[j] < 0.1:
+            return False
+    return True
 
 #varlist = ['Ht','Mht','NJets','BTags','DPhi1','DPhi2','DPhi3','DPhi4','Jet1Pt','Jet1Eta','Jet2Pt','Jet2Eta','Jet3Pt','Jet3Eta','Jet4Pt','Jet4Eta','Met','MhtPhi','SearchBins']
 def growTree(tree, fv, aux, weight):
@@ -1311,7 +1572,7 @@ def fillth2(h,x,y,weight=1):
 def GetHighestPtForwardPt_prefiring(jets):
     highestPt = 0
     for jet in jets:
-        if abs(jet.Eta())>2.25 and abs(jet.Eta())<5.0:#prefiring upper eta is 3.0
+        if abs(jet.Eta())>3.0 and abs(jet.Eta())<5.0:#prefiring upper eta is 3.0
             if jet.Pt()>highestPt:
                 highestPt = jet.Pt()
     return highestPt
