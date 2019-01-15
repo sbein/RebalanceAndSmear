@@ -96,7 +96,8 @@ newfilename = filenameA.replace('Output/','').replace('TruthAndMethod','Closure'
 newfile = TFile('closure_rands.root','recreate')
 #newfile.ls()
 
-norm = 1000*lumi
+if datamc=='MC': norm = 1000*lumi
+else: norm = 1
 #hNormNum = fileA.Get('hLowMhtBaseline_MhtTruth').Clone('hNormNum')
 #hNormNum.Scale(norm)
 #hNormDen = fileA.Get('hLowMhtBaseline_MhtRplusS').Clone('hNormDen')
@@ -136,7 +137,7 @@ for key in keys:
             standard = 'Truth'
     hTruth = fileA.Get('h'+selection+'_'+kinvar+standard).Clone('h'+selection+'_'+kinvar+standard+'')
 
-    print 'mucking in truth', hTruth.GetName()
+
     hTruth.Scale(norm)
     hMethod = fileA.Get('h'+selection+'_'+kinvar+method).Clone('h'+selection+'_'+kinvar+method+'')
     if 'SearchBins' in key.GetName(): hMethod = applyCorrections(hMethod, SearchBinNames)    
@@ -303,8 +304,8 @@ for key in keys:
     #hFracDiff.GetYaxis().SetRangeUser(0.08,30)####    
     hFracDiff.SetTitle('')
     hFracDiff.GetXaxis().SetTitle(nicelabel(kinvar)+('bin' not in units[kinvar])*(' ['+units[kinvar]+']'))
-    #hFracDiff.GetYaxis().SetTitle('pred./expectation')
-    hFracDiff.GetYaxis().SetTitle('(pred-exp)/exp')
+    hFracDiff.GetYaxis().SetTitle('pred./expectation')
+    #hFracDiff.GetYaxis().SetTitle('(pred-exp)/exp')
     hFracDiff.GetXaxis().SetTitleSize(0.165)
     hFracDiff.GetXaxis().SetLabelSize(0.165)
     hFracDiff.GetYaxis().SetTitleSize(0.13)

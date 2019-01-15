@@ -21,7 +21,7 @@ args = parser.parse_args()
 printevery = args.printevery
 fnamekeyword = args.fnamekeyword
 JerUpDown = args.JerUpDown
-nametag = {'Nom':'', 'JerUp': 'JerUp'}
+nametag = {'Nom':'', 'Up': 'JerUp'}
 
 
 
@@ -206,6 +206,7 @@ c.Show(0)
 print "nevents=", nevents
 
 newFileName = 'RandS_'+filelist[0].split('/')[-1].replace('.root','')+'.root'
+newFileName = newFileName.replace('.root',nametag[JerUpDown]+'.root')
 fnew = TFile(newFileName,'recreate')
 print 'creating new file:',fnew.GetName()
 

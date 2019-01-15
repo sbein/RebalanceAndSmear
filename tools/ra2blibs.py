@@ -44,16 +44,22 @@ regionCuts = {}
 pi = 3.14159
 Inf = 9999
 #varlist =                           ['Ht',    'Mht',    'NJets','BTags','SearchBins','MaxDPhi', 'MaxForwardPt','HtRatio']]
-regionCuts['Baseline']          = (0,[[300,Inf],[300,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
-regionCuts['BaselineHtr']       = (0,[[300,Inf],[300,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,1.3]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['Baseline']          = (0,[[300,Inf],[300,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
 regionCuts['LowMhtBaseline']    = (0,[[300,Inf],[200,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['LowMhtSideband']    = (0,[[300,Inf],[250,300],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['LowDeltaPhi']       = (1,[[300,Inf],[300,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['LdpLmhtBase']       = (1,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['LdpLmhtSideband']   = (1,[[300,Inf],[250,300],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+
+'''
+regionCuts['BaselineHtr']       = (0,[[300,Inf],[300,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,1.3]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
 regionCuts['LowMhtBaseFpt']     = (0,[[300,Inf],[200,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,100],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
 regionCuts['LowMhtBaseHtr']     = (0,[[300,Inf],[200,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,1.3]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
 regionCuts['LowMhtBaseFptHtr']  = (0,[[300,Inf],[200,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,100],      [0,1.3]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
-regionCuts['LowDeltaPhi']       = (1,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
 regionCuts['LowDPhiFptHtr']     = (1,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,100],      [0,1.3]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
 regionCuts['LowDPhiHtr']        = (1,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,1.3]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
 regionCuts['LowDPhiFpt']        = (1,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,100],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+
 
 #regionCuts['LowDeltaPhiCR']               = [[1000,Inf],[250,300],[2,Inf],[0,Inf],[0,Inf],[0,Inf],[0,Inf],[0,Inf]]#gets help
 #regionCuts['B1Baseline']               = [[300,Inf],[300,Inf],[2,Inf],[1,Inf],[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]]
@@ -65,7 +71,7 @@ regionCuts['LowDPhiFpt']        = (1,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf,
 #regionCuts['LowMhtBaseline']            = [[500,Inf],[50,200],[4,Inf],[0,Inf],[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]]
 #regionCuts['HighMhtBaseline']               = [[500,Inf],[300,Inf],[2,Inf],[0,Inf],[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]]
 #regionCuts['GmsbBaseline']               = [[500,Inf],[100,Inf],[2,Inf],[0,Inf],[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]]#photon
-
+'''
 
 binning = {}
 binning['Mht']=[400,0,2000]
@@ -220,8 +226,9 @@ binningUser['Mht']=[20,200,1200]#
 #binningUser['Mht']=[0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,300,500,800,1500,2000]#
 #binningUser['Mht']=[55,100,1200]
 binningUser['Met']=binningUser['Mht']#
-#binningUser['Ht']=[60,0,3000]#
 binningUser['Ht']=[10,100,2100]
+binningUser['Ht']=[20,100,2100]
+#binningUser['Ht']=[60,0,3000]#
 binningUser['NJets']=[12,2,14]#
 binningUser['BTags']=[7,0,7]#
 binningUser['DPhi1']=[16,0,3.2]

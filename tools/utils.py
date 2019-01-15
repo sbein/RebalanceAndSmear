@@ -1363,7 +1363,7 @@ def passQCDHighMETFilter2(t):
     if len(t.Jets)>0:
         metvec = TLorentzVector()
         metvec.SetPtEtaPhiE(t.MET, 0, t.METPhi,0)
-        if abs(t.Jets[0].DeltaPhi(metvec))>(3.14159-0.5) and t.Jets_neutralEmEnergyFraction[0]<0.05:
+        if abs(t.Jets[0].DeltaPhi(metvec))>(3.14159-0.4) and t.Jets_neutralEmEnergyFraction[0]<0.03:
             return False
     return True
 
@@ -1471,8 +1471,8 @@ def passAndrewsHtRatio(dphi1, ht5, ht):
     else: return True
 
 def passAndrewsTightHtRatio(dphi1, ht5, ht):
-    if ht==0: return False
-    if not dphi1 >= ((5.3 * ht5/ht)-4.78): return False
+    if ht==0: return True
+    if ht5/ht>1.2 and dphi1 < ((5.3 * ht5/ht)-4.78): return False
     else: return True        
 
 def FastSimFakeJetVeto(c):
