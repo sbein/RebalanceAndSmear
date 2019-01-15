@@ -12,6 +12,11 @@ analyzer = args.analyzer
 JerUpDown = args.JerUpDown
 Bootstrap = args.Bootstrap
 
+if Bootstrap=='0': 
+    bootstrapmode = False
+else: 
+    bootstrapmode = True
+    
 istest = False
 
 
@@ -58,6 +63,7 @@ def main():
         fname = fname_.strip()
         job = analyzer.split('/')[-1].replace('.py','').replace('.jdl','')+'-'+fname.strip()+'Jer'+JerUpDown
         job = job.replace('.root','')
+        if bootstrapmode: job = job.replace('.root',Bootstrap+'.root')
         #print 'creating jobs:',job
         newjdl = open('jobs/'+job+'.jdl','w')
         newjdl.write(jdltemplate.replace('CWD',cwd).replace('JOBKEY',job))
