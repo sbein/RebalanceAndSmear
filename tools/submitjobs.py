@@ -5,10 +5,12 @@ parser.add_argument("-v", "--verbosity", type=bool, default=False,help="analyzer
 parser.add_argument("-analyzer", "--analyzer", type=str,default='tools/ResponseMaker.py',help="analyzer")
 parser.add_argument("-fin", "--fnamekeyword", type=str,default='Summer16.SMS-T1tttt_mGluino-1200_mLSP-800',help="file")
 parser.add_argument("-jersf", "--JerUpDown", type=str, default='Nom',help="JER scale factor (Nom, Up, ...)")
+parser.add_argument("-bootstrap", "--Bootstrap", type=str, default='0',help="boot strapping (0,1of5,2of5,3of5,...)")
 args = parser.parse_args()
 fnamekeyword = args.fnamekeyword.strip()
 analyzer = args.analyzer
 JerUpDown = args.JerUpDown
+Bootstrap = args.Bootstrap
 
 istest = False
 
