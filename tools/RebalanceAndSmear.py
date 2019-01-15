@@ -17,11 +17,26 @@ parser.add_argument("-v", "--verbosity", type=bool, default=0,help="increase out
 parser.add_argument("-nprint", "--printevery", type=int, default=100,help="print every n(events)")
 parser.add_argument("-fin", "--fnamekeyword", type=str,default='RunIIFall17MiniAODv2.QCD_HT200to',help="file")
 parser.add_argument("-jersf", "--JerUpDown", type=str, default='Nom',help="JER scale factor (JerNom, JerUp, ...)")
+parser.add_argument("-bootstrap", "--Bootstrap", type=str, default='0',help="boot strapping (0,1of5,2of5,3of5,...)")
 args = parser.parse_args()
 printevery = args.printevery
 fnamekeyword = args.fnamekeyword
 JerUpDown = args.JerUpDown
+Bootstrap = args.Bootstrap
 nametag = {'Nom':'', 'Up': 'JerUp'}
+
+
+if Bootstrap=='0': 
+    bootstrapmode = False
+    bootupfactor = 1
+else: 
+    bootstrapmode = True
+    from random import randint
+    print randint(0, 9)
+    thisbootstrap, nbootstraps = Bootstrap.split('of')
+    thisbootstrap, nbootstraps = int(thisbootstrap), int(nbootstraps)
+    print 'thisbootstrap, nbootstraps', thisbootstrap, nbootstraps
+    bootupfactor = nbootstraps
 
 
 
@@ -65,7 +80,7 @@ year = '2015'
 year = '2016'
 if year=='2015':loadSearchBins2015()
 if year=='2016':loadSearchBins2016()
-isskim = False ##thing one to switch xxx
+isskim = False ##thing one to switch
 skiprands = False
 
 pwd = os.getcwd()
@@ -207,9 +222,9 @@ print "nevents=", nevents
 
 newFileName = 'RandS_'+filelist[0].split('/')[-1].replace('.root','')+'.root'
 newFileName = newFileName.replace('.root',nametag[JerUpDown]+'.root')
+if bootstrapmode: newFileName = newFileName.replace('.root',Bootstrap+'.root')
 fnew = TFile(newFileName,'recreate')
 print 'creating new file:',fnew.GetName()
-
 
 hHt = TH1F('hHt','hHt',120,0,2500)
 hHt.Sumw2()
@@ -435,6 +450,8 @@ for ientry in range(nevents):
         prescaleweight = c.PrescaleWeightHT#c.Online_HtPrescaleWeight
         ht = c.HTOnline
         if prescaleweight == 0: continue
+        if bootstrapmode:
+            if not randint(1, nbootstraps)==thisbootstrap: continue
         #.Online_Ht
         fillth1(hHt, ht,1)
         fillth1(hHtWeighted, ht,prescaleweight)
@@ -723,9 +740,9 @@ for ientry in range(nevents):
     if PrintJets:
         if not fitsucceed:  print ientry, 'fit failed with mht, btags = ', fv[1], fv[3]
     #if fnamekeyword=='TTJets' or fnamekeyword=='WJetsToLNu' or fnamekeyword=='ZJetsToNuNu':upfactor = 2000
-    upfactor = 25
+    upfactor = 25*bootupfactor
     if isdata: 
-        nsmears = min(int(upfactor*prescaleweight),200)
+        nsmears = min(int(upfactor*prescaleweight),bootupfactor*200)
         weight = prescaleweight/nsmears        
     else:
         nsmears = 3
