@@ -4,15 +4,15 @@ from ra2blibs import *
 import os,sys
 gROOT.SetBatch(1)
 
-datamc = 'Data'
 datamc = 'MC'
+datamc = 'Data'
 lumi = 2.3
 lumi = 24.7
 lumi = 36.3
 lumi = 135
 
-loadSearchBins2016()
-SearchBinNames = {v: k for k, v in SearchBinNumbers.iteritems()}
+#loadSearchBins2016()
+#SearchBinNames = {v: k for k, v in SearchBinNumbers.iteritems()}
 
 redoBinning = binningAnalysis
 redoBinning = binningUser
@@ -54,10 +54,10 @@ def mkLabel(str_,kinvar,selection=''):
     if newstr[0]=='h':newstr = newstr[1:]
     newstr = newstr.replace('GenSmeared',' gen-smeared ')
     newstr = newstr.replace('Rebalanced',' rebalanced ')
-    newstr = newstr.replace('RplusS',' Fall17 QCD R&S')
+    newstr = newstr.replace('RplusS','R&S Prediction')
     if datamc=='Data': newstr = newstr.replace('Truth','Data')
-    newstr = newstr.replace('Truth',' Fall17 QCD (truth) ')
-    if datamc == 'Data': newstr = newstr.replace('Truth',' Data ')
+    newstr = newstr.replace('Truth','Run 2017')
+    if datamc == 'Data': newstr = newstr.replace('Truth',' Data (2017)')
     newstr = newstr.replace(kinvar,'')
     newstr = newstr.replace('_b','').replace('_','')
     newstr = newstr.replace(selection+' ','')
@@ -140,7 +140,7 @@ for key in keys:
 
     hTruth.Scale(norm)
     hMethod = fileA.Get('h'+selection+'_'+kinvar+method).Clone('h'+selection+'_'+kinvar+method+'')
-    if 'SearchBins' in key.GetName(): hMethod = applyCorrections(hMethod, SearchBinNames)    
+    #if 'SearchBins' in key.GetName(): hMethod = applyCorrections(hMethod, SearchBinNames)    
     hMethod.Scale(norm)
 
     try: print 'fail factor', fileA.Get('hTotFit').Integral()/fileA.Get('hPassFit').Integral()
@@ -223,8 +223,8 @@ for key in keys:
     hMethod.Draw('e same')
     hTruth.Draw('E1 same')
     print mkLabel(hMethod.GetName(),kinvar,selection)
-    l.AddEntry(hTruth,mkLabel(hTruth.GetName(),kinvar,selection),'lp')
-    l.AddEntry(hMethod,mkLabel(hMethod.GetName(),kinvar,selection),'fp')
+    l.AddEntry(hTruth,'Run2017 - JetHT','lp')
+    l.AddEntry(hMethod,'R&S QCD prediction','fp')
     l.Draw()
 
     ybottom = hTruth.GetYaxis().GetBinLowEdge(1)
@@ -245,6 +245,7 @@ for key in keys:
     tl.DrawLatex(xlab,0.84, ('MC' in datamc)*' simulation '+'preliminary')
     tl.SetTextFont(regularfont)
     if 'LowMht' in name: cutlabel = mkCutsLabel(kinvar,selection, baselineStrLowMht)
+    elif 'Lmht' in name: cutlabel = mkCutsLabel(kinvar,selection, baselineStrLdpLmht)
     else: cutlabel = mkCutsLabel(kinvar,selection, baselineStr)
         
     if 'LowDeltaPhi' in selection: cutlabel = cutlabel.replace('200','300')
@@ -271,7 +272,7 @@ for key in keys:
     pad2.cd()
 
     hFracDiff = fileA.Get('h'+selection+'_'+kinvar+method).Clone('hFracDiff')###hacks!
-    if 'SearchBins' in key.GetName(): hFracDiff = applyCorrections(hFracDiff, SearchBinNames)    
+    #if 'SearchBins' in key.GetName(): hFracDiff = applyCorrections(hFracDiff, SearchBinNames)    
     hFracDiff.Scale(norm)
     hDen = fileA.Get('h'+selection+'_'+kinvar+standard).Clone('hDen')
     hFracDiff.SetMarkerStyle(20)
@@ -304,7 +305,7 @@ for key in keys:
     #hFracDiff.GetYaxis().SetRangeUser(0.08,30)####    
     hFracDiff.SetTitle('')
     hFracDiff.GetXaxis().SetTitle(nicelabel(kinvar)+('bin' not in units[kinvar])*(' ['+units[kinvar]+']'))
-    hFracDiff.GetYaxis().SetTitle('pred./expectation')
+    hFracDiff.GetYaxis().SetTitle('pred./observed')
     #hFracDiff.GetYaxis().SetTitle('(pred-exp)/exp')
     hFracDiff.GetXaxis().SetTitleSize(0.165)
     hFracDiff.GetXaxis().SetLabelSize(0.165)

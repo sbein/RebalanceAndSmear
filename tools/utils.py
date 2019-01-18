@@ -65,16 +65,6 @@ baseline['DPhi2'] = 0.5
 baseline['DPhi3'] = 0.3
 baseline['DPhi4'] = 0.3
 
-baselineLowMht = {}
-baselineLowMht['Mht'] = 200
-baselineLowMht['Ht'] = 300
-baselineLowMht['NJets'] = 2
-baselineLowMht['BTags'] = 0
-baselineLowMht['DPhi1'] = 0.5
-baselineLowMht['DPhi2'] = 0.5
-baselineLowMht['DPhi3'] = 0.3
-baselineLowMht['DPhi4'] = 0.3
-
 baselineStr = {}
 baselineStr['Mht']='H_{T}^{miss} > '+str(baseline['Mht'])+' GeV'
 baselineStr['Ht']='H_{T} > '+str(baseline['Ht'])+' GeV'
@@ -85,6 +75,16 @@ baselineStr['DPhi2']='#Delta#phi_{2}'
 baselineStr['DPhi3']='#Delta#phi_{3}'
 baselineStr['DPhi4']='#Delta#phi_{4}'
 
+baselineLowMht = {}
+baselineLowMht['Mht'] = 250
+baselineLowMht['Ht'] = 300
+baselineLowMht['NJets'] = 2
+baselineLowMht['BTags'] = 0
+baselineLowMht['DPhi1'] = 0.5
+baselineLowMht['DPhi2'] = 0.5
+baselineLowMht['DPhi3'] = 0.3
+baselineLowMht['DPhi4'] = 0.3
+
 baselineStrLowMht = {}
 baselineStrLowMht['Mht']='H_{T}^{miss} > '+str(baselineLowMht['Mht'])+' GeV'
 baselineStrLowMht['Ht']='H_{T} > '+str(baselineLowMht['Ht'])+' GeV'
@@ -94,6 +94,26 @@ baselineStrLowMht['DPhi1']='#Delta#phi_{1}'
 baselineStrLowMht['DPhi2']='#Delta#phi_{2}'
 baselineStrLowMht['DPhi3']='#Delta#phi_{3}'
 baselineStrLowMht['DPhi4']='#Delta#phi_{4}'
+
+baselineLdpLmht = {}
+baselineLdpLmht['Mht'] = 250
+baselineLdpLmht['Ht'] = 300
+baselineLdpLmht['NJets'] = 2
+baselineLdpLmht['BTags'] = 0
+baselineLdpLmht['DPhi1'] = 0.5
+baselineLdpLmht['DPhi2'] = 0.5
+baselineLdpLmht['DPhi3'] = 0.3
+baselineLdpLmht['DPhi4'] = 0.3
+
+baselineStrLdpLmht = {}
+baselineStrLdpLmht['Mht']='H_{T}^{miss} > '+str(baselineLdpLmht['Mht'])+' GeV'
+baselineStrLdpLmht['Ht']='H_{T} > '+str(baselineLdpLmht['Ht'])+' GeV'
+baselineStrLdpLmht['NJets']='N_{jets} #geq '+str(baselineLdpLmht['NJets'])
+baselineStrLdpLmht['BTags']=''
+baselineStrLdpLmht['DPhi1']='!#Delta#phi_{1}'
+baselineStrLdpLmht['DPhi2']='!#Delta#phi_{2}'
+baselineStrLdpLmht['DPhi3']='!#Delta#phi_{3}'
+baselineStrLdpLmht['DPhi4']='!#Delta#phi_{4}'
 
 
 units = {}
