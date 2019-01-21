@@ -11,7 +11,6 @@ fnamekeyword = args.fnamekeyword.strip()
 analyzer = args.analyzer
 JerUpDown = args.JerUpDown
 Bootstrap = args.Bootstrap
-nametag = {'Nom':'', 'Up': 'JerUp'}
 
 if Bootstrap=='0': 
     bootstrapmode = False
@@ -20,7 +19,6 @@ else:
 
 
 istest = True
-OnlyDoMissingFiles = True
 
 
 try: 
@@ -65,8 +63,8 @@ def main():
         if not (fnamekeyword in fname_): continue
         fname = fname_.strip()
         job = analyzer.split('/')[-1].replace('.py','').replace('.jdl','')+'-'+fname.strip()+'Jer'+JerUpDown
-        job+= job.replace('.root',Bootstrap+'.root')        
         job = job.replace('.root','')
+	job += job.replace('.root',Bootstrap+'.root')
         #print 'creating jobs:',job
         newjdl = open('jobs/'+job+'.jdl','w')
         newjdl.write(jdltemplate.replace('CWD',cwd).replace('JOBKEY',job))
@@ -79,16 +77,6 @@ def main():
         if not os.path.exists('output/'+fnamekeyword.replace(' ','')): 
             os.system('mkdir output/'+fnamekeyword.replace(' ',''))
         os.chdir('output/'+fnamekeyword.replace(' ',''))
-        if OnlyDoMissingFiles:
-            newFileName = 'RandS_'+fname_.split('/')[-1].replace('.root','')+'.root'
-            newFileName = newFileName.replace('.root',nametag[JerUpDown]+'.root')
-            if bootstrapmode: newFileName = newFileName.replace('.root',Bootstrap+'.root')
-            print 'checking for ', newFileName
-            isthere = os.path.exists(newFileName)
-            print isthere
-            if isthere: 
-                os.chdir('../../')
-                continue
         cmd =  'condor_submit '+'../../jobs/'+job+'.jdl'        
         print cmd
         if not istest: os.system(cmd)
