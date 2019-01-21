@@ -1047,14 +1047,15 @@ def loadSearchBins2018():
 	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (9.0, 99.0), (2.0, 99.0)] = 174
 
 def getBinNumber2018(fvmain):# a bit dangerous, so the binning better be right.
-    if fvmain[1]<300: print 'hello'
-    for binkey in SearchBinNumbers.keys():
+    if fvmain[1]<300: return False
+    for ibinkey, binkey in enumerate(SearchBinNumbers.keys()):
         isbin = True
-        for iwindow, window in enumerate(SearchBinNumbers[binkey]):
+        for iwindow, window in enumerate(binkey):
             if not (window[0]<fvmain[iwindow] and fvmain[iwindow]<=window[1]): 
                 isbin = False
                 break
-        if isbin: return SearchBinNumbers[binkey]
+        if isbin: 
+            return SearchBinNumbers[binkey]
     return -1
 templateNJetsAndBTags = []
 templateHtAndMht = []

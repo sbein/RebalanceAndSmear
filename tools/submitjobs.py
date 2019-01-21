@@ -18,6 +18,7 @@ else:
     bootstrapmode = True
     
 istest = False
+skipFilesWithErrorFile = True
 
 
 try: 
@@ -58,16 +59,23 @@ import random
 random.shuffle(fnamelines)
 
 def main():
+    counter = 0    
     for fname_ in fnamelines:
         if not (fnamekeyword in fname_): continue
         fname = fname_.strip()
         job = analyzer.split('/')[-1].replace('.py','').replace('.jdl','')+'-'+fname.strip()+'Jer'+JerUpDown
+
+        #from utils import pause
+        #pause()
         job = job.replace('.root','')
-        job += job.replace('.root',Bootstrap+'.root')
+        job = job.replace('.root',Bootstrap+'.root')     
         #print 'creating jobs:',job
         newjdl = open('jobs/'+job+'.jdl','w')
         newjdl.write(jdltemplate.replace('CWD',cwd).replace('JOBKEY',job))
         newjdl.close()
+        if skipFilesWithErrorFile:
+            errfilename = 'jobs/'+job+'.err'
+            if os.path.exists(errfilename):  continue
         newsh = open('jobs/'+job+'.sh','w')
         newshstr = shtemplate.replace('ANALYZER',analyzer).replace('FNAMEKEYWORD',fname).replace('MOREARGS',moreargs)
         newsh.write(newshstr)
@@ -78,9 +86,10 @@ def main():
         cmd =  'condor_submit '+'../../jobs/'+job+'.jdl'        
         print cmd
         if not istest: os.system(cmd)
+        counter+=1
         os.chdir('../../')
 
-
+    print 'counter', counter
 jdltemplate = '''
 universe = vanilla
 Executable = CWD/jobs/JOBKEY.sh
