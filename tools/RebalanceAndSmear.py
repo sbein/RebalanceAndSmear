@@ -78,8 +78,10 @@ else: BTag_Cut = BTAG_CSVv2
     
 year = '2015'
 year = '2016'
+year = 'Run2'
 if year=='2015':loadSearchBins2015()
 if year=='2016':loadSearchBins2016()
+if year=='Run2':loadSearchBins2018()
 isskim = False ##thing one to switch
 skiprands = False
 
@@ -572,7 +574,7 @@ for ientry in range(nevents):
     fv = [[c.HT,c.MHT,c.NJets,c.BTags],[bDPhi1,bDPhi2,bDPhi3,bDPhi4]]#,bJet1Pt,bJet1Eta,\
           #bJet2Pt,bJet2Eta,bJet3Pt,bJet3Eta,bJet4Pt,bJet4Eta,c.MET,c.MHTPhi]#must be synchronized with varlist 
     #if ientry==47: print 'fv', fv
-    binNumber = getBinNumber(fv[0])    
+    binNumber = getBinNumber2018(fv[0])    
     fv[0].append(binNumber)        
     fv[0].append(max([bDPhi1,bDPhi2,bDPhi3,bDPhi4]))
     fv[0].append(GetHighestPtForwardPt_prefiring(recojets))
@@ -613,7 +615,7 @@ for ientry in range(nevents):
     #fv = [tHt,tMhtPt,tNJets,tBTags,tDPhi1,tDPhi2,tDPhi3,tDPhi4,tJet1Pt,tJet1Eta,\
     #      tJet2Pt,tJet2Eta,tJet3Pt,tJet3Eta,tJet4Pt,tJet4Eta,tMetPt,tMhtPhi]
     fv = [[tHt,tMhtPt,tNJets,tBTags],[tDPhi1,tDPhi2,tDPhi3,tDPhi4]]
-    binNumber = getBinNumber(fv[0])
+    binNumber = getBinNumber2018(fv[0])
     fv[0].append(binNumber)     
     fv[0].append(max([tDPhi1,tDPhi2,tDPhi3,tDPhi4]))
     fv[0].append(GetHighestPtForwardPt_prefiring(recojets))
@@ -703,7 +705,7 @@ for ientry in range(nevents):
     jetPhis = getPhis(rebalancedJets,mMhtVec)
     fv = [[mHt,mMhtPt,mNJets,mBTags],[mDPhi1,mDPhi2,mDPhi3,mDPhi4]]#mJet1Pt,mJet1Eta,\
           #mJet2Pt,mJet2Eta,mJet3Pt,mJet3Eta,mJet4Pt,mJet4Eta,mMetPt,mMhtPhi]
-    binNumber = getBinNumber(fv[0])
+    binNumber = getBinNumber2018(fv[0])
     fv[0].append(binNumber)
     fv[0].append(max([mDPhi1,mDPhi2,mDPhi3,mDPhi4]))
     fv[0].append(GetHighestPtForwardPt_prefiring(rebalancedJets))
@@ -776,7 +778,7 @@ for ientry in range(nevents):
         #fv = [rpsHt,rpsMht,rpsNJets,rpsBTags,rpsDPhi1,rpsDPhi2,rpsDPhi3,rpsDPhi4,rpsJet1Pt,rpsJet1Eta,\
         #      rpsJet2Pt,rpsJet2Eta,rpsJet3Pt,rpsJet3Eta,rpsJet4Pt,rpsJet4Eta,rpsMetPt,rpsMhtPhi]
         fv = [[rpsHt,rpsMht,rpsNJets,rpsBTags],[rpsDPhi1,rpsDPhi2,rpsDPhi3,rpsDPhi4]]
-        binNumber = getBinNumber(fv[0])     
+        binNumber = getBinNumber2018(fv[0])     
         fv[0].append(binNumber)
         fv[0].append(max([rpsDPhi1,rpsDPhi2,rpsDPhi3,rpsDPhi4]))
         fv[0].append(GetHighestPtForwardPt_prefiring(RplusSJets))
@@ -834,7 +836,7 @@ for ientry in range(nevents):
     gJet1Pt,gJet1Eta,gJet2Pt,gJet2Eta,gJet3Pt,gJet3Eta,gJet4Pt,gJet4Eta = getJetKinematics(genjets)
     jetPhis = getPhis(genjets,gMhtVec)
     fv = [[gHt,gMht,gNJets,gBTags],[gDPhi1,gDPhi2,gDPhi3,gDPhi4]]
-    binNumber = getBinNumber(fv[0])##for good measure, do some debugging here. it'd be nice to have an understand for why rebalance mht != generator-level mht
+    binNumber = getBinNumber2018(fv[0])##for good measure, do some debugging here. it'd be nice to have an understand for why rebalance mht != generator-level mht
     fv[0].append(binNumber)
     fv[0].append(max([gDPhi1,gDPhi2,gDPhi3,gDPhi4]))
     fv[0].append(GetHighestPtForwardPt_prefiring(genjets))
@@ -877,7 +879,7 @@ for ientry in range(nevents):
         mJet1Pt,mJet1Eta,mJet2Pt,mJet2Eta,mJet3Pt,mJet3Eta,mJet4Pt,mJet4Eta = getJetKinematics(smearedJets)
         jetPhis = getPhis(smearedJets,mMhtVec)
         fv = [[mHt,mMhtPt,mNJets,mBTags],[mDPhi1,mDPhi2,mDPhi3,mDPhi4]]
-        binNumber = getBinNumber(fv[0])
+        binNumber = getBinNumber2018(fv[0])
         fv[0].append(binNumber)
         fv[0].append(max([mDPhi1,mDPhi2,mDPhi3,mDPhi4]))
         fv[0].append(GetHighestPtForwardPt_prefiring(smearedJets))
@@ -931,3 +933,21 @@ if mktree:
     treefile.cd()
     littletree.Write()
     treefile.Close()
+
+'''
+ls -1 -d output/Run2017B-31Mar2018-v1.JetHT/*Tree.root |wc -l
+ls -1 -d output/Run2017B-31Mar2018-v1.JetHT/*JerUp.root |wc -l
+
+ls -1 -d output/Run2017C-31Mar2018-v1.JetHT/*Tree.root |wc -l
+ls -1 -d output/Run2017C-31Mar2018-v1.JetHT/*JerUp.root |wc -l
+
+ls -1 -d output/Run2017D-31Mar2018-v1.JetHT/*Tree.root |wc -l
+ls -1 -d output/Run2017D-31Mar2018-v1.JetHT/*JerUp.root |wc -l
+
+ls -1 -d output/Run2017E-31Mar2018-v1.JetHT/*Tree.root |wc -l
+ls -1 -d output/Run2017E-31Mar2018-v1.JetHT/*JerUp.root |wc -l
+
+ls -1 -d output/Run2017F-31Mar2018-v1.JetHT/*Tree.root |wc -l
+ls -1 -d output/Run2017F-31Mar2018-v1.JetHT/*JerUp.root |wc -l
+
+'''

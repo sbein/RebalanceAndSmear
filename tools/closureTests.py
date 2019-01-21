@@ -4,8 +4,8 @@ from ra2blibs import *
 import os,sys
 gROOT.SetBatch(1)
 
-datamc = 'MC'
 datamc = 'Data'
+datamc = 'MC'
 lumi = 2.3
 lumi = 24.7
 lumi = 36.3

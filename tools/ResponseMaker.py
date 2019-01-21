@@ -8,7 +8,7 @@ import os, sys
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbosity", type=bool, default=0,help="increase output verbosity")
-parser.add_argument("-fin", "--fnamekeyword", type=str,default='RunIIFall17MiniAODv2.QCD_HT',help="file")
+parser.add_argument("-fin", "--fnamekeyword", type=str,default='RunIIFall17MiniAODv2.QCD_HT',help="file")#RunIISummer16MiniAODv3.QCD_HT300to500
 parser.add_argument("-nprint", "--printevery", type=int, default=100,help="print every n(events)")
 parser.add_argument("-jersf", "--JerUpDown", type=str, default='Nom',help="JER scale factor (SFNom, SFUp, ...)")
 parser.add_argument("-dmcrw", "--DataMcReweight", type=bool, default=False,help="reweight prior")
@@ -406,3 +406,44 @@ hCsvVsCB.Write()
 
 print 'just created file', fnew.GetName()
 fnew.Close()
+
+
+'''
+python tools/submitjobs.py --analyzer tools/ResponseMaker.py --fnamekeyword Summer16MiniAODv3.QCD_H --JerUpDown Nom
+
+python tools/submitjobs.py --analyzer tools/ResponseMaker.py --fnamekeyword Summer16MiniAODv3.QCD_H  --JerUpDown Up
+
+echo 1
+ls -1 -d output/Run2017B-31Mar2018-v1.JetHT/*1of5*.root |wc -l
+ls -1 -d output/Run2017B-31Mar2018-v1.JetHT/*2of5*.root |wc -l
+ls -1 -d output/Run2017B-31Mar2018-v1.JetHT/*3of5*.root |wc -l
+ls -1 -d output/Run2017B-31Mar2018-v1.JetHT/*4of5*.root |wc -l
+ls -1 -d output/Run2017B-31Mar2018-v1.JetHT/*5of5*.root |wc -l
+echo 2
+ls -1 -d output/Run2017C-31Mar2018-v1.JetHT/*1of5*.root |wc -l
+ls -1 -d output/Run2017C-31Mar2018-v1.JetHT/*2of5*.root |wc -l
+ls -1 -d output/Run2017C-31Mar2018-v1.JetHT/*3of5*.root |wc -l
+ls -1 -d output/Run2017C-31Mar2018-v1.JetHT/*4of5*.root |wc -l
+ls -1 -d output/Run2017C-31Mar2018-v1.JetHT/*5of5*.root |wc -l
+echo 3
+ls -1 -d output/Run2017D-31Mar2018-v1.JetHT/*1of5*.root |wc -l
+ls -1 -d output/Run2017D-31Mar2018-v1.JetHT/*2of5*.root |wc -l
+ls -1 -d output/Run2017D-31Mar2018-v1.JetHT/*3of5*.root |wc -l
+ls -1 -d output/Run2017D-31Mar2018-v1.JetHT/*4of5*.root |wc -l
+ls -1 -d output/Run2017D-31Mar2018-v1.JetHT/*5of5*.root |wc -l
+echo 4
+ls -1 -d output/Run2017E-31Mar2018-v1.JetHT/*1of5*.root |wc -l
+ls -1 -d output/Run2017E-31Mar2018-v1.JetHT/*2of5*.root |wc -l
+ls -1 -d output/Run2017E-31Mar2018-v1.JetHT/*3of5*.root |wc -l
+ls -1 -d output/Run2017E-31Mar2018-v1.JetHT/*4of5*.root |wc -l
+ls -1 -d output/Run2017E-31Mar2018-v1.JetHT/*5of5*.root |wc -l
+echo 5
+ls -1 -d output/Run2017F-31Mar2018-v1.JetHT/*1of5*.root |wc -l
+ls -1 -d output/Run2017F-31Mar2018-v1.JetHT/*2of5*.root |wc -l
+ls -1 -d output/Run2017F-31Mar2018-v1.JetHT/*3of5*.root |wc -l
+ls -1 -d output/Run2017F-31Mar2018-v1.JetHT/*4of5*.root |wc -l
+ls -1 -d output/Run2017F-31Mar2018-v1.JetHT/*5of5*.root |wc -l
+
+
+
+'''
