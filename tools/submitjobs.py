@@ -16,15 +16,9 @@ if Bootstrap=='0':
     bootstrapmode = False
 else: 
     bootstrapmode = True
-<<<<<<< HEAD
-
-
-istest = True
-=======
     
 istest = False
 skipFilesWithErrorFile = True
->>>>>>> e7b9fce169fdf867f7b70f0fb309b436f37ad36c
 
 
 try: 
@@ -74,11 +68,7 @@ def main():
         #from utils import pause
         #pause()
         job = job.replace('.root','')
-<<<<<<< HEAD
-	job += job.replace('.root',Bootstrap+'.root')
-=======
         job = job.replace('.root',Bootstrap+'.root')     
->>>>>>> e7b9fce169fdf867f7b70f0fb309b436f37ad36c
         #print 'creating jobs:',job
         newjdl = open('jobs/'+job+'.jdl','w')
         newjdl.write(jdltemplate.replace('CWD',cwd).replace('JOBKEY',job))
@@ -90,7 +80,6 @@ def main():
         newshstr = shtemplate.replace('ANALYZER',analyzer).replace('FNAMEKEYWORD',fname).replace('MOREARGS',moreargs)
         newsh.write(newshstr)
         newsh.close()
-        os.system('chmod +x '+'jobs/'+job+'.sh')
         if not os.path.exists('output/'+fnamekeyword.replace(' ','')): 
             os.system('mkdir output/'+fnamekeyword.replace(' ',''))
         os.chdir('output/'+fnamekeyword.replace(' ',''))
@@ -110,22 +99,19 @@ Log = CWD/jobs/JOBKEY.log
 should_transfer_files = YES
 when_to_transfer_output = ON_EXIT
 transfer_input_files=CWD/tools, CWD/usefulthings, CWD/src
-x509userproxy = /tmp/x509up_u100021
+x509userproxy = $ENV(X509_USER_PROXY)
 Queue 1
 '''
 
 shtemplate = '''
 #!/bin/bash
-source /cvmfs/cms.cern.ch/cmsset_default.sh
-export cwd=$PWD
 export SCRAM_ARCH=slc6_amd64_gcc630
 echo $PWD
 ls
 scram project CMSSW_10_1_0
 cd CMSSW_10_1_0/src
-cmsenv
-#cd ${_CONDOR_SCRATCH_DIR}
-cd $cwd
+eval `scramv1 runtime -sh`
+cd ${_CONDOR_SCRATCH_DIR}
 echo $PWD
 ls
 python ANALYZER --fnamekeyword FNAMEKEYWORD MOREARGS
@@ -133,3 +119,4 @@ python ANALYZER --fnamekeyword FNAMEKEYWORD MOREARGS
 
 main()
 print 'done'
+
