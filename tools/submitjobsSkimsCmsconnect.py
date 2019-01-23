@@ -113,6 +113,7 @@ Queue 1
 shtemplate = '''
 #!/bin/bash
 export SCRAM_ARCH=slc6_amd64_gcc630
+source /cvmfs/cms.cern.ch/cmsset_default.sh
 echo $PWD
 ls
 scram project CMSSW_10_1_0
