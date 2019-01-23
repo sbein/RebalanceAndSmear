@@ -148,17 +148,17 @@ units['HtRatio'] = 'bin'
 
 
 def makehist(hname='hist',var='Mht', color = kBlack):
-	if len(binningTrigger[var])==3:
-		nbins = binningTrigger[var][0]
-		low = binningTrigger[var][1]
-		high = binningTrigger[var][2]
-		hist = TH1F(hname,hname,nbins,low,high)
-	else:
-		nBin = len(binningTrigger[var])-1
-		binArr = array('d',binningTrigger[var])
-		hist = TH1F(hname,hname,nBin,binArr) 
-	histoStyler(hist, color) 
-	return hist  
+    if len(binningTrigger[var])==3:
+        nbins = binningTrigger[var][0]
+        low = binningTrigger[var][1]
+        high = binningTrigger[var][2]
+        hist = TH1F(hname,hname,nbins,low,high)
+    else:
+        nBin = len(binningTrigger[var])-1
+        binArr = array('d',binningTrigger[var])
+        hist = TH1F(hname,hname,nBin,binArr) 
+    histoStyler(hist, color) 
+    return hist  
 
 def Struct(*args, **kwargs):
     def init(self, *iargs, **ikwargs):
@@ -196,7 +196,7 @@ def mkHistoStruct(hname, binning):
         histoStruct.Gen = TH1F('h'+hname+'Gen',hname+'Gen',nBin,binArr)
         histoStruct.Rebalanced = TH1F('h'+hname+'Rebalanced',hname+'Rebalanced',nBin,binArr)
         histoStruct.RplusS = TH1F('h'+hname+'RplusS',hname+'RplusS',nBin,binArr)
-    histoStyler(histoStruct.Branch,19)
+    histoStyler(histoStruct.Branch,kRed)
     histoStyler(histoStruct.Truth,kRed)
     histoStyler(histoStruct.GenSmeared,kBlack)
     histoStyler(histoStruct.Gen,kGreen)
@@ -871,180 +871,180 @@ def mkCutsLabel(kinvar,regionselect='', baselineStr_ = baselineStr):
 
 SearchBinNumbers = {}
 def loadSearchBins2018():
-	SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (1.0, 3.0), (-1.0, 0.0)] = 1
-	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (1.0, 3.0), (-1.0, 0.0)] = 2
-	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (1.0, 3.0), (-1.0, 0.0)] = 3
-	SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (1.0, 3.0), (-1.0, 0.0)] = 4
-	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (1.0, 3.0), (-1.0, 0.0)] = 5
-	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (1.0, 3.0), (-1.0, 0.0)] = 6
-	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (1.0, 3.0), (-1.0, 0.0)] = 7
-	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (1.0, 3.0), (-1.0, 0.0)] = 8
-	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (1.0, 3.0), (-1.0, 0.0)] = 9
-	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (1.0, 3.0), (-1.0, 0.0)] = 10
-	SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (1.0, 3.0), (0.0, 1.0)] = 11
-	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (1.0, 3.0), (0.0, 1.0)] = 12
-	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (1.0, 3.0), (0.0, 1.0)] = 13
-	SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (1.0, 3.0), (0.0, 1.0)] = 14
-	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (1.0, 3.0), (0.0, 1.0)] = 15
-	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (1.0, 3.0), (0.0, 1.0)] = 16
-	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (1.0, 3.0), (0.0, 1.0)] = 17
-	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (1.0, 3.0), (0.0, 1.0)] = 18
-	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (1.0, 3.0), (0.0, 1.0)] = 19
-	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (1.0, 3.0), (0.0, 1.0)] = 20
-	SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (1.0, 3.0), (1.0, 99.0)] = 21
-	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (1.0, 3.0), (1.0, 99.0)] = 22
-	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (1.0, 3.0), (1.0, 99.0)] = 23
-	SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (1.0, 3.0), (1.0, 99.0)] = 24
-	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (1.0, 3.0), (1.0, 99.0)] = 25
-	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (1.0, 3.0), (1.0, 99.0)] = 26
-	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (1.0, 3.0), (1.0, 99.0)] = 27
-	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (1.0, 3.0), (1.0, 99.0)] = 28
-	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (1.0, 3.0), (1.0, 99.0)] = 29
-	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (1.0, 3.0), (1.0, 99.0)] = 30
-	SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (3.0, 5.0), (-1.0, 0.0)] = 31
-	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (3.0, 5.0), (-1.0, 0.0)] = 32
-	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (3.0, 5.0), (-1.0, 0.0)] = 33
-	SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (3.0, 5.0), (-1.0, 0.0)] = 34
-	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (3.0, 5.0), (-1.0, 0.0)] = 35
-	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (3.0, 5.0), (-1.0, 0.0)] = 36
-	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (3.0, 5.0), (-1.0, 0.0)] = 37
-	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (3.0, 5.0), (-1.0, 0.0)] = 38
-	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (3.0, 5.0), (-1.0, 0.0)] = 39
-	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (3.0, 5.0), (-1.0, 0.0)] = 40
-	SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (3.0, 5.0), (0.0, 1.0)] = 41
-	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (3.0, 5.0), (0.0, 1.0)] = 42
-	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (3.0, 5.0), (0.0, 1.0)] = 43
-	SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (3.0, 5.0), (0.0, 1.0)] = 44
-	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (3.0, 5.0), (0.0, 1.0)] = 45
-	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (3.0, 5.0), (0.0, 1.0)] = 46
-	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (3.0, 5.0), (0.0, 1.0)] = 47
-	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (3.0, 5.0), (0.0, 1.0)] = 48
-	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (3.0, 5.0), (0.0, 1.0)] = 49
-	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (3.0, 5.0), (0.0, 1.0)] = 50
-	SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (3.0, 5.0), (1.0, 2.0)] = 51
-	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (3.0, 5.0), (1.0, 2.0)] = 52
-	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (3.0, 5.0), (1.0, 2.0)] = 53
-	SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (3.0, 5.0), (1.0, 2.0)] = 54
-	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (3.0, 5.0), (1.0, 2.0)] = 55
-	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (3.0, 5.0), (1.0, 2.0)] = 56
-	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (3.0, 5.0), (1.0, 2.0)] = 57
-	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (3.0, 5.0), (1.0, 2.0)] = 58
-	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (3.0, 5.0), (1.0, 2.0)] = 59
-	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (3.0, 5.0), (1.0, 2.0)] = 60
-	SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (3.0, 5.0), (2.0, 99.0)] = 61
-	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (3.0, 5.0), (2.0, 99.0)] = 62
-	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (3.0, 5.0), (2.0, 99.0)] = 63
-	SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (3.0, 5.0), (2.0, 99.0)] = 64
-	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (3.0, 5.0), (2.0, 99.0)] = 65
-	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (3.0, 5.0), (2.0, 99.0)] = 66
-	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (3.0, 5.0), (2.0, 99.0)] = 67
-	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (3.0, 5.0), (2.0, 99.0)] = 68
-	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (3.0, 5.0), (2.0, 99.0)] = 69
-	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (3.0, 5.0), (2.0, 99.0)] = 70
-	SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (5.0, 7.0), (-1.0, 0.0)] = 71
-	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (5.0, 7.0), (-1.0, 0.0)] = 72
-	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (5.0, 7.0), (-1.0, 0.0)] = 73
-	SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (5.0, 7.0), (-1.0, 0.0)] = 74
-	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (5.0, 7.0), (-1.0, 0.0)] = 75
-	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (5.0, 7.0), (-1.0, 0.0)] = 76
-	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (5.0, 7.0), (-1.0, 0.0)] = 77
-	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (5.0, 7.0), (-1.0, 0.0)] = 78
-	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (5.0, 7.0), (-1.0, 0.0)] = 79
-	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (5.0, 7.0), (-1.0, 0.0)] = 80
-	SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (5.0, 7.0), (0.0, 1.0)] = 81
-	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (5.0, 7.0), (0.0, 1.0)] = 82
-	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (5.0, 7.0), (0.0, 1.0)] = 83
-	SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (5.0, 7.0), (0.0, 1.0)] = 84
-	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (5.0, 7.0), (0.0, 1.0)] = 85
-	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (5.0, 7.0), (0.0, 1.0)] = 86
-	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (5.0, 7.0), (0.0, 1.0)] = 87
-	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (5.0, 7.0), (0.0, 1.0)] = 88
-	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (5.0, 7.0), (0.0, 1.0)] = 89
-	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (5.0, 7.0), (0.0, 1.0)] = 90
-	SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (5.0, 7.0), (1.0, 2.0)] = 91
-	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (5.0, 7.0), (1.0, 2.0)] = 92
-	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (5.0, 7.0), (1.0, 2.0)] = 93
-	SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (5.0, 7.0), (1.0, 2.0)] = 94
-	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (5.0, 7.0), (1.0, 2.0)] = 95
-	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (5.0, 7.0), (1.0, 2.0)] = 96
-	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (5.0, 7.0), (1.0, 2.0)] = 97
-	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (5.0, 7.0), (1.0, 2.0)] = 98
-	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (5.0, 7.0), (1.0, 2.0)] = 99
-	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (5.0, 7.0), (1.0, 2.0)] = 100
-	SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (5.0, 7.0), (2.0, 99.0)] = 101
-	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (5.0, 7.0), (2.0, 99.0)] = 102
-	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (5.0, 7.0), (2.0, 99.0)] = 103
-	SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (5.0, 7.0), (2.0, 99.0)] = 104
-	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (5.0, 7.0), (2.0, 99.0)] = 105
-	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (5.0, 7.0), (2.0, 99.0)] = 106
-	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (5.0, 7.0), (2.0, 99.0)] = 107
-	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (5.0, 7.0), (2.0, 99.0)] = 108
-	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (5.0, 7.0), (2.0, 99.0)] = 109
-	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (5.0, 7.0), (2.0, 99.0)] = 110
-	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (7.0, 9.0), (-1.0, 0.0)] = 111
-	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (7.0, 9.0), (-1.0, 0.0)] = 112
-	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (7.0, 9.0), (-1.0, 0.0)] = 113
-	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (7.0, 9.0), (-1.0, 0.0)] = 114
-	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (7.0, 9.0), (-1.0, 0.0)] = 115
-	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (7.0, 9.0), (-1.0, 0.0)] = 116
-	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (7.0, 9.0), (-1.0, 0.0)] = 117
-	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (7.0, 9.0), (-1.0, 0.0)] = 118
-	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (7.0, 9.0), (0.0, 1.0)] = 119
-	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (7.0, 9.0), (0.0, 1.0)] = 120
-	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (7.0, 9.0), (0.0, 1.0)] = 121
-	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (7.0, 9.0), (0.0, 1.0)] = 122
-	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (7.0, 9.0), (0.0, 1.0)] = 123
-	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (7.0, 9.0), (0.0, 1.0)] = 124
-	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (7.0, 9.0), (0.0, 1.0)] = 125
-	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (7.0, 9.0), (0.0, 1.0)] = 126
-	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (7.0, 9.0), (1.0, 2.0)] = 127
-	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (7.0, 9.0), (1.0, 2.0)] = 128
-	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (7.0, 9.0), (1.0, 2.0)] = 129
-	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (7.0, 9.0), (1.0, 2.0)] = 130
-	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (7.0, 9.0), (1.0, 2.0)] = 131
-	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (7.0, 9.0), (1.0, 2.0)] = 132
-	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (7.0, 9.0), (1.0, 2.0)] = 133
-	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (7.0, 9.0), (1.0, 2.0)] = 134
-	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (7.0, 9.0), (2.0, 99.0)] = 135
-	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (7.0, 9.0), (2.0, 99.0)] = 136
-	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (7.0, 9.0), (2.0, 99.0)] = 137
-	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (7.0, 9.0), (2.0, 99.0)] = 138
-	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (7.0, 9.0), (2.0, 99.0)] = 139
-	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (7.0, 9.0), (2.0, 99.0)] = 140
-	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (7.0, 9.0), (2.0, 99.0)] = 141
-	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (7.0, 9.0), (2.0, 99.0)] = 142
-	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (9.0, 99.0), (-1.0, 0.0)] = 143
-	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (9.0, 99.0), (-1.0, 0.0)] = 144
-	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (9.0, 99.0), (-1.0, 0.0)] = 145
-	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (9.0, 99.0), (-1.0, 0.0)] = 146
-	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (9.0, 99.0), (-1.0, 0.0)] = 147
-	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (9.0, 99.0), (-1.0, 0.0)] = 148
-	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (9.0, 99.0), (-1.0, 0.0)] = 149
-	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (9.0, 99.0), (-1.0, 0.0)] = 150
-	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (9.0, 99.0), (0.0, 1.0)] = 151
-	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (9.0, 99.0), (0.0, 1.0)] = 152
-	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (9.0, 99.0), (0.0, 1.0)] = 153
-	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (9.0, 99.0), (0.0, 1.0)] = 154
-	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (9.0, 99.0), (0.0, 1.0)] = 155
-	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (9.0, 99.0), (0.0, 1.0)] = 156
-	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (9.0, 99.0), (0.0, 1.0)] = 157
-	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (9.0, 99.0), (0.0, 1.0)] = 158
-	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (9.0, 99.0), (1.0, 2.0)] = 159
-	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (9.0, 99.0), (1.0, 2.0)] = 160
-	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (9.0, 99.0), (1.0, 2.0)] = 161
-	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (9.0, 99.0), (1.0, 2.0)] = 162
-	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (9.0, 99.0), (1.0, 2.0)] = 163
-	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (9.0, 99.0), (1.0, 2.0)] = 164
-	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (9.0, 99.0), (1.0, 2.0)] = 165
-	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (9.0, 99.0), (1.0, 2.0)] = 166
-	SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (9.0, 99.0), (2.0, 99.0)] = 167
-	SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (9.0, 99.0), (2.0, 99.0)] = 168
-	SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (9.0, 99.0), (2.0, 99.0)] = 169
-	SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (9.0, 99.0), (2.0, 99.0)] = 170
-	SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (9.0, 99.0), (2.0, 99.0)] = 171
-	SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (9.0, 99.0), (2.0, 99.0)] = 172
-	SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (9.0, 99.0), (2.0, 99.0)] = 173
-	SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (9.0, 99.0), (2.0, 99.0)] = 174
+    SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (1.0, 3.0), (-1.0, 0.0)] = 1
+    SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (1.0, 3.0), (-1.0, 0.0)] = 2
+    SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (1.0, 3.0), (-1.0, 0.0)] = 3
+    SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (1.0, 3.0), (-1.0, 0.0)] = 4
+    SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (1.0, 3.0), (-1.0, 0.0)] = 5
+    SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (1.0, 3.0), (-1.0, 0.0)] = 6
+    SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (1.0, 3.0), (-1.0, 0.0)] = 7
+    SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (1.0, 3.0), (-1.0, 0.0)] = 8
+    SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (1.0, 3.0), (-1.0, 0.0)] = 9
+    SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (1.0, 3.0), (-1.0, 0.0)] = 10
+    SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (1.0, 3.0), (0.0, 1.0)] = 11
+    SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (1.0, 3.0), (0.0, 1.0)] = 12
+    SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (1.0, 3.0), (0.0, 1.0)] = 13
+    SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (1.0, 3.0), (0.0, 1.0)] = 14
+    SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (1.0, 3.0), (0.0, 1.0)] = 15
+    SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (1.0, 3.0), (0.0, 1.0)] = 16
+    SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (1.0, 3.0), (0.0, 1.0)] = 17
+    SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (1.0, 3.0), (0.0, 1.0)] = 18
+    SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (1.0, 3.0), (0.0, 1.0)] = 19
+    SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (1.0, 3.0), (0.0, 1.0)] = 20
+    SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (1.0, 3.0), (1.0, 99.0)] = 21
+    SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (1.0, 3.0), (1.0, 99.0)] = 22
+    SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (1.0, 3.0), (1.0, 99.0)] = 23
+    SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (1.0, 3.0), (1.0, 99.0)] = 24
+    SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (1.0, 3.0), (1.0, 99.0)] = 25
+    SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (1.0, 3.0), (1.0, 99.0)] = 26
+    SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (1.0, 3.0), (1.0, 99.0)] = 27
+    SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (1.0, 3.0), (1.0, 99.0)] = 28
+    SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (1.0, 3.0), (1.0, 99.0)] = 29
+    SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (1.0, 3.0), (1.0, 99.0)] = 30
+    SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (3.0, 5.0), (-1.0, 0.0)] = 31
+    SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (3.0, 5.0), (-1.0, 0.0)] = 32
+    SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (3.0, 5.0), (-1.0, 0.0)] = 33
+    SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (3.0, 5.0), (-1.0, 0.0)] = 34
+    SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (3.0, 5.0), (-1.0, 0.0)] = 35
+    SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (3.0, 5.0), (-1.0, 0.0)] = 36
+    SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (3.0, 5.0), (-1.0, 0.0)] = 37
+    SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (3.0, 5.0), (-1.0, 0.0)] = 38
+    SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (3.0, 5.0), (-1.0, 0.0)] = 39
+    SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (3.0, 5.0), (-1.0, 0.0)] = 40
+    SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (3.0, 5.0), (0.0, 1.0)] = 41
+    SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (3.0, 5.0), (0.0, 1.0)] = 42
+    SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (3.0, 5.0), (0.0, 1.0)] = 43
+    SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (3.0, 5.0), (0.0, 1.0)] = 44
+    SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (3.0, 5.0), (0.0, 1.0)] = 45
+    SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (3.0, 5.0), (0.0, 1.0)] = 46
+    SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (3.0, 5.0), (0.0, 1.0)] = 47
+    SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (3.0, 5.0), (0.0, 1.0)] = 48
+    SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (3.0, 5.0), (0.0, 1.0)] = 49
+    SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (3.0, 5.0), (0.0, 1.0)] = 50
+    SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (3.0, 5.0), (1.0, 2.0)] = 51
+    SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (3.0, 5.0), (1.0, 2.0)] = 52
+    SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (3.0, 5.0), (1.0, 2.0)] = 53
+    SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (3.0, 5.0), (1.0, 2.0)] = 54
+    SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (3.0, 5.0), (1.0, 2.0)] = 55
+    SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (3.0, 5.0), (1.0, 2.0)] = 56
+    SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (3.0, 5.0), (1.0, 2.0)] = 57
+    SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (3.0, 5.0), (1.0, 2.0)] = 58
+    SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (3.0, 5.0), (1.0, 2.0)] = 59
+    SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (3.0, 5.0), (1.0, 2.0)] = 60
+    SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (3.0, 5.0), (2.0, 99.0)] = 61
+    SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (3.0, 5.0), (2.0, 99.0)] = 62
+    SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (3.0, 5.0), (2.0, 99.0)] = 63
+    SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (3.0, 5.0), (2.0, 99.0)] = 64
+    SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (3.0, 5.0), (2.0, 99.0)] = 65
+    SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (3.0, 5.0), (2.0, 99.0)] = 66
+    SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (3.0, 5.0), (2.0, 99.0)] = 67
+    SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (3.0, 5.0), (2.0, 99.0)] = 68
+    SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (3.0, 5.0), (2.0, 99.0)] = 69
+    SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (3.0, 5.0), (2.0, 99.0)] = 70
+    SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (5.0, 7.0), (-1.0, 0.0)] = 71
+    SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (5.0, 7.0), (-1.0, 0.0)] = 72
+    SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (5.0, 7.0), (-1.0, 0.0)] = 73
+    SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (5.0, 7.0), (-1.0, 0.0)] = 74
+    SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (5.0, 7.0), (-1.0, 0.0)] = 75
+    SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (5.0, 7.0), (-1.0, 0.0)] = 76
+    SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (5.0, 7.0), (-1.0, 0.0)] = 77
+    SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (5.0, 7.0), (-1.0, 0.0)] = 78
+    SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (5.0, 7.0), (-1.0, 0.0)] = 79
+    SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (5.0, 7.0), (-1.0, 0.0)] = 80
+    SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (5.0, 7.0), (0.0, 1.0)] = 81
+    SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (5.0, 7.0), (0.0, 1.0)] = 82
+    SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (5.0, 7.0), (0.0, 1.0)] = 83
+    SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (5.0, 7.0), (0.0, 1.0)] = 84
+    SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (5.0, 7.0), (0.0, 1.0)] = 85
+    SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (5.0, 7.0), (0.0, 1.0)] = 86
+    SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (5.0, 7.0), (0.0, 1.0)] = 87
+    SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (5.0, 7.0), (0.0, 1.0)] = 88
+    SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (5.0, 7.0), (0.0, 1.0)] = 89
+    SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (5.0, 7.0), (0.0, 1.0)] = 90
+    SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (5.0, 7.0), (1.0, 2.0)] = 91
+    SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (5.0, 7.0), (1.0, 2.0)] = 92
+    SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (5.0, 7.0), (1.0, 2.0)] = 93
+    SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (5.0, 7.0), (1.0, 2.0)] = 94
+    SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (5.0, 7.0), (1.0, 2.0)] = 95
+    SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (5.0, 7.0), (1.0, 2.0)] = 96
+    SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (5.0, 7.0), (1.0, 2.0)] = 97
+    SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (5.0, 7.0), (1.0, 2.0)] = 98
+    SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (5.0, 7.0), (1.0, 2.0)] = 99
+    SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (5.0, 7.0), (1.0, 2.0)] = 100
+    SearchBinNumbers[(300.0, 600.0), (300.0, 350.0), (5.0, 7.0), (2.0, 99.0)] = 101
+    SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (5.0, 7.0), (2.0, 99.0)] = 102
+    SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (5.0, 7.0), (2.0, 99.0)] = 103
+    SearchBinNumbers[(350.0, 600.0), (350.0, 600.0), (5.0, 7.0), (2.0, 99.0)] = 104
+    SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (5.0, 7.0), (2.0, 99.0)] = 105
+    SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (5.0, 7.0), (2.0, 99.0)] = 106
+    SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (5.0, 7.0), (2.0, 99.0)] = 107
+    SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (5.0, 7.0), (2.0, 99.0)] = 108
+    SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (5.0, 7.0), (2.0, 99.0)] = 109
+    SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (5.0, 7.0), (2.0, 99.0)] = 110
+    SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (7.0, 9.0), (-1.0, 0.0)] = 111
+    SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (7.0, 9.0), (-1.0, 0.0)] = 112
+    SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (7.0, 9.0), (-1.0, 0.0)] = 113
+    SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (7.0, 9.0), (-1.0, 0.0)] = 114
+    SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (7.0, 9.0), (-1.0, 0.0)] = 115
+    SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (7.0, 9.0), (-1.0, 0.0)] = 116
+    SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (7.0, 9.0), (-1.0, 0.0)] = 117
+    SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (7.0, 9.0), (-1.0, 0.0)] = 118
+    SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (7.0, 9.0), (0.0, 1.0)] = 119
+    SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (7.0, 9.0), (0.0, 1.0)] = 120
+    SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (7.0, 9.0), (0.0, 1.0)] = 121
+    SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (7.0, 9.0), (0.0, 1.0)] = 122
+    SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (7.0, 9.0), (0.0, 1.0)] = 123
+    SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (7.0, 9.0), (0.0, 1.0)] = 124
+    SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (7.0, 9.0), (0.0, 1.0)] = 125
+    SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (7.0, 9.0), (0.0, 1.0)] = 126
+    SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (7.0, 9.0), (1.0, 2.0)] = 127
+    SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (7.0, 9.0), (1.0, 2.0)] = 128
+    SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (7.0, 9.0), (1.0, 2.0)] = 129
+    SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (7.0, 9.0), (1.0, 2.0)] = 130
+    SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (7.0, 9.0), (1.0, 2.0)] = 131
+    SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (7.0, 9.0), (1.0, 2.0)] = 132
+    SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (7.0, 9.0), (1.0, 2.0)] = 133
+    SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (7.0, 9.0), (1.0, 2.0)] = 134
+    SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (7.0, 9.0), (2.0, 99.0)] = 135
+    SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (7.0, 9.0), (2.0, 99.0)] = 136
+    SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (7.0, 9.0), (2.0, 99.0)] = 137
+    SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (7.0, 9.0), (2.0, 99.0)] = 138
+    SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (7.0, 9.0), (2.0, 99.0)] = 139
+    SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (7.0, 9.0), (2.0, 99.0)] = 140
+    SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (7.0, 9.0), (2.0, 99.0)] = 141
+    SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (7.0, 9.0), (2.0, 99.0)] = 142
+    SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (9.0, 99.0), (-1.0, 0.0)] = 143
+    SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (9.0, 99.0), (-1.0, 0.0)] = 144
+    SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (9.0, 99.0), (-1.0, 0.0)] = 145
+    SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (9.0, 99.0), (-1.0, 0.0)] = 146
+    SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (9.0, 99.0), (-1.0, 0.0)] = 147
+    SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (9.0, 99.0), (-1.0, 0.0)] = 148
+    SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (9.0, 99.0), (-1.0, 0.0)] = 149
+    SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (9.0, 99.0), (-1.0, 0.0)] = 150
+    SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (9.0, 99.0), (0.0, 1.0)] = 151
+    SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (9.0, 99.0), (0.0, 1.0)] = 152
+    SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (9.0, 99.0), (0.0, 1.0)] = 153
+    SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (9.0, 99.0), (0.0, 1.0)] = 154
+    SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (9.0, 99.0), (0.0, 1.0)] = 155
+    SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (9.0, 99.0), (0.0, 1.0)] = 156
+    SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (9.0, 99.0), (0.0, 1.0)] = 157
+    SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (9.0, 99.0), (0.0, 1.0)] = 158
+    SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (9.0, 99.0), (1.0, 2.0)] = 159
+    SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (9.0, 99.0), (1.0, 2.0)] = 160
+    SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (9.0, 99.0), (1.0, 2.0)] = 161
+    SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (9.0, 99.0), (1.0, 2.0)] = 162
+    SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (9.0, 99.0), (1.0, 2.0)] = 163
+    SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (9.0, 99.0), (1.0, 2.0)] = 164
+    SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (9.0, 99.0), (1.0, 2.0)] = 165
+    SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (9.0, 99.0), (1.0, 2.0)] = 166
+    SearchBinNumbers[(600.0, 1200.0), (300.0, 350.0), (9.0, 99.0), (2.0, 99.0)] = 167
+    SearchBinNumbers[(1200.0, 9999.0), (300.0, 350.0), (9.0, 99.0), (2.0, 99.0)] = 168
+    SearchBinNumbers[(600.0, 1200.0), (350.0, 600.0), (9.0, 99.0), (2.0, 99.0)] = 169
+    SearchBinNumbers[(1200.0, 9999.0), (350.0, 600.0), (9.0, 99.0), (2.0, 99.0)] = 170
+    SearchBinNumbers[(600.0, 1200.0), (600.0, 850.0), (9.0, 99.0), (2.0, 99.0)] = 171
+    SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (9.0, 99.0), (2.0, 99.0)] = 172
+    SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (9.0, 99.0), (2.0, 99.0)] = 173
+    SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (9.0, 99.0), (2.0, 99.0)] = 174
 
 def getBinNumber2018(fvmain):# a bit dangerous, so the binning better be right.
     if fvmain[1]<300: return False
@@ -1574,21 +1574,21 @@ def getScaleFactor80x(eta):
 
 
 def calcSumPt(jets, obj, conesize=0.6, thresh=10):
-	sumpt_ = 0
-	for jet in jets:
-		if not jet.Pt()>thresh:
-			continue
-		if not (obj.DeltaR(jet.tlv)<conesize):
-			continue
-		sumpt_+=jet.Pt()
-	return sumpt_
+    sumpt_ = 0
+    for jet in jets:
+        if not jet.Pt()>thresh:
+            continue
+        if not (obj.DeltaR(jet.tlv)<conesize):
+            continue
+        sumpt_+=jet.Pt()
+    return sumpt_
 
 epsilon = 0.0001
 def fillth1(h,x,weight=1):
-	h.Fill(min(max(x,h.GetXaxis().GetBinLowEdge(1)+epsilon),h.GetXaxis().GetBinLowEdge(h.GetXaxis().GetNbins()+1)-epsilon),weight)
+    h.Fill(min(max(x,h.GetXaxis().GetBinLowEdge(1)+epsilon),h.GetXaxis().GetBinLowEdge(h.GetXaxis().GetNbins()+1)-epsilon),weight)
 
 def fillth2(h,x,y,weight=1):
-	h.Fill(min(max(x,h.GetXaxis().GetBinLowEdge(1)+epsilon),h.GetXaxis().GetBinLowEdge(h.GetXaxis().GetNbins()+1)-epsilon), min(max(y,h.GetYaxis().GetBinLowEdge(1)+epsilon),h.GetYaxis().GetBinLowEdge(h.GetYaxis().GetNbins()+1)-epsilon),weight)
+    h.Fill(min(max(x,h.GetXaxis().GetBinLowEdge(1)+epsilon),h.GetXaxis().GetBinLowEdge(h.GetXaxis().GetNbins()+1)-epsilon), min(max(y,h.GetYaxis().GetBinLowEdge(1)+epsilon),h.GetYaxis().GetBinLowEdge(h.GetYaxis().GetNbins()+1)-epsilon),weight)
 
 def GetHighestPtForwardPt_prefiring(jets):
     highestPt = 0
@@ -1597,8 +1597,130 @@ def GetHighestPtForwardPt_prefiring(jets):
             if jet.Pt()>highestPt:
                 highestPt = jet.Pt()
     return highestPt
-    
-    
+
+
+def FabDraw(cGold,leg,hTruth,hComponents,datamc='mc',lumi=35.9, title = '', LinearScale=False, fractionthing='(bkg-obs)/obs'):
+    cGold.cd()
+
+    pad1 = TPad("pad1", "pad1", 0, 0.4, 1, 1.0)
+    pad1.SetBottomMargin(0.0)
+    pad1.SetLeftMargin(0.12)
+    if not LinearScale:
+        pad1.SetLogy()
+
+    pad1.SetGridx()
+    #pad1.SetGridy()
+    pad1.Draw()
+    pad1.cd()
+    for ih in range(1,len(hComponents[1:])+1):
+        #print 'entry inventory', hComponents[ih].Integral(), hComponents[ih-1].Integral()
+        #print 'adding',hComponents[ih-1],'to', hComponents[ih]
+        hComponents[ih].Add(hComponents[ih-1])
+        #print 'entry inventory', hComponents[ih].Integral(), hComponents[ih-1].Integral()        
+    hComponents.reverse()        
+    if abs(hComponents[0].Integral(-1,999)-1)<0.001:
+        hComponents[0].GetYaxis().SetTitle('Normalized')
+    else: hComponents[0].GetYaxis().SetTitle('# of events')
+
+    hComponents[0].GetYaxis().SetTitleSize(0.072)
+    hComponents[0].GetYaxis().SetLabelSize(0.06)    
+    cGold.Update()
+    hTruth.GetYaxis().SetTitle('Normalized')
+    hTruth.GetYaxis().SetTitleOffset(1.15)
+    hTruth.SetMarkerStyle(20)
+    histheight = 1.5*max(hComponents[0].GetMaximum(),hTruth.GetMaximum())
+    if LinearScale: low, high = 0, histheight
+    else: low, high = max(0.001,max(hComponents[0].GetMinimum(),hTruth.GetMinimum())), 1000*histheight
+
+    title0 = hTruth.GetTitle()
+    if datamc=='MC':
+        for hcomp in hComponents: leg.AddEntry(hcomp,hcomp.GetTitle(),'lf')
+        leg.AddEntry(hTruth,hTruth.GetTitle(),'lpf')        
+    else:
+        for ihComp, hComp in enumerate(hComponents):
+            leg.AddEntry(hComp, hComp.GetTitle(),'lpf')      
+        leg.AddEntry(hTruth,title0,'lp')    
+    hTruth.SetTitle('')
+    hComponents[0].SetTitle('')	
+    hComponents[0].GetYaxis().SetRangeUser(0.1, 10000*hComponents[0].GetMaximum())
+    hComponents[0].GetYaxis().SetTitleOffset(0.8)
+    hComponents[0].Draw('hist')
+    for h in hComponents[1:]: 
+        h.Draw('hist same')
+        cGold.Update()
+        print 'updating stack', h
+    hComponents[0].Draw('same') 
+    hTruth.Draw('p same')
+    hTruth.Draw('e same')    
+    cGold.Update()
+
+    #hTruth.Draw('E1 same')
+    hComponents[0].Draw('axis same')           
+    leg.Draw()        
+    cGold.Update()
+    stampFab(lumi,datamc)
+    cGold.Update()
+    cGold.cd()
+
+    pad2 = TPad("pad2", "pad2", 0, 0.05, 1, 0.4)
+    pad2.SetTopMargin(0.0)
+    pad2.SetBottomMargin(0.3)
+    pad2.SetLeftMargin(0.12)
+    pad2.SetGridx()
+    #pad2.SetLogy()
+
+    pad2.SetGridy()
+    pad2.Draw()
+    pad2.cd()
+
+    hTruthCopy = hTruth.Clone('hTruthClone'+hComponents[0].GetName())
+    hRatio = hComponents[0].Clone('hRatioClone')#+hComponents[0].GetName()+'testing
+    hRatio.SetMarkerStyle(20)
+    #hFracDiff = hComponents[0].Clone('hFracDiff')
+    #hFracDiff.SetMarkerStyle(20)
+    hTruthCopy.SetMarkerStyle(20)
+    hTruthCopy.SetMarkerColor(1) 
+    #histoStyler(hFracDiff, 1)
+    histoStyler(hTruthCopy, 1)
+    #hFracDiff.Add(hTruthCopy,-1)
+    #hFracDiff.Divide(hTruthCopy)
+    hRatio.Divide(hTruthCopy)
+    hRatio.GetYaxis().SetRangeUser(0.0,.1)###
+    hRatio.SetTitle('')
+
+    if 'prediction' in title0: hFracDiff.GetYaxis().SetTitle('(RS-#Delta#phi)/#Delta#phi')
+    else: hRatio.GetYaxis().SetTitle(fractionthing)
+    hRatio.GetXaxis().SetTitleSize(0.12)
+    hRatio.GetXaxis().SetLabelSize(0.11)
+    hRatio.GetYaxis().SetTitleSize(0.12)
+    hRatio.GetYaxis().SetLabelSize(0.12)
+    hRatio.GetYaxis().SetNdivisions(5)
+    hRatio.GetXaxis().SetNdivisions(10)
+    hRatio.GetYaxis().SetTitleOffset(0.5)
+    hRatio.GetXaxis().SetTitleOffset(1.0)
+    hRatio.GetXaxis().SetTitle(hTruth.GetXaxis().GetTitle())
+    hRatio.Draw()
+    hRatio.Draw('e0')    
+    pad2.cd()
+    hComponents.reverse()
+    hTruth.SetTitle(title0)
+    return hRatio, pad1, pad2
+
+
+
+def stampFab(lumi,datamc='MC'):
+    tl.SetTextFont(cmsTextFont)
+    tl.SetTextSize(1.6*tl.GetTextSize())
+    tl.DrawLatex(0.152,0.82, 'CMS')
+    tl.SetTextFont(extraTextFont)
+    tl.DrawLatex(0.14,0.74, ('MC' in datamc)*' simulation'+' preliminary')
+    tl.SetTextFont(regularfont)
+    if lumi=='': tl.DrawLatex(0.62,0.82,'#sqrt{s} = 13 TeV')
+    else: tl.DrawLatex(0.42,0.82,'#sqrt{s} = 13 TeV, L = '+str(lumi)+' fb^{-1}')
+    #tl.DrawLatex(0.64,0.82,'#sqrt{s} = 13 TeV')#, L = '+str(lumi)+' fb^{-1}')	
+    tl.SetTextSize(tl.GetTextSize()/1.6)
+
+
 '''
 0: HLT_DoubleEle24_22_eta2p1_WPLoose_Gsf_v
 1: HLT_DoubleEle8_CaloIdM_Mass8_PFHT300_v

@@ -6,11 +6,15 @@ parser.add_argument("-analyzer", "--analyzer", type=str,default='tools/ResponseM
 parser.add_argument("-fin", "--fnamekeyword", type=str,default='Summer16.SMS-T1tttt_mGluino-1200_mLSP-800',help="file")
 parser.add_argument("-jersf", "--JerUpDown", type=str, default='Nom',help="JER scale factor (Nom, Up, ...)")
 parser.add_argument("-bootstrap", "--Bootstrap", type=str, default='0',help="boot strapping (0,1of5,2of5,3of5,...)")
+parser.add_argument("-selection", "--selection", type=str, default='signal',help="signal, LDP")
+parser.add_argument("-quickrun", "--quickrun", type=bool, default=False,help="Quick practice run (True, False)")
 args = parser.parse_args()
 fnamekeyword = args.fnamekeyword.strip()
 analyzer = args.analyzer
 JerUpDown = args.JerUpDown
 Bootstrap = args.Bootstrap
+selection = args.selection
+quickrun = args.quickrun
 
 if Bootstrap=='0': 
     bootstrapmode = False
@@ -18,7 +22,7 @@ else:
     bootstrapmode = True
     
 istest = False
-skipFilesWithErrorFile = True
+skipFilesWithErrorFile = False
 
 
 try: 
@@ -50,7 +54,7 @@ if 'Run2018' in fnamekeyword: ntupleV = '16'
     
 cwd = os.getcwd()
 
-fnamefilename = 'usefulthings/filelistV'+ntupleV+'.txt'
+fnamefilename = 'usefulthings/filelistSkim_'+selection+'V'+ntupleV+'.txt'
 print 'fnamefilename', fnamefilename
 fnamefile = open(fnamefilename)
 fnamelines = fnamefile.readlines()
@@ -62,8 +66,9 @@ def main():
     counter = 0    
     for fname_ in fnamelines:
         if not (fnamekeyword in fname_): continue
+        print 'made it'
         fname = fname_.strip()
-        job = analyzer.split('/')[-1].replace('.py','').replace('.jdl','')+'-'+fname.strip()+'Jer'+JerUpDown
+        job = analyzer.split('/')[-1].replace('.py','').replace('.jdl','')+'-'+fname.strip()+''+selection
 
         #from utils import pause
         #pause()
@@ -75,7 +80,8 @@ def main():
         newjdl.close()
         if skipFilesWithErrorFile:
             errfilename = 'jobs/'+job+'.err'
-            if os.path.exists(errfilename):  continue
+            if os.path.exists(errfilename):  
+                continue
         newsh = open('jobs/'+job+'.sh','w')
         newshstr = shtemplate.replace('ANALYZER',analyzer).replace('FNAMEKEYWORD',fname).replace('MOREARGS',moreargs)
         newsh.write(newshstr)
