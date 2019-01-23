@@ -40,6 +40,8 @@ triggerIndecesV16["SinglePhoWithHt"] = [138, 139,141,142,143]
 triggerIndecesV16['HtTrain'] = [67,68,69,72,73,74,80,84,88,91,92,93,95,96,99,102,103,104]
 
 
+triggerIndecesV16 = triggerIndecesV16a #this was not yet checked
+
 regionCuts = {}
 pi = 3.14159
 Inf = 9999
@@ -130,10 +132,10 @@ binningTemplate['MaxForwardPt'] = binning['MaxForwardPt']
 binningTemplate['HtRatio']=binning['HtRatio']
 
 binningAnalysis = {}#
-binningAnalysis['Mht']=[0,250,300,350,500,750,2000]
+binningAnalysis['Mht']=[250,300,350,600,850,2000]
 binningAnalysis['Met']=binningAnalysis['Mht']#
-binningAnalysis['Ht']=[0,300,500,800,1200,3000]#
-binningAnalysis['NJets']=[0,4,7,9,15]#
+binningAnalysis['Ht']=[300,350,600, 850,1200,1700,3000]#
+binningAnalysis['NJets']=[2,4,6,8,10,15]#
 binningAnalysis['BTags']=[0,1,2,3,10]#
 binningAnalysis['Jet1Pt']=[20,0,800]#
 binningAnalysis['Jet1Eta']=[20,-3,3]#
@@ -221,7 +223,7 @@ binningTrigger['HtRatio']=binning['HtRatio']
 binningUser = {}#
 binningUser['Mht']=[60,0,1200]#
 binningUser['Mht']=[50,200,1200]#
-binningUser['Mht']=[20,200,1200]#
+binningUser['Mht']=[20,250,1250]#
 #binningUser['Mht']=[0,50,100,150,200,250,300,350,400,450,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,2000]#good
 #binningUser['Mht']=[0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,300,500,800,1500,2000]#
 #binningUser['Mht']=[55,100,1200]
@@ -229,8 +231,8 @@ binningUser['Met']=binningUser['Mht']#
 binningUser['Ht']=[10,100,2100]
 binningUser['Ht']=[20,100,2100]
 #binningUser['Ht']=[60,0,3000]#
-binningUser['NJets']=[12,2,14]#
-binningUser['BTags']=[7,0,7]#
+binningUser['NJets']=[9,2,11]#
+binningUser['BTags']=[4,0,4]#
 binningUser['DPhi1']=[16,0,3.2]
 binningUser['DPhi2']=[16,0,3.2]
 binningUser['DPhi3']=[16,0,3.2]
