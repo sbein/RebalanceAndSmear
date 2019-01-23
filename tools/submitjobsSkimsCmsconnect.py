@@ -86,6 +86,7 @@ def main():
         newshstr = shtemplate.replace('ANALYZER',analyzer).replace('FNAMEKEYWORD',fname).replace('MOREARGS',moreargs)
         newsh.write(newshstr)
         newsh.close()
+        os.system('chmod +x '+'jobs/'+job+'.sh')
         if not os.path.exists('output/'+fnamekeyword.replace(' ','')): 
             os.system('mkdir output/'+fnamekeyword.replace(' ',''))
         os.chdir('output/'+fnamekeyword.replace(' ',''))
