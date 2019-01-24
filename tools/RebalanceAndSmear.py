@@ -132,7 +132,7 @@ nmain = len(varlist)
 
 def selectionFeatureVector(fvector, regionkey='', omitcuts='', omitcuts_dphi=''):
     fvmain, fvdphi, fvfilters = fvector
-    if not fvmain[1]>200: return False #let's speed this up a bit
+    if not fvmain[1]>250: return False #let's speed this up a bit
     if not sum(fvfilters)==len(fvfilters): return False
     iomits, iomits_dphi = [], []    
     for cut in omitcuts.split('Vs'): iomits.append(indexVar[cut])
@@ -185,7 +185,8 @@ else: isdata = False
 
 #templateFileName = StressData[stressdata][0]
 if ('Summer16' in fnamekeyword or 'Run2016' in fnamekeyword): 
-    templateFileName = 'usefulthings/ResponseFunctionsMC16'+nametag[JerUpDown]+'.root'
+    if UseDeep: templateFileName = 'usefulthings/ResponseFunctionsMC16'+nametag[JerUpDown]+'_deepCsv.root'
+    else: templateFileName = 'usefulthings/ResponseFunctionsMC16'+nametag[JerUpDown]+'.root'
 if ('Fall17' in fnamekeyword or 'Run2017' in fnamekeyword or 'Run2018' in fnamekeyword): 
     if UseDeep: templateFileName = 'usefulthings/ResponseFunctionsMC17'+nametag[JerUpDown]+'_deepCsv.root'
     else: templateFileName = 'usefulthings/ResponseFunctionsMC17'+nametag[JerUpDown]+'.root'
