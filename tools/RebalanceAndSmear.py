@@ -131,8 +131,8 @@ indexVarDPhi['']=-1
 nmain = len(varlist)
 
 def selectionFeatureVector(fvector, regionkey='', omitcuts='', omitcuts_dphi=''):
+    if not fvector[0][1]>250: return False #let's speed this up a bit    
     fvmain, fvdphi, fvfilters = fvector
-    if not fvmain[1]>250: return False #let's speed this up a bit
     if not sum(fvfilters)==len(fvfilters): return False
     iomits, iomits_dphi = [], []    
     for cut in omitcuts.split('Vs'): iomits.append(indexVar[cut])
