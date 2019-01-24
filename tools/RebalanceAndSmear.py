@@ -61,6 +61,7 @@ else:
     isdata = True
 
 is2017f = False
+is2017 = False
 
 if 'Run2016' in fnamekeyword or 'Summer16' in fnamekeyword: 
     BTAG_CSVv2 = 0.8484
@@ -68,6 +69,7 @@ if 'Run2016' in fnamekeyword or 'Summer16' in fnamekeyword:
 if 'Run2017' in fnamekeyword or 'Fall17' in fnamekeyword: 
     BTAG_CSVv2 = 0.8838
     BTAG_deepCSV = 0.4941
+    is2017 = True
     if 'Run2017F' in fnamekeyword: is2017f = True
 if 'Run2018' in fnamekeyword or 'Fall17' in fnamekeyword: 
     BTAG_CSVv2 = 0.8838
@@ -511,6 +513,13 @@ for ientry in range(nevents):
     if UseDeep: recojets = CreateUsefulJetVector(c.Jets, c.Jets_bJetTagDeepCSVBvsAll)#fiducial
     else: recojets = CreateUsefulJetVector(c.Jets, c.Jets_bDiscriminatorCSV)#fiducial    
     if not len(recojets)>0: continue
+
+    if is2017:
+        recojets.clear()
+        for ijet, jet in enumerate(c.Jets):
+            if not (jet.Pt()>2 and abs(jet.Eta())<5.0): continue
+            if abs(jet.Eta())>2.65 and abs(jet.Eta()) < 3.139 and jet.Pt()/c.Jets_jecFactor[ijet]<50: continue #/c.Jets_jerFactor[ijet]
+            recojets.push_back(UsefulJet(jet, c.Jets_bJetTagDeepCSVBvsAll[ijet], jet.Pt()))    
         
     #if not abs(recojets[0].Eta())<2.4: continue
     #if len(recojets)>1: 
@@ -622,7 +631,7 @@ for ientry in range(nevents):
     fv[0].append(tHt5/max(0.0001,tHt))
     fv[0].append(ientry%2==0)    
     fv[0].append(True)
-    fv.append([passAndrewsTightHtRatio(tDPhi1, tHt5, tHt), tMetPt<tHt])
+    fv.append([passAndrewsTightHtRatio(tDPhi1, tHt5, tHt), tMhtPt<tHt])
     if is2017f: fv[-1].append(EcalNoiseFilter(recojets, tMhtPhi))
     
     if PrintJets:

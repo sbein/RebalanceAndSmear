@@ -109,8 +109,7 @@ x509userproxy = $ENV(X509_USER_PROXY)
 Queue 1
 '''
 
-shtemplate = '''
-#!/bin/bash
+shtemplate = '''#!/bin/bash
 export SCRAM_ARCH=slc6_amd64_gcc630
 echo $PWD
 ls

@@ -40,6 +40,7 @@ if 'MC2017' in fnamekeyword or 'MC2016' in fnamekeyword: isdata = False
 else: isdata = True
 
 is2017f = False
+is2017 = False
 
 print 'isdata, is2017f', isdata, is2017f
 
@@ -49,6 +50,7 @@ if '_2016' in fnamekeyword or 'MC2016' in fnamekeyword:
 if '_2017' in fnamekeyword or 'MC2017' in fnamekeyword: 
     BTAG_CSVv2 = 0.8838
     BTAG_deepCSV = 0.4941
+    is2017 = True
     if '2017F' in fnamekeyword: is2017f = True
 if '_2018' in fnamekeyword or 'MC2018' in fnamekeyword: 
     BTAG_CSVv2 = 0.8838
@@ -247,36 +249,45 @@ for ientry in range(nevents):
     if UseDeep: recojets = CreateUsefulJetVector(c.Jets, c.Jets_bJetTagDeepCSVBvsAll)#fiducial
     else: recojets = CreateUsefulJetVector(c.Jets, c.Jets_bDiscriminatorCSV)#fiducial    
 
-    btagprob = btagcorr.GetCorrections(c.Jets,c.Jets_hadronFlavor,c.Jets_HTMask)
+    if is2017:
+        recojets.clear()
+        for ijet, jet in enumerate(c.Jets):
+            if not (jet.Pt()>2 and abs(jet.Eta())<5.0): continue
+            if abs(jet.Eta())>2.65 and abs(jet.Eta()) < 3.139 and jet.Pt()/c.Jets_jecFactor[ijet]<50: continue #/c.Jets_jerFactor[ijet]
+            recojets.push_back(UsefulJet(jet, c.Jets_bJetTagDeepCSVBvsAll[ijet], jet.Pt()))
 
+        
+    btagprob = btagcorr.GetCorrections(c.Jets,c.Jets_hadronFlavor,c.Jets_HTMask)
+    
     MetVec = mkmet(c.MET, c.METPhi)
-    tHt = getHT(recojets,AnMhtJetPtCut)
-    tHt5 = getHT(recojets,AnMhtJetPtCut, 5)
-    tMhtVec = getMHT(recojets,AnMhtJetPtCut, mhtjetetacut)
-    tMhtPt, tMhtPhi = tMhtVec.Pt(), tMhtVec.Phi()
-    tNJets = countJets(recojets,AnMhtJetPtCut)
-    tBTags = countBJets_Useful(recojets,AnMhtJetPtCut)
-    redoneMET = redoMET(MetVec, recojets, recojets)
-    tMetPt,tMetPhi = redoneMET.Pt(), redoneMET.Phi()
+    #branch
+    bMhtVec = mkmet(c.MHT,c.MHTPhi)
+    bMetPt = c.MET
+    ht5 = getHT(recojets,AnMhtJetPtCut, 5.0)#Run2016H-PromptReco-v2.MET
+    htratio = c.HT5/max(0.0001, c.HT)
     dphijets = []
     for jet in recojets:
-        if abs(jet.Eta())<2.4: dphijets.append(jet)    
-    tDPhi1,tDPhi2,tDPhi3,tDPhi4 = getDPhis(tMhtVec,dphijets)
-    tJet1Pt,tJet1Eta,tJet2Pt,tJet2Eta,tJet3Pt,tJet3Eta,tJet4Pt,tJet4Eta = getJetKinematics(recojets)
-    jetPhis = getPhis(recojets,tMhtVec)
-    #fv = [tHt,tMhtPt,tNJets,tBTags,tDPhi1,tDPhi2,tDPhi3,tDPhi4,tJet1Pt,tJet1Eta,\
-    #      tJet2Pt,tJet2Eta,tJet3Pt,tJet3Eta,tJet4Pt,tJet4Eta,tMetPt,tMhtPhi]
-    fv = [[tHt,tMhtPt,tNJets,tBTags],[tDPhi1,tDPhi2,tDPhi3,tDPhi4]]
-    binNumber = getBinNumber2018(fv[0])
-    fv[0].append(binNumber)     
-    fv[0].append(max([tDPhi1,tDPhi2,tDPhi3,tDPhi4]))
+        if abs(jet.Eta())<2.4: dphijets.append(jet)
+    bDPhi1,bDPhi2,bDPhi3,bDPhi4 = abs(c.DeltaPhi1), abs(c.DeltaPhi2), abs(c.DeltaPhi3), abs(c.DeltaPhi4)
+    bJet1Pt,bJet1Eta,bJet2Pt,bJet2Eta,bJet3Pt,bJet3Eta,bJet4Pt,bJet4Eta = getJetKinematics(recojets)
+    jetPhis = getPhis(recojets,bMhtVec)
+    fv = [[c.HT,c.MHT,c.NJets,c.BTags],[bDPhi1,bDPhi2,bDPhi3,bDPhi4]]#,bJet1Pt,bJet1Eta,\
+          #bJet2Pt,bJet2Eta,bJet3Pt,bJet3Eta,bJet4Pt,bJet4Eta,c.MET,c.MHTPhi]#must be synchronized with varlist 
+    #if ientry==47: print 'fv', fv
+    binNumber = getBinNumber2018(fv[0])    
+    fv[0].append(binNumber)        
+    fv[0].append(max([bDPhi1,bDPhi2,bDPhi3,bDPhi4]))
     fv[0].append(GetHighestPtForwardPt_prefiring(recojets))
-    fv[0].append(tHt5/max(0.0001,tHt))
+    fv[0].append(htratio)
+    fv[0].append(-1)
     fv[0].append(ientry%2==0)    
-    fv[0].append(True)
-    fv.append([passAndrewsTightHtRatio(tDPhi1, tHt5, tHt), tMetPt<tHt])
-    if is2017f: fv[-1].append(EcalNoiseFilter(recojets, tMhtPhi))
+    #filtery things
+    fv.append([passAndrewsTightHtRatio(bDPhi1, c.HT5, c.HT), c.MHT<c.HT])
+    if is2017f: fv[-1].append(EcalNoiseFilter(recojets, c.MHTPhi))
 
+    fvb = list(fv)
+
+    
     for nb, bprob in enumerate(btagprob):        
         if isdata: 
             weight = 1
@@ -301,29 +312,59 @@ for ientry in range(nevents):
                     fillth1(histoStructDict[hname].Branch, fv[1][ivar],weight)
         if isdata: break
 
-    #truth
-    bMhtVec = mkmet(c.MHT,c.MHTPhi)
-    bMetPt = c.MET
+    tHt = getHT(recojets,AnMhtJetPtCut)
+    tHt5 = getHT(recojets,AnMhtJetPtCut, 5)
+    tMhtVec = getMHT(recojets,AnMhtJetPtCut, mhtjetetacut)
+    tMhtPt, tMhtPhi = tMhtVec.Pt(), tMhtVec.Phi()
+    tNJets = countJets(recojets,AnMhtJetPtCut)
+    tBTags = countBJets_Useful(recojets,AnMhtJetPtCut)
+    redoneMET = redoMET(MetVec, recojets, recojets)
+    tMetPt,tMetPhi = redoneMET.Pt(), redoneMET.Phi()
     dphijets = []
     for jet in recojets:
-        if abs(jet.Eta())<2.4: dphijets.append(jet)
-    bDPhi1,bDPhi2,bDPhi3,bDPhi4 = abs(c.DeltaPhi1), abs(c.DeltaPhi2), abs(c.DeltaPhi3), abs(c.DeltaPhi4)##can try doing this the old fashioned way
-    bJet1Pt,bJet1Eta,bJet2Pt,bJet2Eta,bJet3Pt,bJet3Eta,bJet4Pt,bJet4Eta = getJetKinematics(recojets)
-    jetPhis = getPhis(recojets,bMhtVec)
-    ht5 = getHT(recojets,AnMhtJetPtCut, 5.0)
-    htratio = ht5/max(0.0001, c.HT)
-    fv = [[c.HT,c.MHT,c.NJets,c.BTags],[bDPhi1,bDPhi2,bDPhi3,bDPhi4]]
+        if abs(jet.Eta())<2.4: dphijets.append(jet)    
+    tDPhi1,tDPhi2,tDPhi3,tDPhi4 = getDPhis(tMhtVec,dphijets)
+    tJet1Pt,tJet1Eta,tJet2Pt,tJet2Eta,tJet3Pt,tJet3Eta,tJet4Pt,tJet4Eta = getJetKinematics(recojets)
+    jetPhis = getPhis(recojets,tMhtVec)
+    #fv = [tHt,tMhtPt,tNJets,tBTags,tDPhi1,tDPhi2,tDPhi3,tDPhi4,tJet1Pt,tJet1Eta,\
+    #      tJet2Pt,tJet2Eta,tJet3Pt,tJet3Eta,tJet4Pt,tJet4Eta,tMetPt,tMhtPhi]
+    fv = [[tHt,tMhtPt,tNJets,tBTags],[tDPhi1,tDPhi2,tDPhi3,tDPhi4]]
     binNumber = getBinNumber2018(fv[0])
-    fv[0].append(binNumber)        
-    fv[0].append(max([bDPhi1,bDPhi2,bDPhi3,bDPhi4]))
+    fv[0].append(binNumber)     
+    fv[0].append(max([tDPhi1,tDPhi2,tDPhi3,tDPhi4]))
     fv[0].append(GetHighestPtForwardPt_prefiring(recojets))
-    fv[0].append(htratio)
-    fv[0].append(-1)
+    fv[0].append(tHt5/max(0.0001,tHt))
     fv[0].append(ientry%2==0)    
-    #filtery things
-    fv.append([passAndrewsTightHtRatio(bDPhi1, c.HT5, c.HT), c.MHT<c.HT])
-    if is2017f: fv[-1].append(EcalNoiseFilter(recojets, c.MHTPhi))
+    fv[0].append(True)
+    fv.append([passAndrewsTightHtRatio(tDPhi1, tHt5, tHt), tMhtPt<tHt])
+    if is2017f: fv[-1].append(EcalNoiseFilter(recojets, tMhtPhi))
 
+
+
+    if not (fvb[0][0]== fv[0][0] and fvb[0][1]== fv[0][1] and fvb[0][2]== fv[0][2]):
+        print ientry, 'truth ', fv[0]
+        print ientry, 'branch ',fvb[0]        
+        print ientry, 'truth ', fv[1]
+        print ientry, 'branch ',fvb[1]  
+        print 'truth'
+        for ijet, jet in enumerate(recojets):
+            if jet.Pt()>30: print ijet, jet.Pt(), jet.Eta(), jet.Phi()
+        print 'true mht = ', fv[0][1]
+        for ijet, jet in enumerate(c.Jets):
+            if jet.Pt()>30: print ijet, jet.Pt(), jet.Eta(), jet.Phi(), bool(c.Jets_MHTOrigMask[ijet])
+        print 'branch mht = ', c.MHT        
+        mhttruth = TLorentzVector()
+        mhttruth.SetPtEtaPhiE(fv[0][1], 0, tMhtPhi, fv[0][1])
+        mhtbranch = TLorentzVector()
+        mhtbranch.SetPtEtaPhiE(c.MHT, 0, c.MHTPhi, c.MHTPhi)
+        mhtdiff = (-mhttruth+mhtbranch)
+        for ijet, jet in enumerate(c.Jets): 
+            if abs(mhtdiff.Pt()-jet.Pt())<0.01: 
+                print 'difference in MHT is', jet.Pt(), jet.Eta(), jet.Phi(), jet.Pt()/c.Jets_jecFactor[ijet]#/c.Jets_jerFactor[ijet]
+                newmht = bMhtVec.Clone()
+                newmht+=jet
+                print 'testing naive mht', newmht.Pt()/fv[0][1]
+        #pause()      
     for nb, bprob in enumerate(btagprob):        
         if isdata: 
             weight = 1

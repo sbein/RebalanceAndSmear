@@ -20,13 +20,13 @@ specialscale = lumi/9632.85#c
 specialscale = lumi/4247.7#d
 specialscale = lumi/9313.99#e
 specialscale = lumi/13498.41#f
-specialscale = 1.0
+specialscale = 1.5
 
 redoBinning = binningAnalysis
 #redoBinning = binningUser
 
 
-fnamePrediction = 'Vault/Run2017RandS_Nom.root'
+#fnamePrediction = 'Vault/Run2017RandS_Nom.root'
 fnamePrediction = 'OutputBoostrapRun2017.root'
 #fnamePrediction = 'testF.root'
 
@@ -41,7 +41,7 @@ fPredJerUp = TFile(fnamePredJerUp)
 fTruth = TFile(fnameTruth)
 fNonQcd = TFile(fnameNonQcd)
 
-subtractnonq = True #toggle this on to get njet systematic
+subtractnonq = False #toggle this on to get njet systematic
 
 gStyle.SetOptStat(0)
 gROOT.ForceStyle()
@@ -131,10 +131,10 @@ for key in keys:
     print 'kinvar=', kinvar
     if 'RplusS' in key.GetName():
         method = 'RplusS'
-        standard = 'Truth'
+        standard = 'Branch'##
         if datamc == 'Data':
             method = 'RplusS'
-            standard = 'Truth'
+            standard = 'Branch'##
 
 
     hPrediction = fPrediction.Get('h'+selection+'_'+kinvar+method).Clone('h'+selection+'_'+kinvar+method+'')
