@@ -52,6 +52,8 @@ regionCuts['LowMhtSideband']    = (0,[[300,Inf],[250,300],[2,Inf],[0,Inf],[-Inf,
 regionCuts['LowDeltaPhi']       = (1,[[300,Inf],[300,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
 regionCuts['LdpLmhtBase']       = (1,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
 regionCuts['LdpLmhtSideband']   = (1,[[300,Inf],[250,300],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['LowHtLowDeltaPhi']  = (1,[[300,800],[250,300],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['HighHtLowDeltaPhi'] = (1,[[800,Inf],[250,300],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
 
 '''
 regionCuts['BaselineHtr']       = (0,[[300,Inf],[300,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,1.3]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])

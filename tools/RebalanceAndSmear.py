@@ -512,15 +512,14 @@ for ientry in range(nevents):
 
     if UseDeep: recojets = CreateUsefulJetVector(c.Jets, c.Jets_bJetTagDeepCSVBvsAll)#fiducial
     else: recojets = CreateUsefulJetVector(c.Jets, c.Jets_bDiscriminatorCSV)#fiducial    
-    if not len(recojets)>0: continue
-
     if is2017:
         recojets.clear()
         for ijet, jet in enumerate(c.Jets):
             if not (jet.Pt()>2 and abs(jet.Eta())<5.0): continue
             if abs(jet.Eta())>2.65 and abs(jet.Eta()) < 3.139 and jet.Pt()/c.Jets_jecFactor[ijet]<50: continue #/c.Jets_jerFactor[ijet]
             recojets.push_back(UsefulJet(jet, c.Jets_bJetTagDeepCSVBvsAll[ijet], jet.Pt()))    
-        
+
+    if not len(recojets)>0: continue
     #if not abs(recojets[0].Eta())<2.4: continue
     #if len(recojets)>1: 
     #    if not abs(recojets[1].Eta())<2.4: continue
