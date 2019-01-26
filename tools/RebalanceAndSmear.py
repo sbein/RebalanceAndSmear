@@ -18,11 +18,14 @@ parser.add_argument("-nprint", "--printevery", type=int, default=100,help="print
 parser.add_argument("-fin", "--fnamekeyword", type=str,default='RunIIFall17MiniAODv2.QCD_HT200to',help="file")
 parser.add_argument("-jersf", "--JerUpDown", type=str, default='Nom',help="JER scale factor (JerNom, JerUp, ...)")
 parser.add_argument("-bootstrap", "--Bootstrap", type=str, default='0',help="boot strapping (0,1of5,2of5,3of5,...)")
+parser.add_argument("-quickrun", "--quickrun", type=bool, default=False,help="Quick practice run (True, False)")
+
 args = parser.parse_args()
 printevery = args.printevery
 fnamekeyword = args.fnamekeyword
 JerUpDown = args.JerUpDown
 Bootstrap = args.Bootstrap
+quickrun = args.quickrun
 nametag = {'Nom':'', 'Up': 'JerUp'}
 
 
@@ -45,7 +48,6 @@ UseDeep = True
 #Delta phis need some attention - only use central jets
 
 chasedown200 = False
-quickrun = False
 
 
 if 'Summer16' in fnamekeyword: 
@@ -221,7 +223,7 @@ for line in lines:
     filelist.append(fname)
     if not chasedown200: break
 nevents = c.GetEntries()
-if quickrun: nevents = min(25000,nevents)
+if quickrun: nevents = min(50000,nevents)
 c.Show(0)
 print "nevents=", nevents
 
@@ -435,7 +437,6 @@ if mktree:
     prepareLittleTree(littletree)
 
 #t.Show(0)
-print 'nevents=', nevents
 t0 = time.time()
 for ientry in range(nevents):
     if debugmode:
@@ -795,7 +796,8 @@ for ientry in range(nevents):
         fv[0].append(ientry%2==0)
         fv.append([passAndrewsTightHtRatio(rpsDPhi1, rpsHt5, rpsHt), rpsMht<rpsHt])
         if is2017f: fv[-1].append(EcalNoiseFilter(RplusSJets, rpsMhtPhi))
-        
+
+        #if fv[0][1]>250: print 'fv[0][1]', fv[0][1]
 
         if isdata: wtrig_nom = Eff_Met110Mht110FakePho_CenterUpDown(fv[0][0], fv[0][1], fv[0][2])[0]
         else:  wtrig_nom = 1.0        
