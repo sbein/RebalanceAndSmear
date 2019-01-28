@@ -64,10 +64,12 @@ else:
 
 is2017f = False
 is2017 = False
+is2016 = False
 
 if 'Run2016' in fnamekeyword or 'Summer16' in fnamekeyword: 
     BTAG_CSVv2 = 0.8484
     BTAG_deepCSV = 0.6324
+    is2016 = True
 if 'Run2017' in fnamekeyword or 'Fall17' in fnamekeyword: 
     BTAG_CSVv2 = 0.8838
     BTAG_deepCSV = 0.4941
@@ -79,7 +81,14 @@ if 'Run2018' in fnamekeyword or 'Fall17' in fnamekeyword:
 
 if UseDeep: BTag_Cut = BTAG_deepCSV
 else: BTag_Cut = BTAG_CSVv2
+
+if isdata and is2016:
+    filePrescaleCorrector = TFile('usefulthings/PrescaleCorrector2016.root')
+    fPrescaleCorrector = filePrescaleCorrector.Get('multiplierOfPrescaleWeightHtBelow300GeV')
+    hHtWeightedForCorrection = filePrescaleCorrector.Get("hHtWeightedForCorrection")
+    xaxHt = hHtWeightedForCorrection.GetXaxis()
     
+
 year = '2015'
 year = '2016'
 year = 'Run2'
@@ -185,6 +194,8 @@ branchonly = False
 if 'Run20' in fnamekeyword: isdata = True
 else: isdata = False
 
+print 'just making sure about isdata', isdata
+
 #templateFileName = StressData[stressdata][0]
 if ('Summer16' in fnamekeyword or 'Run2016' in fnamekeyword): 
     if UseDeep: templateFileName = 'usefulthings/ResponseFunctionsMC16'+nametag[JerUpDown]+'_deepCsv.root'
@@ -223,7 +234,7 @@ for line in lines:
     filelist.append(fname)
     if not chasedown200: break
 nevents = c.GetEntries()
-if quickrun: nevents = min(50000,nevents)
+if quickrun: nevents = min(10000,nevents)
 c.Show(0)
 print "nevents=", nevents
 
@@ -455,6 +466,13 @@ for ientry in range(nevents):
     if isdata:
         prescaleweight = c.PrescaleWeightHT#c.Online_HtPrescaleWeight
         ht = c.HTOnline
+        if not ht>150: continue
+        if is2016 and isdata and ht<300: 
+            htbin = xaxHt.FindBin(ht)
+            #print ht, htbin
+            denom = hHtWeightedForCorrection.GetBinContent(htbin)
+            if denom>0: prescaleweight*=fPrescaleCorrector.Eval(ht)/denom
+            #print ht, 'original weight, new weight are', c.PrescaleWeightHT, prescaleweight
         if prescaleweight == 0: continue
         if bootstrapmode:
             if not randint(1, nbootstraps)==thisbootstrap: continue
@@ -514,7 +532,7 @@ for ientry in range(nevents):
 
     if UseDeep: recojets = CreateUsefulJetVector(c.Jets, c.Jets_bJetTagDeepCSVBvsAll)#fiducial
     else: recojets = CreateUsefulJetVector(c.Jets, c.Jets_bDiscriminatorCSV)#fiducial    
-    if is2017:
+    if is2017 and False:
         recojets.clear()
         for ijet, jet in enumerate(c.Jets):
             if not (jet.Pt()>2 and abs(jet.Eta())<5.0): continue
@@ -754,7 +772,7 @@ for ientry in range(nevents):
     #if fnamekeyword=='TTJets' or fnamekeyword=='WJetsToLNu' or fnamekeyword=='ZJetsToNuNu':upfactor = 2000
     upfactor = 25*bootupfactor
     if isdata: 
-        nsmears = min(int(upfactor*prescaleweight),bootupfactor*200)
+        nsmears = int(min(int(upfactor*prescaleweight),bootupfactor*200))
         weight = prescaleweight/nsmears        
     else:
         nsmears = 3
@@ -797,7 +815,7 @@ for ientry in range(nevents):
         fv.append([passAndrewsTightHtRatio(rpsDPhi1, rpsHt5, rpsHt), rpsMht<rpsHt])
         if is2017f: fv[-1].append(EcalNoiseFilter(RplusSJets, rpsMhtPhi))
 
-        #if fv[0][1]>250: print 'fv[0][1]', fv[0][1]
+        if fv[0][1]>250: print 'fv[0][1]', fv[0][1]
 
         if isdata: wtrig_nom = Eff_Met110Mht110FakePho_CenterUpDown(fv[0][0], fv[0][1], fv[0][2])[0]
         else:  wtrig_nom = 1.0        
