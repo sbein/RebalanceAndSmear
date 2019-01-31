@@ -1,13 +1,30 @@
 from ROOT import *
+'''
+hadd -f Vault/RandS_Run2_1of5.root Vault/RandS_Run201*1of5.root
+hadd -f Vault/RandS_Run2_2of5.root Vault/RandS_Run201*2of5.root
+hadd -f Vault/RandS_Run2_3of5.root Vault/RandS_Run201*3of5.root
+hadd -f Vault/RandS_Run2_4of5.root Vault/RandS_Run201*4of5.root
+hadd -f Vault/RandS_Run2_5of5.root Vault/RandS_Run201*5of5.root
+python tools/processBootstrap.py Run2
+
+'''
+
 from utils import *
 from ra2blibs import *
 from glob import glob
 import numpy as np
+import sys
 
 nBoot = 5
-flist = glob('Vault/*of'+str(nBoot)+'.root')
 
-fnew = TFile('OutputBoostrapRun2017.root','recreate')
+try: year = sys.argv[1]
+except: year = 'Run2017'
+
+
+flist = glob('Vault/*'+year+'_*of'+str(nBoot)+'.root')
+print 'flist', flist
+
+fnew = TFile('OutputBootstrap'+year+'.root','recreate')
 loadSearchBins2018()
 SearchBinWindows = {v: k for k, v in SearchBinNumbers.iteritems()}
 redoBinning = binningAnalysis
@@ -22,7 +39,11 @@ names = []
 for key in keys: names.append(key.GetName())
 
 for name in names:
-    if not 'RplusS' in name: continue
+    if not 'RplusS' in name: 
+        h = files[0].Get(name)
+        fnew.cd()
+        h.Write(name)
+        continue
     hMaster = files[0].Get(name).Clone()
     hMaster.SetDirectory(0)
     hMaster.Reset()
@@ -53,7 +74,7 @@ for name in names:
         newxs = array('d',newbinning)
         hMaster = hMaster.Rebin(nbins,'',newxs) 
 
-    if 'SearchBins' in name: 
+    if 'hBaseline_SearchBins' in name: 
         xax = hMaster.GetXaxis()
         countByHtMht = {}
         errorByHtMht = {}        
@@ -64,11 +85,16 @@ for name in names:
                 countByHtMht[countkey] = hMaster.GetBinContent(ibin) 
                 errorByHtMht[countkey] = hMaster.GetBinError(ibin) 
             else: 
-                countByHtMht[countkey] = max(countByHtMht[countkey], hMaster.GetBinContent(ibin))
-                errorByHtMht[countkey] = max(errorByHtMht[countkey], hMaster.GetBinError(ibin))
+                if hMaster.GetBinContent(ibin)>0 and countByHtMht[countkey]>0:
+                    countByHtMht[countkey] = min(countByHtMht[countkey], hMaster.GetBinContent(ibin))
+                    errorByHtMht[countkey] = min(errorByHtMht[countkey], hMaster.GetBinError(ibin))                    
+                else:
+                    countByHtMht[countkey] = max(countByHtMht[countkey], hMaster.GetBinContent(ibin))
+                    errorByHtMht[countkey] = max(errorByHtMht[countkey], hMaster.GetBinError(ibin))                    
         for ibin in range(1, xax.GetNbins()+1): 
             countkey = SearchBinWindows[ibin][:2]
             if hMaster.GetBinContent(ibin)==0: 
+                print 'fixing this up', ibin, countByHtMht[countkey], errorByHtMht[countkey], 'center', xax.GetBinCenter(ibin)
                 hMaster.SetBinContent(ibin, countByHtMht[countkey])
                 hMaster.SetBinError(ibin, errorByHtMht[countkey])                
         for ibin in range(1, xax.GetNbins()+1): 

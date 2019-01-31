@@ -114,8 +114,7 @@ x509userproxy = /tmp/x509up_u100021
 Queue 1
 '''
 
-shtemplate = '''
-#!/bin/bash
+shtemplate = '''#!/bin/bash
 source /cvmfs/cms.cern.ch/cmsset_default.sh
 export cwd=$PWD
 export SCRAM_ARCH=slc6_amd64_gcc630

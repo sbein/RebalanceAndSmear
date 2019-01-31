@@ -1,14 +1,14 @@
-
 from ROOT import *
 from utils import *
 from ra2blibs import *
 from array import array
+import numpy as np
 from glob import glob
 import os, sys
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbosity", type=bool, default=0,help="increase output verbosity")
-parser.add_argument("-fin", "--fnamekeyword", type=str,default='RunIIFall17MiniAODv2.QCD_HT',help="file")#RunIISummer16MiniAODv3.QCD_HT300to500
+parser.add_argument("-fin", "--fnamekeyword", type=str,default='Fall17MiniAODv2.QCD_HT',help="file")#RunIISummer16MiniAODv3.QCD_HT300to500
 parser.add_argument("-nprint", "--printevery", type=int, default=100,help="print every n(events)")
 parser.add_argument("-jersf", "--JerUpDown", type=str, default='Nom',help="JER scale factor (SFNom, SFUp, ...)")
 parser.add_argument("-dmcrw", "--DataMcReweight", type=bool, default=False,help="reweight prior")
@@ -33,24 +33,33 @@ elif 'V15a' in fnamekeyword or 'RelVal' in fnamekeyword:
     ntupleV = '15a'
     isdata = False
 elif 'Fall17' in fnamekeyword:
-	ntupleV = '16'
+    ntupleV = '16'
 else: 
     ntupleV = '15'
     isdata = True
 
 UseDeep = True
-
 ntupleV = '16'
-    
+is2017 = False
+is2016 = False
+is2018 = False
+
 if 'Run2016' in fnamekeyword or 'Summer16' in fnamekeyword: 
     BTAG_CSVv2 = 0.8484
     BTAG_deepCSV = 0.6324
+    is2016 = True
 if 'Run2017' in fnamekeyword or 'Fall17' in fnamekeyword: 
     BTAG_CSVv2 = 0.8838
     BTAG_deepCSV = 0.4941
+    is2017 = True
 if 'Run2018' in fnamekeyword or 'Fall17' in fnamekeyword: 
     BTAG_CSVv2 = 0.8838
     BTAG_deepCSV = 0.4941
+    is2018 = True
+
+if is2016: jerScaleFactors = ScaleFactors2016
+if is2017: jerScaleFactors = ScaleFactors2017
+if is2018: jerScaleFactors = ScaleFactors2017
 
 if UseDeep: BTag_Cut = BTAG_deepCSV
 else: BTag_Cut = BTAG_CSVv2
@@ -217,6 +226,8 @@ fnamefile = open('usefulthings/filelistV'+ntupleV+'.txt')
 lines = fnamefile.readlines()
 fnamefile.close()
 
+listofvariations = []
+
 c = TChain('TreeMaker2/PreSelection')
 filelist = []
 for line in lines:
@@ -245,14 +256,15 @@ for ientry in range(nevents):
         print "processing event", ientry, '/', nevents
     c.GetEntry(ientry)
 
-    if not passesUniversalSelection(c): continue###this is fiducial
+    #if not passesUniversalSelection(c): continue###this is fiducial
+    if not passesUniversalSelectionForResponses(c): continue
     if UseDeep: recojets = CreateUsefulJetVector(c.Jets, c.Jets_bJetTagDeepCSVBvsAll)#fiducial
     else: recojets = CreateUsefulJetVector(c.Jets, c.Jets_bDiscriminatorCSV)#fiducial
 
 
     if not (len(c.Jets)>0): continue
     if not c.Jets_neutralEmEnergyFraction[0]>0.02: continue
-            
+
     matchedCsvVec = createMatchedCsvVector(c.GenJets, recojets);
     genjets = CreateUsefulJetVector(c.GenJets, matchedCsvVec)
 
@@ -270,7 +282,7 @@ for ientry in range(nevents):
                 dr = genjets[igen].DeltaR(gen2add)
                 if not (dr<0.4): continue # maybe one day you can use .5 and then put hold that neutrino
                 genjets[igen]+=gen2add
-    
+
     ght = getHT(genjets, 30)# make HT include the neutrinos 
     iht = templateHtAxis.FindBin(ght)      
     #weight = t.CrossSection/nevents
@@ -314,13 +326,17 @@ for ientry in range(nevents):
                 dRbig = dR_
                 matched = True
                 pt0 = rjet.Pt()
-
-                #sf, sfunc = getScaleFactor80x(abs(rjet.Eta()))
-                #variation = 0#uncsign[JerUpDown]*sfunc
-                if uncsign==1: variation = (c.Jets_jerFactorUp[ireco]-c.Jets_jerFactor[ireco])/c.Jets_jerFactor[ireco]
-                elif uncsign==-1: variation = (c.Jets_jerFactorDown[ireco]-c.Jets_jerFactor[ireco])/c.Jets_jerFactor[ireco]
-                else: variation = 0
+                if uncsign==1: 
+                    sf, sfunc = getScaleFactor(abs(rjet.Eta()), jerScaleFactors)
+                    variation = sfunc/sf
+                else: variation, sfunc = 0, 0
+                #print 'compare', variation/sfunc                    
+                #if uncsign==1:    variation = (c.Jets_jerFactorUp[ireco]-c.Jets_jerFactor[ireco])/c.Jets_jerFactor[ireco]
+                #elif uncsign==-1: variation = (c.Jets_jerFactorDown[ireco]-c.Jets_jerFactor[ireco])/c.Jets_jerFactor[ireco]
+                #else: variation = 0
                 #print 'c.Jets_jerFactorUp[ireco], c.Jets_jerFactorDown[ireco], c.Jets_jerFactor[ireco]', c.Jets_jerFactorUp[ireco], c.Jets_jerFactorDown[ireco], c.Jets_jerFactor[ireco], variation
+                #listofvariations.append(variation)
+                #print np.mean(listofvariations)
                 pt1 = max(0.,gpt+(1+variation)*(pt0-gpt))
                 response = pt1/gpt#cosine did nothing man! * TMath.Cos(rjet.DeltaPhi(gjet))
 
@@ -339,7 +355,7 @@ for ientry in range(nevents):
         #if nbs==0: hCsvVsC.Fill(response, recoCsv)
 
 
-        
+
     if not ('QCD_HT' in physicsProcess): continue
 
     weight = c.Weight

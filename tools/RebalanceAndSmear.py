@@ -10,6 +10,8 @@ import time
 mhtjetetacut = 5.0 # also needs be be changed in UsefulJet.h
 
 debugmode = False
+doPileUpSlice = True
+
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -52,15 +54,17 @@ chasedown200 = False
 
 if 'Summer16' in fnamekeyword: 
     ntupleV = '16'
-    isdata = False
+    isdata___ = False
 elif 'V15a' in fnamekeyword or 'RelVal' in fnamekeyword:
     ntupleV = '15a'
-    isdata = False
+    isdata___ = False
 elif 'Fall17' in fnamekeyword:
-	ntupleV = '16'
+    ntupleV = '16'
+    isdata___ = False    
+    print 'we know isdata___', isdata___    
 else: 
     ntupleV = '16'
-    isdata = True
+    isdata___ = True
 
 is2017f = False
 is2017 = False
@@ -82,12 +86,12 @@ if 'Run2018' in fnamekeyword or 'Fall17' in fnamekeyword:
 if UseDeep: BTag_Cut = BTAG_deepCSV
 else: BTag_Cut = BTAG_CSVv2
 
-if isdata and is2016:
+if isdata___ and is2016:
     filePrescaleCorrector = TFile('usefulthings/PrescaleCorrector2016.root')
     fPrescaleCorrector = filePrescaleCorrector.Get('multiplierOfPrescaleWeightHtBelow300GeV')
     hHtWeightedForCorrection = filePrescaleCorrector.Get("hHtWeightedForCorrection")
     xaxHt = hHtWeightedForCorrection.GetXaxis()
-    
+
 
 year = '2015'
 year = '2016'
@@ -191,10 +195,10 @@ StressData['NomNom'] = [pwd+'/Templates/megatemplateNoSF.root']#sam added Nov29
 
 branchonly = False
 
-if 'Run20' in fnamekeyword: isdata = True
-else: isdata = False
+if 'Run20' in fnamekeyword: isdata___ = True
+else: isdata___ = False
 
-print 'just making sure about isdata', isdata
+print 'just making sure about isdata___', isdata___
 
 #templateFileName = StressData[stressdata][0]
 if ('Summer16' in fnamekeyword or 'Run2016' in fnamekeyword): 
@@ -438,9 +442,9 @@ if ntupleV=='14': triggerIndeces = triggerIndecesV14
 if ntupleV=='16a': triggerIndeces = triggerIndecesV16a
 
 def PassTrig(c,trigname):
-	for trigidx in triggerIndeces[trigname]: 
-		if c.TriggerPass[trigidx]==1: return True
-	return False
+    for trigidx in triggerIndeces[trigname]: 
+        if c.TriggerPass[trigidx]==1: return True
+    return False
 
 if mktree:
     treefile = TFile('littletreeLowMht'+fnamekeyword+'.root','recreate')
@@ -463,11 +467,11 @@ for ientry in range(nevents):
         print '='*20
     #if not (c.BTags>5): continue
 
-    if isdata:
+    if isdata___:
         prescaleweight = c.PrescaleWeightHT#c.Online_HtPrescaleWeight
         ht = c.HTOnline
         if not ht>150: continue
-        if is2016 and isdata and ht<300: 
+        if is2016 and isdata___ and ht<300: 
             htbin = xaxHt.FindBin(ht)
             #print ht, htbin
             denom = hHtWeightedForCorrection.GetBinContent(htbin)
@@ -488,11 +492,14 @@ for ientry in range(nevents):
         fillth1(hMht, c.MHT,1)
         fillth1(hMhtWeighted, c.MHT,c.CrossSection)    
         prescaleweight = 1
+
+        if doPileUpSlice:
+            if not c.NVtx<35: continue
     if len(c.Jets)>0:
         if not c.Jets_neutralEmEnergyFraction[0]>0.03: continue
-        
+
     if c.MHT>200: fillth1(hCaloMetRatio, c.PFCaloMETRatio)
-    if isdata: 
+    if isdata___: 
         if isskim:
             if not passesUniversalSkimSelection(c): continue
         else:
@@ -501,14 +508,14 @@ for ientry in range(nevents):
         if not passesUniversalSelection(c): continue
 
 
-    if (not isdata) and (c.HT>5*c.GenHT and c.GenHT>10):
+    if (not isdata___) and (c.HT>5*c.GenHT and c.GenHT>10):
         print 'DEBUG suspicious event', ientry, c.HT, c.GenHT
 
     MetVec = mkmet(c.MET, c.METPhi)
     MhtVec = mkmet(c.MHT,c.MHTPhi)
-    
+
     nsmears = 1
-    if isdata: weight = 1.0*prescaleweight
+    if isdata___: weight = 1.0*prescaleweight
     else: weight = c.CrossSection        
 
     if PrintJets: 
@@ -517,7 +524,7 @@ for ientry in range(nevents):
             if gp.Pt()>1: print igp, gp.Pt(), gp.Eta(), gp.Phi(), c.GenParticles_PdgId[igp]
         print 'MHT, GenMHT = ', c.MHT, c.GenMHT
 
-    
+
     '''
     if not isskim:
         softrecojets = CreateUsefulJetVector(c.SoftJets, c.SoftJets_bDiscriminatorCSV)
@@ -544,7 +551,7 @@ for ientry in range(nevents):
     #if len(recojets)>1: 
     #    if not abs(recojets[1].Eta())<2.4: continue
 
-        
+
     ht5 = getHT(recojets,AnMhtJetPtCut, 5.0)#Run2016H-PromptReco-v2.MET
     htratio = ht5/max(0.0001, c.HT)
     if c.MHT>300 and c.HT>300:################switched off
@@ -570,7 +577,7 @@ for ientry in range(nevents):
         print 'htratio', htratio
         #continue
 
-    if not isdata:
+    if not isdata___:
         matchedCsvVec = createMatchedCsvVector(c.GenJets, recojets)
         genjets = CreateUsefulJetVector(c.GenJets, matchedCsvVec)
         ##ignore jets that aren't matched!!!
@@ -612,7 +619,7 @@ for ientry in range(nevents):
     #filtery things
     fv.append([passAndrewsTightHtRatio(bDPhi1, c.HT5, c.HT), c.MHT<c.HT])
     if is2017f: fv[-1].append(EcalNoiseFilter(recojets, c.MHTPhi))
-                                               
+
     for regionkey in regionCuts:
         for ivar, varname in enumerate(varlist):
             hname = regionkey+'_'+varname
@@ -625,7 +632,7 @@ for ientry in range(nevents):
     if mktree and 'T1' in fnamekeyword:
         if fv[1]>=150 and fv[1]<=200 and fv[0]>500 and fv[2]>3:# and ientry>nevents/2:
             growTree(littletree, fv, jetPhis, weight)            
-    
+
     tHt = getHT(recojets,AnMhtJetPtCut)
     tHt5 = getHT(recojets,AnMhtJetPtCut, 5)
     tMhtVec = getMHT(recojets,AnMhtJetPtCut, mhtjetetacut)
@@ -652,7 +659,7 @@ for ientry in range(nevents):
     fv[0].append(True)
     fv.append([passAndrewsTightHtRatio(tDPhi1, tHt5, tHt), tMhtPt<tHt])
     if is2017f: fv[-1].append(EcalNoiseFilter(recojets, tMhtPhi))
-    
+
     if PrintJets:
         print 'RECO: nbtags =' , c.BTags
         print fv
@@ -668,8 +675,8 @@ for ientry in range(nevents):
         print 'RECO[0] Jets_ID=', bool(c.Jets_ID[0])
         print 'RECO[0] Jets_jecFactor=', c.Jets_jecFactor[0]
         print 'RECO[0] Jets_jerFactor=', c.Jets_jerFactor[0] 
-        
-    if isdata: wtrig_nom = Eff_Met110Mht110FakePho_CenterUpDown(fv[0][0], fv[0][1], fv[0][2])[0]
+
+    if isdata___: wtrig_nom = Eff_Met110Mht110FakePho_CenterUpDown(fv[0][0], fv[0][1], fv[0][2])[0]
     else:  wtrig_nom = 1.0   
 
     for regionkey in regionCuts:
@@ -684,11 +691,11 @@ for ientry in range(nevents):
 
     if tMhtPt>300: 
         print ientry, 'event passing baseline', fv
-        
+
     if branchonly: continue
     #if chasedown200: continue
-    
-    if isdata: weight = 1.0*prescaleweight
+
+    if isdata___: weight = 1.0*prescaleweight
     else: weight = c.CrossSection
 
 
@@ -722,7 +729,7 @@ for ientry in range(nevents):
     mBTags = countBJets_Useful(rebalancedJets,AnMhtJetPtCut)###
 
     hope = (fitsucceed and mMhtPt<160)# mMhtPt>min(mHt/2,180):# was 160
-    
+
     redoneMET = redoMET(MetVec,recojets,rebalancedJets)
     mMetPt,mMetPhi = redoneMET.Pt(), redoneMET.Phi()
     dphijets = []
@@ -741,16 +748,16 @@ for ientry in range(nevents):
     fv[0].append(ientry%2==0)
     fv.append([passAndrewsTightHtRatio(mDPhi1, mHt5, mHt), mMhtPt<mHt])
     if is2017f: fv[-1].append(EcalNoiseFilter(rebalancedJets, mMhtPhi))
-    
+
     if PrintJets:
         print 'Rebalanced'
         print fv
         for ireb, rjet in enumerate(rebalancedJets):
             if rjet.Pt()>15: print ireb, rjet.Pt(), rjet.Eta(), rjet.csv
         print 'fit passed?=',fitsucceed
-    if isdata: wtrig_nom = Eff_Met110Mht110FakePho_CenterUpDown(fv[0][0], fv[0][1], fv[0][2])[0]
+    if isdata___: wtrig_nom = Eff_Met110Mht110FakePho_CenterUpDown(fv[0][0], fv[0][1], fv[0][2])[0]
     else:  wtrig_nom = 1.0
-              
+
     for regionkey in regionCuts:      
         for ivar, varname in enumerate(varlist):
             hname = regionkey+'_'+varname
@@ -771,7 +778,7 @@ for ientry in range(nevents):
         if not fitsucceed:  print ientry, 'fit failed with mht, btags = ', fv[1], fv[3]
     #if fnamekeyword=='TTJets' or fnamekeyword=='WJetsToLNu' or fnamekeyword=='ZJetsToNuNu':upfactor = 2000
     upfactor = 25*bootupfactor
-    if isdata: 
+    if isdata___: 
         nsmears = int(min(int(upfactor*prescaleweight),bootupfactor*200))
         weight = prescaleweight/nsmears        
     else:
@@ -817,7 +824,7 @@ for ientry in range(nevents):
 
         if fv[0][1]>250: print 'fv[0][1]', fv[0][1]
 
-        if isdata: wtrig_nom = Eff_Met110Mht110FakePho_CenterUpDown(fv[0][0], fv[0][1], fv[0][2])[0]
+        if isdata___: wtrig_nom = Eff_Met110Mht110FakePho_CenterUpDown(fv[0][0], fv[0][1], fv[0][2])[0]
         else:  wtrig_nom = 1.0        
         #if rpsMht>250: print 'r&s trigger',wtrig_nom, fv
         for regionkey in regionCuts:     
@@ -840,7 +847,7 @@ for ientry in range(nevents):
                     print 'RplusS: pt, csv', jet.Pt(),jet.Eta(), jet.csv
 
 
-    if isdata: continue    
+    if isdata___: continue    
     genMetVec = mkmet(c.GenMET, c.GenMETPhi)
 
     #matchedCsvVec = createMatchedCsvVector(t.GenJets, recojets)
@@ -887,7 +894,7 @@ for ientry in range(nevents):
     #Gen-smearing
     #continue
     nsmears = 3
-    if isdata: weight = 1.0*prescaleweight/nsmears    
+    if isdata___: weight = 1.0*prescaleweight/nsmears    
     else: weight = c.CrossSection/nsmears
     for i in range(nsmears):
         if not (gMht<150): break
@@ -914,7 +921,7 @@ for ientry in range(nevents):
         fv[0].append(GetHighestPtForwardPt_prefiring(smearedJets))
         fv[0].append(mHt5/max(0.0001, mHt))
         fv[0].append(ientry%2==0)
-        
+
         fv.append([passAndrewsTightHtRatio(mDPhi1, mHt5, mHt), mMhtPt<mHt])
         if is2017f: fv[-1].append(EcalNoiseFilter(smearedJets, mMhtPhi))
         for regionkey in regionCuts:

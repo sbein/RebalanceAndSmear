@@ -2,20 +2,34 @@
 from ROOT import *
 from utils import *
 from ra2blibs import *
+import os, sys
 
+try: year = sys.argv[1]
+except: year = 'Run2016'
 redoBinning = binningAnalysis
-fnew = TFile('QcdPrediction2017.root','recreate')
+labelfilename = 'Vault/QcdPredictionSUS-16-033.root'
+labelfile = TFile(labelfilename)
+labeledhist = labelfile.Get('PredictionCV')
+labeledhist.Reset()
+xax = labeledhist.GetXaxis()
+
+fnew = TFile('QcdPrediction'+year+'.root','recreate')
 loadSearchBins2018()
 SearchBinWindows = {v: k for k, v in SearchBinNumbers.iteritems()}
 redoBinning = binningAnalysis
 
 
-fCentral = TFile('OutputBoostrapRun2017.root')
-hCentral = fCentral.Get('hBaseline_SearchBinsRplusS')
+fCentral = TFile('OutputBootstrap'+year+'.root')
+hCentral_ = fCentral.Get('hBaseline_SearchBinsRplusS').Clone('hBaseline_SearchBinsRplusS_aux')
+hCentral = labeledhist.Clone('')
+for ibin in range(1,xax.GetNbins()+1):
+    hCentral.SetBinContent(ibin, hCentral_.GetBinContent(ibin))
+    hCentral.SetBinError(ibin, hCentral_.GetBinError(ibin))    
+
 hStat = hCentral.Clone('hStat')
 xax = hStat.GetXaxis()
 for ibin in range(1,xax.GetNbins()+1):
-    hStat.SetBinContent(ibin, 1+TMath.Sqrt(pow(0.3,2)+pow(hStat.GetBinError(ibin)/hStat.GetBinContent(ibin),2)))
+    hStat.SetBinContent(ibin, 1+TMath.Sqrt(pow(0.5,2)+pow(hStat.GetBinError(ibin)/hStat.GetBinContent(ibin),2)))
 
 fnew.cd()
 hCentral.Write('PredictionCV')
@@ -33,16 +47,21 @@ for ibin in range(1, xax.GetNbins()+1):
     jetmult = SearchBinWindows[ibin][2][0]+1
     jetbin = xax_jet.FindBin(jetmult)
     PredictionNJet.SetBinContent(ibin, hSyst_njet.GetBinContent(jetbin))
+
+for ibin in range(1,xax.GetNbins()+1):
+    PredictionNJet.GetXaxis().SetBinLabel(ibin, 'QCDNJets')
     
 fnew.cd()
-PredictionNJet.Write('PredictionNJet')
+#PredictionNJet.Write('PredictionNJet')
 #fnjetsyst.Close()
 
 
-hSyst_tail = hSyst_njet.Clone('hSyst_tail')
+hSyst_tail = hStat.Clone('hSyst_tail')
 for ibin in range(1,xax.GetNbins()+1):
     hSyst_tail.SetBinContent(ibin, 1.3)
 fnew.cd()
+for ibin in range(1,xax.GetNbins()+1):
+    hSyst_tail.GetXaxis().SetBinLabel(ibin, 'QCDTail')
 hSyst_tail.Write('PredictionTail')
 
 fJerNom = TFile('Vault/Run2017RandS_JerNom.root')
@@ -65,8 +84,8 @@ else:
     hUp = hUp.Rebin(nbins,'',newxs)
     hNom = hNom.Rebin(nbins,'',newxs)
 
-PredictionCoreUp = hUp.Clone('PredictionCoreUp')
-PredictionCoreUp.Reset()
+PredictionCore = hUp.Clone('PredictionCore')
+PredictionCore.Reset()
 xax = hUp.GetXaxis()
 countNom = {}
 countUp = {}
@@ -79,10 +98,13 @@ for ibin in range(1, xax.GetNbins()+1):
     countUp[countkey] += hUp.GetBinContent(ibin)        
 for ibin in range(1, xax.GetNbins()+1): 
     countkey = SearchBinWindows[ibin][:2]
-    PredictionCoreUp.SetBinContent(ibin, countUp[countkey]/countNom[countkey])
+    PredictionCore.SetBinContent(ibin, countUp[countkey]/countNom[countkey])
 
+for ibin in range(1,xax.GetNbins()+1):
+    PredictionCore.GetXaxis().SetBinLabel(ibin, 'QCDCore')
+    
 fnew.cd()
-PredictionCoreUp.Write()
+PredictionCore.Write()
 
 print 'just created', fnew.GetName()
 

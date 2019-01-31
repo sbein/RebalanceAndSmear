@@ -6,11 +6,13 @@ parser.add_argument("-analyzer", "--analyzer", type=str,default='tools/ResponseM
 parser.add_argument("-fin", "--fnamekeyword", type=str,default='Summer16.SMS-T1tttt_mGluino-1200_mLSP-800',help="file")
 parser.add_argument("-jersf", "--JerUpDown", type=str, default='Nom',help="JER scale factor (Nom, Up, ...)")
 parser.add_argument("-bootstrap", "--Bootstrap", type=str, default='0',help="boot strapping (0,1of5,2of5,3of5,...)")
+parser.add_argument("-quickrun", "--quickrun", type=bool, default=False,help="Quick practice run (True, False)")
 args = parser.parse_args()
 fnamekeyword = args.fnamekeyword.strip()
 analyzer = args.analyzer
 JerUpDown = args.JerUpDown
 Bootstrap = args.Bootstrap
+quickrun = args.quickrun
 
 if Bootstrap=='0': 
     bootstrapmode = False
@@ -103,8 +105,8 @@ x509userproxy = $ENV(X509_USER_PROXY)
 Queue 1
 '''
 
-shtemplate = '''
-#!/bin/bash
+shtemplate = '''#!/bin/bash
+source /cvmfs/cms.cern.ch/cmsset_default.sh
 export SCRAM_ARCH=slc6_amd64_gcc630
 echo $PWD
 ls

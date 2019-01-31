@@ -767,7 +767,7 @@ def getJetKinematics(jets):
 def mkcanvas(name='canvas'):
     c = TCanvas(name,name, 800, 800)
     c.SetTopMargin(0.07)
-    c.SetBottomMargin(0.15)
+    c.SetBottomMargin(0.16)
     c.SetLeftMargin(0.19)
     return c
 
@@ -1413,6 +1413,30 @@ def passesUniversalSelection(t):
     '''#second half filters low edge               
     return True
 
+def passesUniversalSelectionForResponses(t):
+    if not (bool(t.JetID) and  t.NVtx>0): return False
+    if not (t.NElectrons==0 and t.NMuons==0 and t.isoElectronTracks==0 and t.isoMuonTracks==0 and t.isoPionTracks==0): return False
+    if not  passQCDHighMETFilter(t): return False
+    if not passQCDHighMETFilter2(t): return False
+    if not t.PFCaloMETRatio<5: return False
+    #featuring:
+    #if not t.globalTightHalo2016Filter: return False ##this alone was good # only these comments weren't saved on last submission
+    if not t.globalSuperTightHalo2016Filter: return False
+    if not t.HBHENoiseFilter: return False    
+    if not t.HBHEIsoNoiseFilter: return False
+    if not t.eeBadScFilter: return False      
+    if not t.BadChargedCandidateFilter: return False
+    if not t.BadPFMuonFilter: return False
+    if not t.CSCTightHaloFilter: return False
+    if not passesPhotonVeto(t): return False    
+    #if not t.EcalDeadCellTriggerPrimitiveFilter: return False            
+    '''#first half filters up edge    
+    #first half filters low edge           
+    ####if not t.ecalBadCalibFilter: return False #this says it's deprecated
+
+    '''#second half filters low edge               
+    return True
+
 
 
 
@@ -1533,7 +1557,7 @@ def growTree(tree, fv, aux, weight):
     _weight[0] = weight
     tree.Fill()
 
-
+'''
 ScaleFactors74x = [[[0.0,0.8],[1.061,0.023]],\
                    [[0.8,1.3],[1.088,0.029]],\
                    [[1.3,1.9],[1.106,0.030]],\
@@ -1556,22 +1580,48 @@ ScaleFactors80x = [[[0.0,0.5],[1.122, 0.026]],\
                    [[2.8,3.0],[1.595, 0.175]],\
                    [[3.0,3.2],[0.998, 0.066]],\
                    [[3.2,5.0],[1.226, 0.145]]]
+'''
 
-def getScaleFactor74x(eta):
-    for sfBall in ScaleFactors74x:
+ScaleFactors2016 = [
+    [[0.000,0.522],[1.1595 , 0.0645]],\
+    [[0.522 , 0.783],[1.1948, 0.0652]],\
+    [[0.783,1.131],[1.1464, 0.0632 ]],\
+    [[1.131,1.305],[1.1609, 0.1025]],\
+    [[1.305,1.740],[1.1278, 0.0986]],\
+    [[1.740 , 1.930],[1.1000, 0.1079]],\
+    [[1.930,2.043],[1.1426, 0.1214]],\
+    [[2.043 , 2.322 ],[1.1512, 0.1140]],\
+    [[2.322 , 2.5 ],[1.2963, 0.2371]],\
+    [[2.5,2.853],[1.3418, 0.2091]],\
+    [[2.853,2.964],[1.7788, 0.2008]],\
+    [[2.964,3.139],[1.1869, 0.1243]],\
+    [[3.139,5.191],[1.1922, 0.1488]]
+    ]
+
+ScaleFactors2017 = [
+    [[0.000,0.522],[1.1432 , 0.0222]],\
+    [[0.522 , 0.783],[1.1815, 0.0484]],\
+    [[0.783,1.131],[1.0989, 0.0456 ]],\
+    [[1.131,1.305],[1.1137, 0.1397]],\
+    [[1.305,1.740],[1.1307, 0.1470]],\
+    [[1.740 , 1.930],[1.1600, 0.0976]],\
+    [[1.930,2.043],[1.2393, 0.1909]],\
+    [[2.043 , 2.322 ],[1.2604, 0.1501]],\
+    [[2.322 , 2.5 ],[1.4085, 0.2020]],\
+    [[2.5,2.853],[1.9909, 0.5684]],\
+    [[2.853,2.964],[2.2923, 0.3743]],\
+    [[2.964,3.139],[ 1.2696, 0.1089]],\
+    [[3.139,5.191],[1.1542, 0.1524]]
+    ]
+
+
+def getScaleFactor(eta, sfBalls=ScaleFactors2016):
+    for sfBall in sfBalls:
         if eta>=sfBall[0][0] and eta<=sfBall[0][1]:
             return [sfBall[1][0], sfBall[1][1]]
     print "didn't find any scale factor!", eta
     exit(0)
-
-
-def getScaleFactor80x(eta):
-    for sfBall in ScaleFactors80x:
-        if eta>=sfBall[0][0] and eta<=sfBall[0][1]:
-            return [sfBall[1][0], sfBall[1][1]]
-    print "didn't find any scale factor!", eta
-    exit(0)
-
+    
 
 def calcSumPt(jets, obj, conesize=0.6, thresh=10):
     sumpt_ = 0

@@ -4,18 +4,31 @@ from ra2blibs import *
 import os,sys
 gROOT.SetBatch(1)
 
-datamc = 'Data'
 datamc = 'MC'
 lumi = 2.3
 lumi = 24.7
 lumi = 36.3
 lumi = 135
 
-loadSearchBins2016()
+loadSearchBins2018()
 SearchBinNames = {v: k for k, v in SearchBinNumbers.iteritems()}
 
+
+try: filenameA = sys.argv[1]
+except:
+    print 'please give command like'
+    print 'python python/closureTest.py Vault/QCD_Summer16.root'
+    filenameA = 'Vault/QCD_Summer16.root'
+
+if '16' in filenameA:
+    year = 'Summer16'
+    lumi = 35.9
+elif '17' in filenameA:
+    year = 'Fall17'
+    lumi = 100.7
+    
 redoBinning = binningAnalysis
-redoBinning = binningUser
+#redoBinning = binningUser
 #redoBinning = binning
 
 gStyle.SetOptStat(0)
@@ -43,20 +56,16 @@ def applyCorrections(hmethod, SearchBinNames):
     return hMethod
 
 
-try: filenameA = sys.argv[1]
-except:
-    print 'please give command like'
-    print 'python python/divideMht.py MethodFile TruthFile Electron'
-    filenameA = 'Output/TruthAndMethodHT2000.root'
-
 def mkLabel(str_,kinvar,selection=''):
     newstr = str_
     if newstr[0]=='h':newstr = newstr[1:]
     newstr = newstr.replace('GenSmeared',' gen-smeared ')
     newstr = newstr.replace('Rebalanced',' rebalanced ')
-    newstr = newstr.replace('RplusS',' Fall17 QCD R&S')
+    if year=='Summer16': newstr = newstr.replace('RplusS',' Summer16 QCD R&S')
+    elif year=='Fall17': newstr = newstr.replace('RplusS',' Fall17 QCD R&S')
     if datamc=='Data': newstr = newstr.replace('Truth','Data')
-    newstr = newstr.replace('Truth',' Fall17 QCD (truth) ')
+    if year=='Summer16': newstr = newstr.replace('Truth',' Summer16 QCD (truth) ')
+    elif year=='Fall17': newstr = newstr.replace('Truth',' Fall17 QCD (truth) ')
     if datamc == 'Data': newstr = newstr.replace('Truth',' Data ')
     newstr = newstr.replace(kinvar,'')
     newstr = newstr.replace('_b','').replace('_','')
@@ -196,8 +205,9 @@ for key in keys:
 
     ##hMethod.Scale(norm)
     if datamc=='MC':
-        hMethod.Scale(1,'width')###
-        hTruth.Scale(1,'width')
+        #hMethod.Scale(1,'width')###
+        #hTruth.Scale(1,'width')
+        a = 1
     if datamc == 'Data': units_ = 'bin'
     units_ = units[kinvar]
     #hMethod.GetYaxis().SetTitle('Events/'+units_)
@@ -245,6 +255,7 @@ for key in keys:
     tl.DrawLatex(xlab,0.84, ('MC' in datamc)*' simulation '+'preliminary')
     tl.SetTextFont(regularfont)
     if 'LowMht' in name: cutlabel = mkCutsLabel(kinvar,selection, baselineStrLowMht)
+    elif 'LdpLmhtBase' in name: cutlabel = mkCutsLabel(kinvar,selection, baselineStrLdpLmht)
     else: cutlabel = mkCutsLabel(kinvar,selection, baselineStr)
         
     if 'LowDeltaPhi' in selection: cutlabel = cutlabel.replace('200','300')
@@ -320,7 +331,7 @@ for key in keys:
     cname = (hMethod.GetName()+'_And_'+hTruth.GetName()).replace(' ','')
     cGold.Write(cname)
     print 'trying:','pdfs/ClosureTests/'+selection+'_'+method+'And'+standard+'_'+kinvar+'.pdf'
-    cGold.Print('pdfs/ClosureTests/'+selection+'_'+method+'And'+standard+'_'+kinvar+'.pdf')
+    cGold.Print('pdfs/ClosureTests/'+selection+'_'+method+'And'+standard+'_'+kinvar+year+'.pdf')
 
 
 print 'just created', newfile.GetName()

@@ -153,7 +153,7 @@ for line in lines:
     if not shortfname in line: continue
     fname = '/eos/uscms//store/user/lpcsusyhad/SusyRA2Analysis2015/Skims/Run2ProductionV'+ntupleV+'/tree_'+selection+'/'+line#RelValQCD_FlatPt
     fname = fname.strip()
-    legalfname = fname.replace('/eos/uscms/','root://cmsxrootd.fnal.gov//')
+    legalfname = fname.replace('/eos/uscms/','root://cmseos.fnal.gov//')
     print 'adding', legalfname
     c.Add(legalfname)
     filelist.append(legalfname)
