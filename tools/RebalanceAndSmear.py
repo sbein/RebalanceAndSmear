@@ -12,6 +12,7 @@ mhtjetetacut = 5.0 # also needs be be changed in UsefulJet.h
 debugmode = False
 doPileUpSlice = True
 
+blockHem = 15#value is pt threshold, but 0 means do no veto
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -20,7 +21,8 @@ parser.add_argument("-nprint", "--printevery", type=int, default=100,help="print
 parser.add_argument("-fin", "--fnamekeyword", type=str,default='RunIIFall17MiniAODv2.QCD_HT200to',help="file")
 parser.add_argument("-jersf", "--JerUpDown", type=str, default='Nom',help="JER scale factor (JerNom, JerUp, ...)")
 parser.add_argument("-bootstrap", "--Bootstrap", type=str, default='0',help="boot strapping (0,1of5,2of5,3of5,...)")
-parser.add_argument("-quickrun", "--quickrun", type=bool, default=False,help="Quick practice run (True, False)")
+parser.add_argument("-quickrun", "--quickrun", type=bool, default='',help="Quick practice run (True, False)")
+parser.add_argument("-forcetemplates", "--forcetemplates", type=str, default=False,help="you can use this to override the template choice")
 
 args = parser.parse_args()
 printevery = args.printevery
@@ -28,6 +30,9 @@ fnamekeyword = args.fnamekeyword
 JerUpDown = args.JerUpDown
 Bootstrap = args.Bootstrap
 quickrun = args.quickrun
+forcetemplates = args.forcetemplates
+
+
 nametag = {'Nom':'', 'Up': 'JerUp'}
 
 
@@ -208,7 +213,8 @@ if ('Fall17' in fnamekeyword or 'Run2017' in fnamekeyword or 'Run2018' in fnamek
     if UseDeep: templateFileName = 'usefulthings/ResponseFunctionsMC17'+nametag[JerUpDown]+'_deepCsv.root'
     else: templateFileName = 'usefulthings/ResponseFunctionsMC17'+nametag[JerUpDown]+'.root'
 
-
+if not forcetemplates=='': templateFileName = forcetemplates
+    
 ftemplate = TFile(templateFileName)
 print 'using templates from',templateFileName
 hPtTemplate = ftemplate.Get('hPtTemplate')
@@ -238,11 +244,12 @@ for line in lines:
     filelist.append(fname)
     if not chasedown200: break
 nevents = c.GetEntries()
-if quickrun: nevents = min(10000,nevents)
+if quickrun: nevents = min(50000,nevents)
 c.Show(0)
 print "nevents=", nevents
 
 newFileName = 'RandS_'+filelist[0].split('/')[-1].replace('.root','')+'.root'
+if blockHem: newFileName = newFileName.replace('.root','HemVeto'+str(blockHem)+'.root')
 newFileName = newFileName.replace('.root',nametag[JerUpDown]+'.root')
 if bootstrapmode: newFileName = newFileName.replace('.root',Bootstrap+'.root')
 fnew = TFile(newFileName,'recreate')
@@ -534,12 +541,11 @@ for ientry in range(nevents):
 
 
 
-
     ##recojets = CreateUsefulJetVector(c.Jets, c.Jets_bDiscriminatorCSV)
 
     if UseDeep: recojets = CreateUsefulJetVector(c.Jets, c.Jets_bJetTagDeepCSVBvsAll)#fiducial
     else: recojets = CreateUsefulJetVector(c.Jets, c.Jets_bDiscriminatorCSV)#fiducial    
-    if is2017 and False:
+    if is2017:
         recojets.clear()
         for ijet, jet in enumerate(c.Jets):
             if not (jet.Pt()>2 and abs(jet.Eta())<5.0): continue
@@ -547,6 +553,16 @@ for ientry in range(nevents):
             recojets.push_back(UsefulJet(jet, c.Jets_bJetTagDeepCSVBvsAll[ijet], jet.Pt()))    
 
     if not len(recojets)>0: continue
+    if blockHem: 
+        PassesHemVeto = True
+        for recojet in recojets:
+            if not recojet.Pt()>blockHem: continue
+            if -3.0<recojet.Eta() and recojet.Eta()<-1.4 and -1.57<recojet.Phi() and recojet.Phi()<-0.87: 
+                PassesHemVeto = False
+                break
+        
+        if not PassesHemVeto: continue
+              
     #if not abs(recojets[0].Eta())<2.4: continue
     #if len(recojets)>1: 
     #    if not abs(recojets[1].Eta())<2.4: continue
