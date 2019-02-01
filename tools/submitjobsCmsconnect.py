@@ -124,7 +124,7 @@ echo $PWD
 ls
 scram project CMSSW_10_1_0
 cd CMSSW_10_1_0/src
-cmsenv
+eval `scramv1 runtime -sh`
 #cd ${_CONDOR_SCRATCH_DIR}
 cd $cwd
 echo $PWD
