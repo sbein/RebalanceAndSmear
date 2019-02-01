@@ -10,7 +10,7 @@ import time
 mhtjetetacut = 5.0 # also needs be be changed in UsefulJet.h
 
 debugmode = False
-doPileUpSlice = True
+
 
 blockHem = 15#value is pt threshold, but 0 means do no veto
 
@@ -23,14 +23,15 @@ parser.add_argument("-jersf", "--JerUpDown", type=str, default='Nom',help="JER s
 parser.add_argument("-bootstrap", "--Bootstrap", type=str, default='0',help="boot strapping (0,1of5,2of5,3of5,...)")
 parser.add_argument("-quickrun", "--quickrun", type=bool, default='',help="Quick practice run (True, False)")
 parser.add_argument("-forcetemplates", "--forcetemplates", type=str, default=False,help="you can use this to override the template choice")
-
 args = parser.parse_args()
+forcetemplates = args.forcetemplates
+
 printevery = args.printevery
 fnamekeyword = args.fnamekeyword
 JerUpDown = args.JerUpDown
 Bootstrap = args.Bootstrap
 quickrun = args.quickrun
-forcetemplates = args.forcetemplates
+
 
 
 nametag = {'Nom':'', 'Up': 'JerUp'}
@@ -56,7 +57,7 @@ UseDeep = True
 
 chasedown200 = False
 
-
+doPileUpSlice = False
 if 'Summer16' in fnamekeyword: 
     ntupleV = '16'
     isdata___ = False
@@ -66,6 +67,7 @@ elif 'V15a' in fnamekeyword or 'RelVal' in fnamekeyword:
 elif 'Fall17' in fnamekeyword:
     ntupleV = '16'
     isdata___ = False    
+    doPileUpSlice = True
     print 'we know isdata___', isdata___    
 else: 
     ntupleV = '16'
@@ -252,6 +254,7 @@ newFileName = 'RandS_'+filelist[0].split('/')[-1].replace('.root','')+'.root'
 if blockHem: newFileName = newFileName.replace('.root','HemVeto'+str(blockHem)+'.root')
 newFileName = newFileName.replace('.root',nametag[JerUpDown]+'.root')
 if bootstrapmode: newFileName = newFileName.replace('.root',Bootstrap+'.root')
+if not forcetemplates=='': newFileName = newFileName.replace('.root',forcetemplates.split('/')[-1].replace('.root','')+'.root')
 fnew = TFile(newFileName,'recreate')
 print 'creating new file:',fnew.GetName()
 
