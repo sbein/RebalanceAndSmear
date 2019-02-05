@@ -294,6 +294,7 @@ for key in keys:
 
 	cname = (hPrediction.GetName()+'_And_'+hTruth.GetName()).replace(' ','')
 	cGold.Write(cname)
+	hPrediction.Write()	
 	if subtractnonq and key.GetName()=='hLdpLmhtSideband_NJetsRplusS':
 		print 'activating thingy'
 		hrat.Write('hRatio_LdpLmhtSideband_RplusSAndTruth_NJets')

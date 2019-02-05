@@ -6,6 +6,13 @@ import os, sys
 
 try: year = sys.argv[1]
 except: year = 'Run2016'
+
+
+#if year=='Run2016': NORM = 1.48 #these come from closureData.root!!!!
+#elif year=='Run2017': NORM = 1.41
+#elif year=='Run2018': NORM = 2.79
+
+        
 redoBinning = binningAnalysis
 labelfilename = 'Vault/QcdPredictionSUS-16-033.root'
 labelfile = TFile(labelfilename)
@@ -18,13 +25,23 @@ loadSearchBins2018()
 SearchBinWindows = {v: k for k, v in SearchBinNumbers.iteritems()}
 redoBinning = binningAnalysis
 
-
-fCentral = TFile('OutputBootstrap'+year+'.root')
-hCentral_ = fCentral.Get('hBaseline_SearchBinsRplusS').Clone('hBaseline_SearchBinsRplusS_aux')
 hCentral = labeledhist.Clone('')
-for ibin in range(1,xax.GetNbins()+1):
-    hCentral.SetBinContent(ibin, hCentral_.GetBinContent(ibin))
-    hCentral.SetBinError(ibin, hCentral_.GetBinError(ibin))    
+if not year== 'Run2':
+    fCentral = TFile('validation_data'+year+'.root')#these validation files must be HDP!!!! would be good to change their names as decided in closureData.py to reflect this
+    hCentral_ = fCentral.Get('hBaseline_SearchBinsRplusS').Clone('hBaseline_SearchBinsRplusS_aux')
+    for ibin in range(1,xax.GetNbins()+1):
+        hCentral.SetBinContent(ibin, hCentral_.GetBinContent(ibin))
+        hCentral.SetBinError(ibin, hCentral_.GetBinError(ibin))   
+else:
+    fCentral16 = TFile('validation_dataRun2016.root')
+    fCentral17 = TFile('validation_dataRun2017.root')
+    fCentral18 = TFile('validation_dataRun2018.root')        
+    hCentral16_ = fCentral16.Get('hBaseline_SearchBinsRplusS').Clone('hBaseline_SearchBinsRplusS_16')
+    hCentral17_ = fCentral17.Get('hBaseline_SearchBinsRplusS').Clone('hBaseline_SearchBinsRplusS_17')    
+    hCentral18_ = fCentral18.Get('hBaseline_SearchBinsRplusS').Clone('hBaseline_SearchBinsRplusS_18')        
+    hCentral.Add(hCentral16_)
+    hCentral.Add(hCentral17_)
+    hCentral.Add(hCentral18_)        
 
 hStat = hCentral.Clone('hStat')
 xax = hStat.GetXaxis()

@@ -20,6 +20,10 @@ nBoot = 5
 try: year = sys.argv[1]
 except: year = 'Run2017'
 
+applyNorms = True
+if year=='Run2016': NORM = 1.48 #these come from closureData.root, backported, since that step usually comes after this one!!!!
+elif year=='Run2017': NORM = 1.41
+elif year=='Run2018': NORM = 2.79
 
 flist = glob('Vault/*'+year+'_*of'+str(nBoot)+'.root')
 print 'flist', flist
@@ -103,6 +107,7 @@ for name in names:
             print ibin, hMaster.GetBinContent(ibin), 'pm', hMaster.GetBinError(ibin), SearchBinWindows[ibin]
     fnew.cd()
     hMaster.Scale(nBoot)
+    hMaster.Scale(NORM)
     hMaster.Write()
 
 print 'just created', fnew.GetName()

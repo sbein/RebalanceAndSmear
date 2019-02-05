@@ -23,7 +23,7 @@ else:
     bootstrapmode = True
     
 istest = False
-skipFilesWithErrorFile = True
+skipFilesWithErrorFile = False
 
 
 try: 

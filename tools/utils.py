@@ -144,6 +144,7 @@ units['BestDijetMass']='GeV'
 units['MinDeltaM']='GeV'
 units['MaxDPhi']='rad'
 units['MaxForwardPt'] = 'GeV'
+units['MaxHemJetPt'] = 'GeV'
 units['HtRatio'] = 'bin'
 
 
@@ -1644,6 +1645,14 @@ def GetHighestPtForwardPt_prefiring(jets):
     highestPt = 0
     for jet in jets:
         if abs(jet.Eta())>3.0 and abs(jet.Eta())<5.0:#prefiring upper eta is 3.0
+            if jet.Pt()>highestPt:
+                highestPt = jet.Pt()
+    return highestPt
+
+def GetHighestHemJetPt(jets):
+    highestPt = 0
+    for jet in jets:
+        if -3.0<jet.Eta() and jet.Eta()<-1.4 and -1.57<jet.Phi() and jet.Phi()<-0.87:
             if jet.Pt()>highestPt:
                 highestPt = jet.Pt()
     return highestPt

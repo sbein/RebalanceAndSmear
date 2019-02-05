@@ -45,15 +45,20 @@ triggerIndecesV16 = triggerIndecesV16a #this was not yet checked
 regionCuts = {}
 pi = 3.14159
 Inf = 9999
-#varlist =                           ['Ht',    'Mht',    'NJets','BTags','SearchBins','MaxDPhi', 'MaxForwardPt','HtRatio']]
+#varlist =                           ['Ht',    'Mht',    'NJets','BTags','SearchBins','MaxDPhi', 'MaxHemJetPt','HtRatio']]
 regionCuts['Baseline']          = (0,[[300,Inf],[300,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
 regionCuts['LowMhtBaseline']    = (0,[[300,Inf],[200,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
 regionCuts['LowMhtSideband']    = (0,[[300,Inf],[250,300],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
 regionCuts['LowDeltaPhi']       = (1,[[300,Inf],[300,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
 regionCuts['LdpLmhtBase']       = (1,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
 regionCuts['LdpLmhtSideband']   = (1,[[300,Inf],[250,300],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
-regionCuts['LowHtLowDeltaPhi']  = (1,[[300,800],[250,300],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
-regionCuts['HighHtLowDeltaPhi'] = (1,[[800,Inf],[250,300],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+
+regionCuts['LowMhtBaseHemv15']  = (0,[[300,Inf],[200,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,15],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['LdpLmhtBaseHemv15'] = (1,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,15],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['LowMhtBaseHemv30']  = (0,[[300,Inf],[200,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,30],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['LdpLmhtBaseHemv30'] = (1,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,30],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+#regionCuts['LowHtLowDeltaPhi']  = (1,[[300,800],[250,300],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+#regionCuts['HighHtLowDeltaPhi'] = (1,[[800,Inf],[250,300],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
 
 '''
 regionCuts['BaselineHtr']       = (0,[[300,Inf],[300,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,1.3]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
@@ -107,6 +112,7 @@ binning['BestDijetMass']=[30,0,4500]
 binning['MinDeltaM']=[30,0,3]
 binning['MaxDPhi']=[32,0,3.2]
 binning['MaxForwardPt']=[30,20,320]
+binning['MaxHemJetPt']=[20,0,100]
 binning['HtRatio']=[30,1,4]
 
 binningTemplate = {}
@@ -131,6 +137,7 @@ binningTemplate['DPhi2']=binningTemplate['DPhi1']
 binningTemplate['DPhi3']=binningTemplate['DPhi1']
 binningTemplate['DPhi4']=binningTemplate['DPhi1']
 binningTemplate['MaxForwardPt'] = binning['MaxForwardPt']
+binningTemplate['MaxHemJetPt']=[20,0,100]
 binningTemplate['HtRatio']=binning['HtRatio']
 
 binningAnalysis = {}#
@@ -161,6 +168,7 @@ binningAnalysis['BestDijetMass']=binning['BestDijetMass']
 binningAnalysis['MinDeltaM']=binning['MinDeltaM']
 binningAnalysis['MaxDPhi']=binning['MaxDPhi']
 binningAnalysis['MaxForwardPt'] = binning['MaxForwardPt']
+binningAnalysis['MaxHemJetPt']=binning['MaxHemJetPt']
 binningAnalysis['HtRatio']=binning['HtRatio']
 
 binning2d = {}
@@ -259,4 +267,5 @@ binningUser['BestDijetMass']=binning['BestDijetMass']
 binningUser['MinDeltaM']=binning['MinDeltaM']
 binningUser['MaxDPhi']=binning['MaxDPhi']
 binningUser['MaxForwardPt'] = binning['MaxForwardPt']
+binningUser['MaxHemJetPt']=binning['MaxHemJetPt']
 binningUser['HtRatio']=binning['HtRatio']
