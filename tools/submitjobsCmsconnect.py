@@ -67,7 +67,7 @@ def main():
     for fname_ in fnamelines:
         if not (fnamekeyword in fname_): continue
         fname = fname_.strip()
-        job = analyzer.split('/')[-1].replace('.py','').replace('.jdl','')+'-'+fname.strip()+'Jer'+JerUpDown
+        job = analyzer.split('/')[-1].replace('.py','').replace('.jdl','')+'-'+fname.strip()+'Jer'+JerUpDown+hemcut
         #job = job.replace('.root',Bootstrap+'.root')        
         job = job.replace('.root','')
         job+=Bootstrap
