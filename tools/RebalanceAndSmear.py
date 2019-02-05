@@ -266,7 +266,7 @@ if quickrun: nevents = min(10000,nevents)
 c.Show(0)
 print "nevents=", nevents
 
-newFileName = 'RandS_'+filelist[0].split('/')[-1].replace('.root','')+'.root'
+newFileName = 'RandS_'+filelist[0].split('/')[-1].replace('.root','')+hemcut+'.root'
 if blockHem: newFileName = newFileName.replace('.root','HemVeto'+str(blockHem)+'.root')
 newFileName = newFileName.replace('.root',nametag[JerUpDown]+'.root')
 if bootstrapmode: newFileName = newFileName.replace('.root',Bootstrap+'.root')
