@@ -24,9 +24,10 @@ parser.add_argument("-jersf", "--JerUpDown", type=str, default='Nom',help="JER s
 parser.add_argument("-bootstrap", "--Bootstrap", type=str, default='0',help="boot strapping (0,1of5,2of5,3of5,...)")
 parser.add_argument("-quickrun", "--quickrun", type=bool, default='',help="Quick practice run (True, False)")
 parser.add_argument("-forcetemplates", "--forcetemplates", type=str, default='',help="you can use this to override the template choice")
+parser.add_argument("-hemcut", "--hemcut", type=str, default='',help="you can use this to override the template choice")
 args = parser.parse_args()
+hemcut = args.hemcut
 forcetemplates = args.forcetemplates
-
 printevery = args.printevery
 fnamekeyword = args.fnamekeyword
 JerUpDown = args.JerUpDown
@@ -113,6 +114,17 @@ if year=='Run2':loadSearchBins2018()
 isskim = False ##thing one to switch
 skiprands = False
 
+if hemcut=='DuringHem':
+    def PassHemCut(runn):
+        if runn>=319077: return True
+        else: return False
+elif hemcut=='PreHem':
+    def PassHemCut(runn):    
+        if runn<319077: return True
+        else: return False    
+else: 
+    def PassHemCut(runn):
+        return True
 pwd = os.getcwd()
 
 
@@ -485,6 +497,7 @@ for ientry in range(nevents):
         prescaleweight = c.PrescaleWeightHT#c.Online_HtPrescaleWeight
         ht = c.HTOnline
         if not ht>150: continue
+        if not PassHemCut(c.RunNum): continue
         if is2016 and isdata___ and ht<300: 
             htbin = xaxHt.FindBin(ht)
             #print ht, htbin
