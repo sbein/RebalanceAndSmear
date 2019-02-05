@@ -8,8 +8,9 @@ parser.add_argument("-jersf", "--JerUpDown", type=str, default='Nom',help="JER s
 parser.add_argument("-bootstrap", "--Bootstrap", type=str, default='0',help="boot strapping (0,1of5,2of5,3of5,...)")
 parser.add_argument("-quickrun", "--quickrun", type=bool, default=False,help="Quick practice run (True, False)")
 parser.add_argument("-forcetemplates", "--forcetemplates", type=str, default=False,help="you can use this to override the template choice")
+parser.add_argument("-hemcut", "--hemcut", type=str, default='',help="you can use this to override the template choice")
 args = parser.parse_args()
-forcetemplates = args.forcetemplates
+hemcut = args.hemcut
 
 fnamekeyword = args.fnamekeyword.strip()
 analyzer = args.analyzer

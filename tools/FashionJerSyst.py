@@ -1,12 +1,23 @@
 '''on cmsconnect at /uscms_data/d3/sbein/Ra2slashB2018/29Nov2018/CMSSW_10_1_0/src/RebalanceAndSmear, do
 
-python tools/ahadd.py -f JerPit/Run2016_JerUpPartial.root output/Run2016*/*JerUp1of5.root
-python tools/ahadd.py -f JerPit/Run2017_JerUpPartial.root output/Run2017*/*JerUp1of5.root
-python tools/ahadd.py -f JerPit/Run2018_JerUpPartial.root output/Run2018*/*JerUp1of5.root
+python tools/ahadd.py -f JerPit/Run2016_JerUpPartial.root output/Run2016*Jet/*JerUp.root
+python tools/ahadd.py -f JerPit/Run2017_JerUpPartial.root output/Run2017*Jet/*JerUp.root
+python tools/ahadd.py -f JerPit/Run2018_JerUpPartial.root output/Run2018*Jet/*JerUp.root
+python tools/ahadd.py -f JerPit/Run2016_JerNom.root output/Run2016*Jet/*Tree.root
+python tools/ahadd.py -f JerPit/Run2017_JerNom.root output/Run2017*Jet/*Tree.root
+python tools/ahadd.py -f JerPit/Run2018_JerNom.root output/Run2018*Jet/*Tree.root
 
-python tools/ahadd.py -f JerPit/Run2016_JerNom.root output/Run2016*/*Tree1of5.root
-python tools/ahadd.py -f JerPit/Run2017_JerNom.root output/Run2017*/*Tree1of5.root
-python tools/ahadd.py -f JerPit/Run2018_JerNom.root output/Run2018*/*Tree1of5.root
+#try 2
+python tools/ahadd.py JerPit/Run2016JerUp.root output/Run2016*Jet/*TreeJerUp.root
+python tools/ahadd.py JerPit/Run2016JerNom.root output/Run2016*Jet/*Tree.root
+
+python tools/ahadd.py JerPit/Run2017JerUp.root output/Run2017*Jet/*TreeJerUp.root
+python tools/ahadd.py JerPit/Run2017JerNom.root output/Run2017*Jet/*Tree.root
+
+python tools/ahadd.py JerPit/Run2018JerUp.root output/Run2018*Jet/*TreeJerUp.root
+python tools/ahadd.py JerPit/Run2018JerNom.root output/Run2018*Jet/*Tree.root
+
+echo done
 
 Then here, do
 python toosl/FashionJerSyst.py Run2016 && python toosl/FashionJerSyst.py Run2017 && python toosl/FashionJerSyst.py Run2018
