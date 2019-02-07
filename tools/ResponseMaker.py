@@ -326,10 +326,14 @@ for ientry in range(nevents):
                 dRbig = dR_
                 matched = True
                 pt0 = rjet.Pt()
+
+                '''
                 if uncsign==1: 
                     sf, sfunc = getScaleFactor(abs(rjet.Eta()), jerScaleFactors)
                     variation = sfunc/sf
                 else: variation, sfunc = 0, 0
+                '''
+                
                 #print 'compare', variation/sfunc                    
                 #if uncsign==1:    variation = (c.Jets_jerFactorUp[ireco]-c.Jets_jerFactor[ireco])/c.Jets_jerFactor[ireco]
                 #elif uncsign==-1: variation = (c.Jets_jerFactorDown[ireco]-c.Jets_jerFactor[ireco])/c.Jets_jerFactor[ireco]
@@ -337,9 +341,11 @@ for ientry in range(nevents):
                 #print 'c.Jets_jerFactorUp[ireco], c.Jets_jerFactorDown[ireco], c.Jets_jerFactor[ireco]', c.Jets_jerFactorUp[ireco], c.Jets_jerFactorDown[ireco], c.Jets_jerFactor[ireco], variation
                 #listofvariations.append(variation)
                 #print np.mean(listofvariations)
-                pt1 = max(0.,gpt+(1+variation)*(pt0-gpt))
+                #pt1 = max(0.,gpt+(1+variation)*(pt0-gpt))
+                if uncsign==1: pt1 = rjet.Pt()*c.Jets_jerFactorUp[ireco]/c.Jets_jerFactor[ireco]
+                elif uncsign==-1: pt1 = rjet.Pt()*c.Jets_jerFactorDown[ireco]/c.Jets_jerFactor[ireco]
+                else: pt1 = rjet.Pt()
                 response = pt1/gpt#cosine did nothing man! * TMath.Cos(rjet.DeltaPhi(gjet))
-
                 #response = pt0/gpt
                 sumpt = calcSumPt(c.Jets, rjet, 0.7, 0)
                 ratioRPtSumpt1 = rjet.Pt()/sumpt
