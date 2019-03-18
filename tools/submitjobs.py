@@ -70,7 +70,6 @@ def main():
         if not (fnamekeyword in fname_): continue
         fname = fname_.strip()
         job = analyzer.split('/')[-1].replace('.py','').replace('.jdl','')+'-'+fname.strip()+'Jer'+JerUpDown
-
         #from utils import pause
         #pause()
         job = job.replace('.root','')

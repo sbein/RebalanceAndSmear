@@ -24,7 +24,9 @@ parser.add_argument("-fin", "--fnamekeyword", type=str,default='tree_TTJets_HT-6
 parser.add_argument("-jersf", "--JerUpDown", type=str, default='Nom',help="JER scale factor (JerNom, JerUp, ...)")
 parser.add_argument("-selection", "--selection", type=str, default='signal',help="signal, LDP")
 parser.add_argument("-quickrun", "--quickrun", type=bool, default=False,help="Quick practice run (True, False)")
+parser.add_argument("-periodwrthem", "--periodwrthem", type=str, default='',help="you can use this to override the template choice")
 args = parser.parse_args()
+periodwrthem = args.periodwrthem
 printevery = args.printevery
 fnamekeyword = args.fnamekeyword
 JerUpDown = args.JerUpDown
@@ -35,29 +37,95 @@ UseDeep = True
 
 
 ntupleV = '16'
-
-if 'MC2017' in fnamekeyword or 'MC2016' in fnamekeyword: isdata = False
+if 'MC' in fnamekeyword: isdata = False
 else: isdata = True
+
+#################
+# Process some c++ #
+#################
+gROOT.ProcessLine(open('src/UsefulJet.cc').read())
+exec('from ROOT import *')
+
+gROOT.ProcessLine(open('src/BayesRandS.cc').read())
+exec('from ROOT import *')
+
+gROOT.ProcessLine(open('src/Met110Mht110FakePho.cpp').read())
+exec('from ROOT import *')
+
+gROOT.ProcessLine(open('src/BTagCorrector.h').read())
+exec('from ROOT import *')
+
+
+#################
+# Scale factors #
+#################
+# b-tagging
+if not isdata:
+    path_bTagCalib = "usefulthings/btag/DeepCSV_94XSF_V3_B_F.csv"
+    btagcorr = BTagCorrector()
+    
+#################
+# Load in chain #
+#################
+fnamefile = open('usefulthings/filelistSkim_'+selection+'V'+ntupleV+'.txt')
+lines = fnamefile.readlines()
+fnamefile.close()
+
+c = TChain('tree')
+filelist = []
+for line in lines:
+    shortfname = fnamekeyword
+    if not shortfname in line: continue
+    fname = '/eos/uscms//store/user/lpcsusyhad/SusyRA2Analysis2015/Skims/Run2ProductionV'+ntupleV+'/tree_'+selection+'/'+line#RelValQCD_FlatPt
+    fname = fname.strip()
+    legalfname = fname.replace('/eos/uscms/','root://cmseos.fnal.gov//')
+    print 'adding', legalfname
+    c.Add(legalfname)
+    filelist.append(legalfname)
+    tfile = TFile.Open(legalfname)
+    tfile.ls()
+    if not isdata: btagcorr.SetEffs(tfile)
+    break
+
+if not isdata:
+    btagcorr.SetCalib(path_bTagCalib)
+    btagcorr.SetFastSim(False)
+
+nevents = c.GetEntries()
+if quickrun: nevents = min(5000,nevents)
+c.Show(0)
+print "nevents=", nevents
+
+newFileName = 'Skim_'+filelist[0].split('/')[-1].replace('.root','')+'_'+selection+periodwrthem+'.root'
+newFileName = newFileName.replace('.root',nametag[JerUpDown]+'.root')
+fnew = TFile(newFileName,'recreate')
+print 'creating new file:',fnew.GetName()
+
+
+
 
 is2017f = False
 is2017 = False
 
 print 'isdata, is2017f', isdata, is2017f
 
-if '_2016' in fnamekeyword or 'MC2016' in fnamekeyword: 
+if '_2016' in filelist[0] or 'MC2016' in filelist[0]: 
     BTAG_CSVv2 = 0.8484
     BTAG_deepCSV = 0.6324
-if '_2017' in fnamekeyword or 'MC2017' in fnamekeyword: 
+if '_2017' in filelist[0] or 'MC2017' in filelist[0]: 
     BTAG_CSVv2 = 0.8838
     BTAG_deepCSV = 0.4941
     is2017 = True
-    if '2017F' in fnamekeyword: is2017f = True
-if '_2018' in fnamekeyword or 'MC2018' in fnamekeyword: 
+    if '2017F' in filelist[0]: is2017f = True
+if '_2018' in fnamekeyword or 'MC2018' in filelist[0]: 
     BTAG_CSVv2 = 0.8838
     BTAG_deepCSV = 0.4941
 
 if UseDeep: BTag_Cut = BTAG_deepCSV
 else: BTag_Cut = BTAG_CSVv2
+
+
+
 
 year = '2015'
 year = '2016'
@@ -76,20 +144,9 @@ ujfu= open('src/UsefulJet.h', 'w')
 ujfu.write(ujfdata)
 ujfu.close()
 
-gROOT.ProcessLine(open('src/UsefulJet.cc').read())
-exec('from ROOT import *')
-
-gROOT.ProcessLine(open('src/BayesRandS.cc').read())
-exec('from ROOT import *')
-
-gROOT.ProcessLine(open('src/Met110Mht110FakePho.cpp').read())
-exec('from ROOT import *')
-
-gROOT.ProcessLine(open('src/BTagCorrector.h').read())
-exec('from ROOT import *')
 
 
-varlist = ['Ht','Mht','NJets','BTags','SearchBins', 'MaxDPhi', 'MaxForwardPt', 'HtRatio']
+varlist = ['Ht','Mht','NJets','BTags','SearchBins', 'MaxDPhi', 'MaxHemJetPt', 'HtRatio']##labeling issue with maxhemjet
 indexVar = {}
 for ivar, var in enumerate(varlist): indexVar[var] = ivar
 indexVar[''] = -1
@@ -124,12 +181,6 @@ def selectionFeatureVector(fvector, regionkey='', omitcuts='', omitcuts_dphi='')
     return passmain 
 
 
-#################
-# Scale factors #
-#################
-# b-tagging
-path_bTagCalib = "usefulthings/btag/DeepCSV_94XSF_V3_B_F.csv"
-btagcorr = BTagCorrector()
 
 #################
 # MadHT ranges #
@@ -139,41 +190,20 @@ elif 'TTJets_HT' in fnamekeyword: madranges = [(600,Inf)]
 else: madranges = [(0, Inf)]
 
 
-#################
-# Load in chain #
-#################
-fnamefile = open('usefulthings/filelistSkim_'+selection+'V'+ntupleV+'.txt')
-lines = fnamefile.readlines()
-fnamefile.close()
+if periodwrthem=='DuringHem':
+    def PassIntendedHemRunnumber(runn):
+        if runn>=319077: return True
+        else: return False
+elif periodwrthem=='PreHem':
+    def PassIntendedHemRunnumber(runn):    
+        if runn<319077: return True
+        else: return False    
+else: 
+    def PassIntendedHemRunnumber(runn):
+        return True
 
-c = TChain('tree')
-filelist = []
-for line in lines:
-    shortfname = fnamekeyword
-    if not shortfname in line: continue
-    fname = '/eos/uscms//store/user/lpcsusyhad/SusyRA2Analysis2015/Skims/Run2ProductionV'+ntupleV+'/tree_'+selection+'/'+line#RelValQCD_FlatPt
-    fname = fname.strip()
-    legalfname = fname.replace('/eos/uscms/','root://cmseos.fnal.gov//')
-    print 'adding', legalfname
-    c.Add(legalfname)
-    filelist.append(legalfname)
-    tfile = TFile.Open(legalfname)
-    print 'listing'
-    tfile.ls()
-    btagcorr.SetEffs(tfile)
 
-btagcorr.SetCalib(path_bTagCalib)
-btagcorr.SetFastSim(False)
 
-nevents = c.GetEntries()
-if quickrun: nevents = min(5000,nevents)
-c.Show(0)
-print "nevents=", nevents
-
-newFileName = 'Skim_'+filelist[0].split('/')[-1].replace('.root','')+'_'+selection+'.root'
-newFileName = newFileName.replace('.root',nametag[JerUpDown]+'.root')
-fnew = TFile(newFileName,'recreate')
-print 'creating new file:',fnew.GetName()
 
 hHt = TH1F('hHt','hHt',120,0,2500)
 hHt.Sumw2()
@@ -231,6 +261,7 @@ for ientry in range(nevents):
         ht = c.HTOnline
         fillth1(hHt, ht)
         fillth1(hMht, c.MHT)
+        if not PassIntendedHemRunnumber(c.RunNum): continue
     else:
         gHt = getHT(c.GenJets,AnMhtJetPtCut)
         fillth1(hHt, gHt,1)
@@ -256,9 +287,10 @@ for ientry in range(nevents):
             if abs(jet.Eta())>2.65 and abs(jet.Eta()) < 3.139 and jet.Pt()/c.Jets_jecFactor[ijet]<50: continue #/c.Jets_jerFactor[ijet]
             recojets.push_back(UsefulJet(jet, c.Jets_bJetTagDeepCSVBvsAll[ijet], jet.Pt()))
 
-        
-    btagprob = btagcorr.GetCorrections(c.Jets,c.Jets_hadronFlavor,c.Jets_HTMask)
-    
+    if not isdata:
+        btagprob = btagcorr.GetCorrections(c.Jets,c.Jets_hadronFlavor,c.Jets_HTMask)
+    else:
+        btagprob = [1]
     MetVec = mkmet(c.MET, c.METPhi)
     #branch
     bMhtVec = mkmet(c.MHT,c.MHTPhi)
@@ -277,7 +309,7 @@ for ientry in range(nevents):
     binNumber = getBinNumber2018(fv[0])    
     fv[0].append(binNumber)        
     fv[0].append(max([bDPhi1,bDPhi2,bDPhi3,bDPhi4]))
-    fv[0].append(GetHighestPtForwardPt_prefiring(recojets))
+    fv[0].append(GetHighestHemJetPt(recojets))
     fv[0].append(htratio)
     fv[0].append(-1)
     fv[0].append(ientry%2==0)    
@@ -332,7 +364,7 @@ for ientry in range(nevents):
     binNumber = getBinNumber2018(fv[0])
     fv[0].append(binNumber)     
     fv[0].append(max([tDPhi1,tDPhi2,tDPhi3,tDPhi4]))
-    fv[0].append(GetHighestPtForwardPt_prefiring(recojets))
+    fv[0].append(GetHighestHemJetPt(recojets))
     fv[0].append(tHt5/max(0.0001,tHt))
     fv[0].append(ientry%2==0)    
     fv[0].append(True)

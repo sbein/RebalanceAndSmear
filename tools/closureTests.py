@@ -26,6 +26,9 @@ if '16' in filenameA:
 elif '17' in filenameA:
     year = 'Fall17'
     lumi = 100.7
+else: 
+    year = 'Summer16'
+    lumi = 100.7
     
 redoBinning = binningAnalysis
 #redoBinning = binningUser
@@ -105,7 +108,7 @@ newfilename = filenameA.replace('Output/','').replace('TruthAndMethod','Closure'
 newfile = TFile('closure_rands.root','recreate')
 #newfile.ls()
 
-if datamc=='MC': norm = 1000*lumi
+if datamc=='MC': norm = lumi
 else: norm = 1
 #hNormNum = fileA.Get('hLowMhtBaseline_MhtTruth').Clone('hNormNum')
 #hNormNum.Scale(norm)

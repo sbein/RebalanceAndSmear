@@ -8,7 +8,9 @@ parser.add_argument("-jersf", "--JerUpDown", type=str, default='Nom',help="JER s
 parser.add_argument("-bootstrap", "--Bootstrap", type=str, default='0',help="boot strapping (0,1of5,2of5,3of5,...)")
 parser.add_argument("-selection", "--selection", type=str, default='signal',help="signal, LDP")
 parser.add_argument("-quickrun", "--quickrun", type=bool, default=False,help="Quick practice run (True, False)")
+parser.add_argument("-periodwrthem", "--periodwrthem", type=str, default='',help="you can use this to override the template choice")
 args = parser.parse_args()
+periodwrthem = args.periodwrthem
 fnamekeyword = args.fnamekeyword.strip()
 analyzer = args.analyzer
 JerUpDown = args.JerUpDown
@@ -72,7 +74,7 @@ def main():
 
         #from utils import pause
         #pause()
-        job = job.replace('.root','')
+        job = job.replace('.root','')+periodwrthem
         job = job.replace('.root',Bootstrap+'.root')     
         #print 'creating jobs:',job
         newjdl = open('jobs/'+job+'.jdl','w')

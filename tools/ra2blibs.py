@@ -45,18 +45,27 @@ triggerIndecesV16 = triggerIndecesV16a #this was not yet checked
 regionCuts = {}
 pi = 3.14159
 Inf = 9999
-#varlist =                           ['Ht',    'Mht',    'NJets','BTags','SearchBins','MaxDPhi', 'MaxHemJetPt','HtRatio']]
+#varlist =                           ['Ht',    'Mht',    'NJets','BTags','SearchBins','MaxDPhi', 'MinDeltaPhiHem','HtRatio']]
 regionCuts['Baseline']          = (0,[[300,Inf],[300,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
-regionCuts['LowMhtBaseline']    = (0,[[300,Inf],[200,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
-regionCuts['LowMhtSideband']    = (0,[[300,Inf],[250,300],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
-regionCuts['LowDeltaPhi']       = (1,[[300,Inf],[300,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
-regionCuts['LdpLmhtBase']       = (1,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
-regionCuts['LdpLmhtSideband']   = (1,[[300,Inf],[250,300],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['LowMhtBaseline']    = (0,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,2]],  [[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+#regionCuts['LowMhtSideband']    = (0,[[300,Inf],[250,300],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,2]],  [[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+#regionCuts['LowDeltaPhi']       = (1,[[300,Inf],[300,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,2]],  [[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['LdpLmhtBase']       = (1,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,2]],  [[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+###regionCuts['LdpLmhtSideband']   = (1,[[300,Inf],[250,300],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,2]],  [[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
 
-regionCuts['LowMhtBaseHemv15']  = (0,[[300,Inf],[200,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,15],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
-regionCuts['LdpLmhtBaseHemv15'] = (1,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,15],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
-regionCuts['LowMhtBaseHemv30']  = (0,[[300,Inf],[200,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,30],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
-regionCuts['LdpLmhtBaseHemv30'] = (1,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,30],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+#regionCuts['LowMhtBaseHemv15']  = (0,[[300,Inf],[200,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,15],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+#regionCuts['LdpLmhtBaseHemv15'] = (1,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,15],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['LowMhtBaseHemv0p5']  = (0,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0.5,Inf],   [0,2]],  [[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['LdpLmhtBaseHemv0p5'] = (1,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0.5,Inf],   [0,2]],  [[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+
+regionCuts['LowMhtBaseHemv0p7']  = (0,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0.7,Inf],   [0,2]],  [[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['LdpLmhtBaseHemv0p7'] = (1,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0.7,Inf],   [0,2]],  [[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+
+#regionCuts['LowMhtSidebandHemv0p5']  = (0,[[300,Inf],[250,300],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf], [0.5,Inf],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['LdpLmhtSidebandHemv0p5'] = (1,[[300,Inf],[250,300],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf], [0.5,Inf],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+
+#regionCuts['LowMhtSidebandHemv0p7']  = (0,[[300,Inf],[250,300],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf], [0.7,Inf],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['LdpLmhtSidebandHemv0p7'] = (1,[[300,Inf],[250,300],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf], [0.7,Inf],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
 #regionCuts['LowHtLowDeltaPhi']  = (1,[[300,800],[250,300],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
 #regionCuts['HighHtLowDeltaPhi'] = (1,[[800,Inf],[250,300],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,Inf],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
 
@@ -114,6 +123,7 @@ binning['MaxDPhi']=[32,0,3.2]
 binning['MaxForwardPt']=[30,20,320]
 binning['MaxHemJetPt']=[20,0,100]
 binning['HtRatio']=[30,1,4]
+binning['MinDeltaPhiHem'] = [32,0,3.2]
 
 binningTemplate = {}
 binningTemplate['Mht']=[300,0,600]
@@ -139,9 +149,12 @@ binningTemplate['DPhi4']=binningTemplate['DPhi1']
 binningTemplate['MaxForwardPt'] = binning['MaxForwardPt']
 binningTemplate['MaxHemJetPt']=[20,0,100]
 binningTemplate['HtRatio']=binning['HtRatio']
+binningTemplate['MinDeltaPhiHem'] = binning['MinDeltaPhiHem']
 
 binningAnalysis = {}#
 binningAnalysis['Mht']=[250,300,350,600,850,2000]
+#binningAnalysis['Mht']=[250,300,350,400,450,500,550,600,650,700,750,800,850,900,950,1000,1050,1100,1150,1200,1250,1300,1350,1400,1450,1500,1550,1600,1650,1700,1750,1800,1850,1900,1950,2000]
+#inningAnalysis['Mht']=[250,300,350,400,450,500,550,600,650,700,750,800,850,900,950,1000]
 binningAnalysis['Met']=binningAnalysis['Mht']#
 binningAnalysis['Ht']=[300,350,600, 850,1200,1700,3000]#
 binningAnalysis['NJets']=[2,4,6,8,10,15]#
@@ -170,6 +183,7 @@ binningAnalysis['MaxDPhi']=binning['MaxDPhi']
 binningAnalysis['MaxForwardPt'] = binning['MaxForwardPt']
 binningAnalysis['MaxHemJetPt']=binning['MaxHemJetPt']
 binningAnalysis['HtRatio']=binning['HtRatio']
+binningAnalysis['MinDeltaPhiHem'] = binning['MinDeltaPhiHem']
 
 binning2d = {}
 binning2d['Mht']=[0,20,40,60,80,100,120,140,160,180,200,220,240,260,280,300,340,380,420,460,500,550,600]
@@ -214,6 +228,8 @@ binningTemplate['DPhi2']=binningTemplate['DPhi1']
 binningTemplate['DPhi3']=binningTemplate['DPhi1']
 binningTemplate['DPhi4']=binningTemplate['DPhi1']
 binningTemplate['HtRatio']=binning['HtRatio']
+binningTemplate = binning['MinDeltaPhiHem']
+
 
 binningTrigger = {}
 binningTrigger['MHT']=[100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,260,270,280,290,300,310,320,350,380,410,450,500,600,1000]
@@ -229,6 +245,7 @@ binningTrigger[dimupt] = binningTrigger['MHT']
 binningTrigger['Photons_hadTowOverEM[0]'] = [20,0,0.05]
 binningTrigger['Photons_sigmaIetaIeta[0]'] = [20,0,0.015]
 binningTrigger['HtRatio']=binning['HtRatio']
+binningTrigger = binning['MinDeltaPhiHem']
 
 binningUser = {}#
 binningUser['Mht']=[60,0,1200]#
@@ -269,3 +286,4 @@ binningUser['MaxDPhi']=binning['MaxDPhi']
 binningUser['MaxForwardPt'] = binning['MaxForwardPt']
 binningUser['MaxHemJetPt']=binning['MaxHemJetPt']
 binningUser['HtRatio']=binning['HtRatio']
+binningUser['MinDeltaPhiHem'] = binning['MinDeltaPhiHem']

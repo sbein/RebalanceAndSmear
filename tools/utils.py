@@ -146,6 +146,7 @@ units['MaxDPhi']='rad'
 units['MaxForwardPt'] = 'GeV'
 units['MaxHemJetPt'] = 'GeV'
 units['HtRatio'] = 'bin'
+units['MinDeltaPhiHem'] = 'bin'
 
 
 def makehist(hname='hist',var='Mht', color = kBlack):
@@ -153,11 +154,11 @@ def makehist(hname='hist',var='Mht', color = kBlack):
         nbins = binningTrigger[var][0]
         low = binningTrigger[var][1]
         high = binningTrigger[var][2]
-        hist = TH1F(hname,hname,nbins,low,high)
+        hist = TH1D(hname,hname,nbins,low,high)
     else:
         nBin = len(binningTrigger[var])-1
         binArr = array('d',binningTrigger[var])
-        hist = TH1F(hname,hname,nBin,binArr) 
+        hist = TH1D(hname,hname,nBin,binArr) 
     histoStyler(hist, color) 
     return hist  
 
@@ -182,21 +183,21 @@ def mkHistoStruct(hname, binning):
         nbins = binning[var][0]
         low = binning[var][1]
         high = binning[var][2]
-        histoStruct.Branch = TH1F('h'+hname+'Branch',hname+'Branch',nbins,low,high)
-        histoStruct.Truth = TH1F('h'+hname+'Truth',hname+'Truth',nbins,low,high)
-        histoStruct.GenSmeared = TH1F('h'+hname+'GenSmeared',hname+'GenSmeared',nbins,low,high)
-        histoStruct.Gen = TH1F('h'+hname+'Gen',hname+'Gen',nbins,low,high)
-        histoStruct.Rebalanced = TH1F('h'+hname+'Rebalanced',hname+'Rebalanced',nbins,low,high)
-        histoStruct.RplusS = TH1F('h'+hname+'RplusS',hname+'RplusS',nbins,low,high)
+        histoStruct.Branch = TH1D('h'+hname+'Branch',hname+'Branch',nbins,low,high)
+        histoStruct.Truth = TH1D('h'+hname+'Truth',hname+'Truth',nbins,low,high)
+        histoStruct.GenSmeared = TH1D('h'+hname+'GenSmeared',hname+'GenSmeared',nbins,low,high)
+        histoStruct.Gen = TH1D('h'+hname+'Gen',hname+'Gen',nbins,low,high)
+        histoStruct.Rebalanced = TH1D('h'+hname+'Rebalanced',hname+'Rebalanced',nbins,low,high)
+        histoStruct.RplusS = TH1D('h'+hname+'RplusS',hname+'RplusS',nbins,low,high)
     else:
         nBin = len(binning[var])-1
         binArr = array('d',binning[var])
-        histoStruct.Branch = TH1F('h'+hname+'Branch',hname+'Branch',nBin,binArr)
-        histoStruct.Truth = TH1F('h'+hname+'Truth',hname+'Truth',nBin,binArr)
-        histoStruct.GenSmeared = TH1F('h'+hname+'GenSmeared',hname+'GenSmeared',nBin,binArr)
-        histoStruct.Gen = TH1F('h'+hname+'Gen',hname+'Gen',nBin,binArr)
-        histoStruct.Rebalanced = TH1F('h'+hname+'Rebalanced',hname+'Rebalanced',nBin,binArr)
-        histoStruct.RplusS = TH1F('h'+hname+'RplusS',hname+'RplusS',nBin,binArr)
+        histoStruct.Branch = TH1D('h'+hname+'Branch',hname+'Branch',nBin,binArr)
+        histoStruct.Truth = TH1D('h'+hname+'Truth',hname+'Truth',nBin,binArr)
+        histoStruct.GenSmeared = TH1D('h'+hname+'GenSmeared',hname+'GenSmeared',nBin,binArr)
+        histoStruct.Gen = TH1D('h'+hname+'Gen',hname+'Gen',nBin,binArr)
+        histoStruct.Rebalanced = TH1D('h'+hname+'Rebalanced',hname+'Rebalanced',nBin,binArr)
+        histoStruct.RplusS = TH1D('h'+hname+'RplusS',hname+'RplusS',nBin,binArr)
     histoStyler(histoStruct.Branch,kRed)
     histoStyler(histoStruct.Truth,kRed)
     histoStyler(histoStruct.GenSmeared,kBlack)
@@ -1046,6 +1047,9 @@ def loadSearchBins2018():
     SearchBinNumbers[(1200.0, 9999.0), (600.0, 850.0), (9.0, 99.0), (2.0, 99.0)] = 172
     SearchBinNumbers[(850.0, 1700.0), (850.0, 9999.0), (9.0, 99.0), (2.0, 99.0)] = 173
     SearchBinNumbers[(1700.0, 9999.0), (850.0, 9999.0), (9.0, 99.0), (2.0, 99.0)] = 174
+    SearchBinNumbers[(-2,-1), (-2,-1), (-2,-1), (-2,-2)] = 175
+    SearchBinNumbers[(-2,-1), (-2,-1), (-2,-1), (-2,-1)] = 176
+        
 
 def getBinNumber2018(fvmain):# a bit dangerous, so the binning better be right.
     if fvmain[1]<300: return False
@@ -1657,6 +1661,16 @@ def GetHighestHemJetPt(jets):
                 highestPt = jet.Pt()
     return highestPt
 
+def GetMaxDeltaPhiMhtHemJets(jets, mht):
+    highestDPhi = -10
+    for jet in jets:
+        if not jet.Pt()>30: continue
+        if -3.2<jet.Eta() and jet.Eta()<-1.2 and -1.77<jet.Phi() and jet.Phi()<-0.67:
+            if abs(jet.DeltaPhi(mht))>highestDPhi:
+                highestDPhi = abs(jet.DeltaPhi(mht))
+    if highestDPhi<0: return 10
+    else: return highestDPhi
+
 
 def FabDraw(cGold,leg,hTruth,hComponents,datamc='mc',lumi=35.9, title = '', LinearScale=False, fractionthing='(bkg-obs)/obs'):
     cGold.cd()
@@ -1701,9 +1715,9 @@ def FabDraw(cGold,leg,hTruth,hComponents,datamc='mc',lumi=35.9, title = '', Line
         leg.AddEntry(hTruth,title0,'lp')    
     hTruth.SetTitle('')
     hComponents[0].SetTitle('')	
-    hComponents[0].GetYaxis().SetRangeUser(0.1, 10000*hComponents[0].GetMaximum())
+    hComponents[0].GetYaxis().SetRangeUser(0.05, 10000*hComponents[0].GetMaximum())
     hComponents[0].GetYaxis().SetTitleOffset(0.8)
-    hComponents[0].Draw('hist')
+    hComponents[0].Draw('hist e')
     for h in hComponents[1:]: 
         h.Draw('hist same')
         cGold.Update()
@@ -1769,7 +1783,7 @@ def FabDraw(cGold,leg,hTruth,hComponents,datamc='mc',lumi=35.9, title = '', Line
 
 def stampFab(lumi,datamc='MC'):
     tl.SetTextFont(cmsTextFont)
-    tl.SetTextSize(1.6*tl.GetTextSize())
+    tl.SetTextSize(1.55*tl.GetTextSize())
     tl.DrawLatex(0.152,0.82, 'CMS')
     tl.SetTextFont(extraTextFont)
     tl.DrawLatex(0.14,0.74, ('MC' in datamc)*' simulation'+' preliminary')
@@ -1777,7 +1791,7 @@ def stampFab(lumi,datamc='MC'):
     if lumi=='': tl.DrawLatex(0.62,0.82,'#sqrt{s} = 13 TeV')
     else: tl.DrawLatex(0.42,0.82,'#sqrt{s} = 13 TeV, L = '+str(lumi)+' fb^{-1}')
     #tl.DrawLatex(0.64,0.82,'#sqrt{s} = 13 TeV')#, L = '+str(lumi)+' fb^{-1}')	
-    tl.SetTextSize(tl.GetTextSize()/1.6)
+    tl.SetTextSize(tl.GetTextSize()/1.55)
 
 
 '''

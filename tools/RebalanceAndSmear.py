@@ -98,6 +98,8 @@ if 'Run2018' in fnamekeyword or 'Fall17' in fnamekeyword:
 if UseDeep: BTag_Cut = BTAG_deepCSV
 else: BTag_Cut = BTAG_CSVv2
 
+if is2016: UsePuWeight = False
+
 if isdata___ and is2016:
     filePrescaleCorrector = TFile('usefulthings/PrescaleCorrector2016.root')
     fPrescaleCorrector = filePrescaleCorrector.Get('multiplierOfPrescaleWeightHtBelow300GeV')
@@ -115,15 +117,15 @@ isskim = False ##thing one to switch
 skiprands = False
 
 if hemcut=='DuringHem':
-    def PassHemCut(runn):
+    def PassIntendedHemRunnumber(runn):
         if runn>=319077: return True
         else: return False
 elif hemcut=='PreHem':
-    def PassHemCut(runn):    
+    def PassIntendedHemRunnumber(runn):    
         if runn<319077: return True
         else: return False    
 else: 
-    def PassHemCut(runn):
+    def PassIntendedHemRunnumber(runn):
         return True
 pwd = os.getcwd()
 
@@ -145,6 +147,11 @@ exec('from ROOT import *')
 gROOT.ProcessLine(open('src/Met110Mht110FakePho.cpp').read())
 exec('from ROOT import *')
 
+#mht, njets = 260, 4
+#ht = 2000
+#print 'eff(%d,%d,%d)='%(ht,mht,njets), Eff_Met110Mht110FakePho_CenterUpDown(ht, mht, njets)[0]
+#exit(0)
+
 doHybridMet = False
 lhdMhtJetPtCut = 15.0
 AnMhtJetPtCut = 30.0
@@ -158,7 +165,7 @@ CuttingEdge = True
 
 
 #varlist = ['Ht','Mht','NJets','BTags','DPhi1','DPhi2','DPhi3','DPhi4','Jet1Pt','Jet1Eta','Jet2Pt','Jet2Eta','Jet3Pt','Jet3Eta','Jet4Pt','Jet4Eta','Met','MhtPhi','SearchBins','Odd','MvaLowMht','MvaLowHt']
-varlist = ['Ht','Mht','NJets','BTags','SearchBins', 'MaxDPhi', 'MaxHemJetPt', 'HtRatio']
+varlist = ['Ht','Mht','NJets','BTags','SearchBins', 'MaxDPhi', 'MinDeltaPhiHem', 'HtRatio']
 indexVar = {}
 for ivar, var in enumerate(varlist): indexVar[var] = ivar
 indexVar[''] = -1
@@ -169,7 +176,7 @@ indexVarDPhi['']=-1
 nmain = len(varlist)
 
 def selectionFeatureVector(fvector, regionkey='', omitcuts='', omitcuts_dphi=''):
-    if not fvector[0][1]>250: return False #let's speed this up a bit    
+    if not fvector[0][1]>200: return False #let's speed this up a bit    
     fvmain, fvdphi, fvfilters = fvector
     if not sum(fvfilters)==len(fvfilters): return False
     iomits, iomits_dphi = [], []    
@@ -225,14 +232,14 @@ print 'just making sure about isdata___', isdata___
 
 #templateFileName = StressData[stressdata][0]
 if ('Summer16' in fnamekeyword or 'Run2016' in fnamekeyword): 
-    if UseDeep: templateFileName = 'usefulthings/ResponseFunctionsMC16'+nametag[JerUpDown]+'_deepCsv.root'
-    else: templateFileName = 'usefulthings/ResponseFunctionsMC16'+nametag[JerUpDown]+'.root'
+    if UseDeep: templateFileName = 'usefulthings/ResponseFunctionsMC16AllFilters'+nametag[JerUpDown]+'_deepCsv.root'
+    else: templateFileName = 'usefulthings/ResponseFunctionsMC16AllFilters'+nametag[JerUpDown]+'.root'
 if ('Fall17' in fnamekeyword or 'Run2017' in fnamekeyword or 'Run2018' in fnamekeyword): 
     if UseDeep: templateFileName = 'usefulthings/ResponseFunctionsMC17'+nametag[JerUpDown]+'_deepCsv.root'
     else: templateFileName = 'usefulthings/ResponseFunctionsMC17'+nametag[JerUpDown]+'.root'
 
 if not forcetemplates=='': templateFileName = forcetemplates
-    
+
 ftemplate = TFile(templateFileName)
 print 'using templates from',templateFileName
 hPtTemplate = ftemplate.Get('hPtTemplate')
@@ -262,7 +269,7 @@ for line in lines:
     filelist.append(fname)
     if not chasedown200: break
 nevents = c.GetEntries()
-if quickrun: nevents = min(10000,nevents)
+if quickrun: nevents = min(4000,nevents)
 c.Show(0)
 print "nevents=", nevents
 
@@ -271,6 +278,8 @@ if blockHem: newFileName = newFileName.replace('.root','HemVeto'+str(blockHem)+'
 newFileName = newFileName.replace('.root',nametag[JerUpDown]+'.root')
 if bootstrapmode: newFileName = newFileName.replace('.root',Bootstrap+'.root')
 if not forcetemplates=='': newFileName = newFileName.replace('.root',forcetemplates.split('/')[-1].replace('.root','')+'.root')
+
+#newFileName = 'test.root'
 fnew = TFile(newFileName,'recreate')
 print 'creating new file:',fnew.GetName()
 
@@ -487,6 +496,7 @@ for ientry in range(nevents):
         print 'time=',time.time()-t0
     c.GetEntry(ientry)
 
+    
     if True and ientry==0:
         for itrig in range(len(c.TriggerPass)):
             print itrig, c.TriggerNames[itrig], c.TriggerPrescales[itrig], c.HT
@@ -497,7 +507,7 @@ for ientry in range(nevents):
         prescaleweight = c.PrescaleWeightHT#c.Online_HtPrescaleWeight
         ht = c.HTOnline
         if not ht>150: continue
-        if not PassHemCut(c.RunNum): continue
+        if not PassIntendedHemRunnumber(c.RunNum): continue
         if is2016 and isdata___ and ht<300: 
             htbin = xaxHt.FindBin(ht)
             #print ht, htbin
@@ -513,11 +523,12 @@ for ientry in range(nevents):
         fillth1(hMht, c.MHT,1)
         fillth1(hMhtWeighted, c.MHT,prescaleweight)
     else:
+        xsec = float(c.CrossSection)
         gHt = getHT(c.GenJets,AnMhtJetPtCut)
         fillth1(hHt, gHt,1)
-        fillth1(hHtWeighted, gHt,c.CrossSection)
+        fillth1(hHtWeighted, gHt,xsec)
         fillth1(hMht, c.MHT,1)
-        fillth1(hMhtWeighted, c.MHT,c.CrossSection)    
+        fillth1(hMhtWeighted, c.MHT,xsec)    
         prescaleweight = 1
 
         if doPileUpSlice:
@@ -535,8 +546,7 @@ for ientry in range(nevents):
         if not passesUniversalSelection(c): continue
 
 
-    if (not isdata___) and (c.HT>5*c.GenHT and c.GenHT>10):
-        print 'DEBUG suspicious event', ientry, c.HT, c.GenHT
+    if (not isdata___) and (c.HT>5*c.GenHT and c.GenHT>10): print 'DEBUG suspicious event', ientry, c.HT, c.GenHT
 
     MetVec = mkmet(c.MET, c.METPhi)
     MhtVec = mkmet(c.MHT,c.MHTPhi)
@@ -544,7 +554,7 @@ for ientry in range(nevents):
     nsmears = 1
     if isdata___: weight = 1.0*prescaleweight
     else: 
-        weight = c.CrossSection        
+        weight = xsec        
         if UsePuWeight: weight*=c.puWeight
 
     if PrintJets: 
@@ -552,7 +562,6 @@ for ientry in range(nevents):
         for igp, gp in enumerate(c.GenParticles):
             if gp.Pt()>1: print igp, gp.Pt(), gp.Eta(), gp.Phi(), c.GenParticles_PdgId[igp]
         print 'MHT, GenMHT = ', c.MHT, c.GenMHT
-
 
     '''
     if not isskim:
@@ -582,9 +591,9 @@ for ientry in range(nevents):
             if -3.0<recojet.Eta() and recojet.Eta()<-1.4 and -1.57<recojet.Phi() and recojet.Phi()<-0.87: 
                 PassesHemVeto = False
                 break
-        
+
         if not PassesHemVeto: continue
-              
+
     #if not abs(recojets[0].Eta())<2.4: continue
     #if len(recojets)>1: 
     #    if not abs(recojets[1].Eta())<2.4: continue
@@ -614,7 +623,6 @@ for ientry in range(nevents):
     if not htratio<2: 
         print 'htratio', htratio
         #continue
-
     if not isdata___:
         matchedCsvVec = createMatchedCsvVector(c.GenJets, recojets)
         genjets = CreateUsefulJetVector(c.GenJets, matchedCsvVec)
@@ -650,19 +658,24 @@ for ientry in range(nevents):
     binNumber = getBinNumber2018(fv[0])    
     fv[0].append(binNumber)        
     fv[0].append(max([bDPhi1,bDPhi2,bDPhi3,bDPhi4]))
-    fv[0].append(GetHighestHemJetPt(recojets))
+    fv[0].append(GetMaxDeltaPhiMhtHemJets(recojets,bMhtVec))
     fv[0].append(htratio)
     fv[0].append(-1)
-    fv[0].append(ientry%2==0)    
+    fv[0].append(ientry%2==0)
     #filtery things
     fv.append([passAndrewsTightHtRatio(bDPhi1, c.HT5, c.HT), c.MHT<c.HT])
+
     if is2017f: fv[-1].append(EcalNoiseFilter(recojets, c.MHTPhi))
 
     for regionkey in regionCuts:
         for ivar, varname in enumerate(varlist):
             hname = regionkey+'_'+varname
             if selectionFeatureVector(fv,regionkey,varname,''): 
+                #print 'filling', fv[0][ivar], histoStructDict[hname].Branch.GetName(), regionkey, varname, 'with', fv, 'weight', weight
                 fillth1(histoStructDict[hname].Branch, fv[0][ivar],weight)
+                #histoStructDict[hname].Branch.Draw('hist e')
+                #c1.Update()
+                #pause()
         for ivar, varname in enumerate(varlistDPhi):
             hname = regionkey+'_'+varname
             if selectionFeatureVector(fv,regionkey,'',varname): 
@@ -691,7 +704,7 @@ for ientry in range(nevents):
     binNumber = getBinNumber2018(fv[0])
     fv[0].append(binNumber)     
     fv[0].append(max([tDPhi1,tDPhi2,tDPhi3,tDPhi4]))
-    fv[0].append(GetHighestHemJetPt(recojets))
+    fv[0].append(GetMaxDeltaPhiMhtHemJets(recojets,tMhtVec))
     fv[0].append(tHt5/max(0.0001,tHt))
     fv[0].append(ientry%2==0)    
     fv[0].append(True)
@@ -735,7 +748,7 @@ for ientry in range(nevents):
 
     if isdata___: weight = 1.0*prescaleweight
     else: 
-        weight = c.CrossSection
+        weight = xsec
         if UsePuWeight: weight*=c.puWeight
 
 
@@ -751,14 +764,8 @@ for ientry in range(nevents):
                                                                    gGenMhtPtTemplates,gGenMhtDPhiTemplates,\
                                                                    hHtTemplate,cutoff,lhdMhtJetPtCut)
         rebalancedJets = CreateUsefulJetVector(rebalancedJets_,csvRebalancedJets)
-
-        #rebalancedJets_,csvRebalancedJets, nparams = rebalanceJets(t.JetSlim,t.JetsSlim_bDiscriminatorCSV,\
-        #                                                           gRebTemplates,hEtaTemplate,hPtTemplate,\
-        #                                                           gGenMhtPtTemplates,gGenMhtDPhiTemplates,\
-        #                                                           hHtTemplate,cutoff,lhdMhtJetPtCut)
-        #rebalancedJets = CreateUsefulJetVector(rebalancedJets_,csvRebalancedJets)
-        #
         _nparams_ = nparams
+
 
     mHt = getHT(rebalancedJets,AnMhtJetPtCut)
     mHt5 = getHT(rebalancedJets,AnMhtJetPtCut, 5.0)
@@ -783,7 +790,7 @@ for ientry in range(nevents):
     binNumber = getBinNumber2018(fv[0])
     fv[0].append(binNumber)
     fv[0].append(max([mDPhi1,mDPhi2,mDPhi3,mDPhi4]))
-    fv[0].append(GetHighestHemJetPt(rebalancedJets))
+    fv[0].append(GetMaxDeltaPhiMhtHemJets(rebalancedJets, mMhtVec))
     fv[0].append(mHt5/max(0.0001, mHt))
     fv[0].append(ientry%2==0)
     fv.append([passAndrewsTightHtRatio(mDPhi1, mHt5, mHt), mMhtPt<mHt])
@@ -823,7 +830,7 @@ for ientry in range(nevents):
         weight = prescaleweight/nsmears        
     else:
         nsmears = 3
-        weight = c.CrossSection/nsmears
+        weight = xsec/nsmears
         if UsePuWeight: weight*=c.puWeight
     for i in range(nsmears):
 
@@ -857,7 +864,7 @@ for ientry in range(nevents):
         binNumber = getBinNumber2018(fv[0])     
         fv[0].append(binNumber)
         fv[0].append(max([rpsDPhi1,rpsDPhi2,rpsDPhi3,rpsDPhi4]))
-        fv[0].append(GetHighestHemJetPt(RplusSJets))
+        fv[0].append(GetMaxDeltaPhiMhtHemJets(RplusSJets, rpsMhtVec))
         fv[0].append(rpsHt5/max(0.0001, rpsHt))
         fv[0].append(ientry%2==0)
         fv.append([passAndrewsTightHtRatio(rpsDPhi1, rpsHt5, rpsHt), rpsMht<rpsHt])
@@ -896,7 +903,7 @@ for ientry in range(nevents):
     gMhtVec = getMHT(genjets,AnMhtJetPtCut, mhtjetetacut)
     gMht, gMhtPhi = gMhtVec.Pt(), gMhtVec.Phi()
     #matchedRebCsvVec = getMatchedCsv(genjets,rebalancedJets,csvRebalancedJets,harryhistosReba)#for Harry!
-    weight = c.CrossSection
+    weight = xsec
     if UsePuWeight: weight*=c.puWeight
     gHt = getHT(genjets,AnMhtJetPtCut)
     gHt5= getHT(genjets,AnMhtJetPtCut, 5.0)
@@ -917,7 +924,7 @@ for ientry in range(nevents):
     binNumber = getBinNumber2018(fv[0])##for good measure, do some debugging here. it'd be nice to have an understand for why rebalance mht != generator-level mht
     fv[0].append(binNumber)
     fv[0].append(max([gDPhi1,gDPhi2,gDPhi3,gDPhi4]))
-    fv[0].append(GetHighestHemJetPt(genjets))
+    fv[0].append(GetMaxDeltaPhiMhtHemJets(genjets, gMhtVec))
     fv[0].append(gHt5/max(0.0001,gHt))
     fv[0].append(ientry%2==0)
 
@@ -938,7 +945,7 @@ for ientry in range(nevents):
     nsmears = 3
     if isdata___: weight = 1.0*prescaleweight/nsmears    
     else: 
-        weight = c.CrossSection/nsmears
+        weight = xsec/nsmears
         if UsePuWeight: weight*=c.puWeight
     for i in range(nsmears):
         if not (gMht<150): break
@@ -962,7 +969,7 @@ for ientry in range(nevents):
         binNumber = getBinNumber2018(fv[0])
         fv[0].append(binNumber)
         fv[0].append(max([mDPhi1,mDPhi2,mDPhi3,mDPhi4]))
-        fv[0].append(GetHighestHemJetPt(smearedJets))
+        fv[0].append(GetMaxDeltaPhiMhtHemJets(smearedJets, mMhtVec))
         fv[0].append(mHt5/max(0.0001, mHt))
         fv[0].append(ientry%2==0)
 

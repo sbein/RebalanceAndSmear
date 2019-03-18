@@ -1,10 +1,20 @@
 from ROOT import *
 '''
-hadd -f Vault/RandS_Run2_1of5.root Vault/RandS_Run201*1of5.root
-hadd -f Vault/RandS_Run2_2of5.root Vault/RandS_Run201*2of5.root
-hadd -f Vault/RandS_Run2_3of5.root Vault/RandS_Run201*3of5.root
-hadd -f Vault/RandS_Run2_4of5.root Vault/RandS_Run201*4of5.root
-hadd -f Vault/RandS_Run2_5of5.root Vault/RandS_Run201*5of5.root
+#The 2018 HEM-weighted predictions should be in VaultHem/, and they need to be bundled up
+python tools/StitchUpHemPrediction.py
+
+
+#then pause to carry out commands it suggests (move new files into Vault)
+
+hadd -f Vault/RandS_Run2_1of5.root Vault/RandS_Run2016_1of5.root Vault/RandS_Run2017_1of5.root Vault/RandS_Run2018_1of5.root
+hadd -f Vault/RandS_Run2_2of5.root Vault/RandS_Run2016_2of5.root Vault/RandS_Run2017_2of5.root Vault/RandS_Run2018_2of5.root
+hadd -f Vault/RandS_Run2_3of5.root Vault/RandS_Run2016_3of5.root Vault/RandS_Run2017_3of5.root Vault/RandS_Run2018_3of5.root
+hadd -f Vault/RandS_Run2_4of5.root Vault/RandS_Run2016_4of5.root Vault/RandS_Run2017_4of5.root Vault/RandS_Run2018_4of5.root
+hadd -f Vault/RandS_Run2_5of5.root Vault/RandS_Run2016_5of5.root Vault/RandS_Run2017_5of5.root Vault/RandS_Run2018_5of5.root
+
+python tools/processBootstrap.py Run2016
+python tools/processBootstrap.py Run2017
+python tools/processBootstrap.py Run2018
 python tools/processBootstrap.py Run2
 
 '''
@@ -20,10 +30,6 @@ nBoot = 5
 try: year = sys.argv[1]
 except: year = 'Run2017'
 
-applyNorms = True
-if year=='Run2016': NORM = 1.48 #these come from closureData.root, backported, since that step usually comes after this one!!!!
-elif year=='Run2017': NORM = 1.41
-elif year=='Run2018': NORM = 2.79
 
 flist = glob('Vault/*'+year+'_*of'+str(nBoot)+'.root')
 print 'flist', flist
@@ -32,6 +38,7 @@ fnew = TFile('OutputBootstrap'+year+'.root','recreate')
 loadSearchBins2018()
 SearchBinWindows = {v: k for k, v in SearchBinNumbers.iteritems()}
 redoBinning = binningAnalysis
+
 
 files = []
 for fname in flist:
@@ -59,6 +66,7 @@ for name in names:
             vals.append(h.GetBinContent(ibin))
         haux = TH1F('','',100,min(vals)-1,max(vals)+1)
         for val in vals: haux.Fill(val)
+            
         hMaster.SetBinContent(ibin, haux.GetMean())
         hMaster.SetBinError(ibin, haux.GetRMS())  
 
@@ -69,16 +77,17 @@ for name in names:
     if len(redoBinning[kinvar])>3:
         nbins = len(redoBinning[kinvar])-1
         newxs = array('d',redoBinning[kinvar])
-        hMaster = hMaster.Rebin(nbins,'',newxs)        
+        #hMaster = hMaster.Rebin(nbins,'',newxs)
     else:
         newbinning = []
         stepsize = round(1.0*(redoBinning[kinvar][2]-redoBinning[kinvar][1])/redoBinning[kinvar][0],4)
         for ibin in range(redoBinning[kinvar][0]+1): newbinning.append(redoBinning[kinvar][1]+ibin*stepsize)
         nbins = len(newbinning)-1
         newxs = array('d',newbinning)
-        hMaster = hMaster.Rebin(nbins,'',newxs) 
+        #hMaster = hMaster.Rebin(nbins,'',newxs) 
 
-    if 'hBaseline_SearchBins' in name: 
+    if 'hLowMhtBaseline_SearchBins' in name: 
+        hMaster = hMaster.Rebin(nbins,'',newxs)
         xax = hMaster.GetXaxis()
         countByHtMht = {}
         errorByHtMht = {}        
@@ -107,7 +116,6 @@ for name in names:
             print ibin, hMaster.GetBinContent(ibin), 'pm', hMaster.GetBinError(ibin), SearchBinWindows[ibin]
     fnew.cd()
     hMaster.Scale(nBoot)
-    hMaster.Scale(NORM)
     hMaster.Write()
 
 print 'just created', fnew.GetName()

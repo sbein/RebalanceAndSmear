@@ -25,35 +25,49 @@ loadSearchBins2018()
 SearchBinWindows = {v: k for k, v in SearchBinNumbers.iteritems()}
 redoBinning = binningAnalysis
 
-hCentral = labeledhist.Clone('')
 if not year== 'Run2':
-    fCentral = TFile('validation_data'+year+'.root')#these validation files must be HDP!!!! would be good to change their names as decided in closureData.py to reflect this
-    hCentral_ = fCentral.Get('hBaseline_SearchBinsRplusS').Clone('hBaseline_SearchBinsRplusS_aux')
+    hCentral = labeledhist.Clone('')
+    fCentral = TFile('validation_data'+year+'HDP.root')
+    hCentral_ = fCentral.Get('hLowMhtBaseline_SearchBinsRplusS').Clone('hLowMhtBaseline_SearchBinsRplusS_aux')
     for ibin in range(1,xax.GetNbins()+1):
         hCentral.SetBinContent(ibin, hCentral_.GetBinContent(ibin))
         hCentral.SetBinError(ibin, hCentral_.GetBinError(ibin))   
+        print ibin, 'setting bin error', hCentral_.GetBinError(ibin)
 else:
-    fCentral16 = TFile('validation_dataRun2016.root')
-    fCentral17 = TFile('validation_dataRun2017.root')
-    fCentral18 = TFile('validation_dataRun2018.root')        
-    hCentral16_ = fCentral16.Get('hBaseline_SearchBinsRplusS').Clone('hBaseline_SearchBinsRplusS_16')
-    hCentral17_ = fCentral17.Get('hBaseline_SearchBinsRplusS').Clone('hBaseline_SearchBinsRplusS_17')    
-    hCentral18_ = fCentral18.Get('hBaseline_SearchBinsRplusS').Clone('hBaseline_SearchBinsRplusS_18')        
+    fCentral16 = TFile('validation_dataRun2016HDP.root')
+    fCentral17 = TFile('validation_dataRun2017HDP.root')
+    fCentral18 = TFile('validation_dataRun2018HDP.root')        
+    hCentral16_ = fCentral16.Get('hLowMhtBaseline_SearchBinsRplusS').Clone('hLowMhtBaseline_SearchBinsRplusS_16')
+    hCentral = hCentral16_.Clone('')
+    hCentral.Reset()
+    hCentral17_ = fCentral17.Get('hLowMhtBaseline_SearchBinsRplusS').Clone('hLowMhtBaseline_SearchBinsRplusS_17')    
+    hCentral18_ = fCentral18.Get('hLowMhtBaseline_SearchBinsRplusS').Clone('hLowMhtBaseline_SearchBinsRplusS_18')        
     hCentral.Add(hCentral16_)
     hCentral.Add(hCentral17_)
-    hCentral.Add(hCentral18_)        
+    hCentral.Add(hCentral18_)   
 
 hStat = hCentral.Clone('hStat')
 xax = hStat.GetXaxis()
 for ibin in range(1,xax.GetNbins()+1):
     hStat.SetBinContent(ibin, 1+TMath.Sqrt(pow(0.5,2)+pow(hStat.GetBinError(ibin)/hStat.GetBinContent(ibin),2)))
-
+    hCentral.GetXaxis().SetBinLabel(ibin, labeledhist.GetXaxis().GetBinLabel(ibin))
 fnew.cd()
 hCentral.Write('PredictionCV')
+
+
+for ibin in range(1, xax.GetNbins()+1): 
+    bxwindow = SearchBinWindows[ibin][3]
+    print 'bxwindow', bxwindow
+    if bxwindow[0]>=2: 
+        origerror = hStat.GetBinError(ibin)-1
+        newerrr = 0.2
+        hStat.SetBinError(ibin, 1+TMath.Sqrt(pow(origerror,2)+pow(newerrr,2)))
+
 hStat.Write('PredictionUncorrelated')
 #fCentral.Close()
 
 
+'''
 fnjetsyst = TFile('Vault/data-validation-njetsyst.root')
 hSyst_njet = fnjetsyst.Get('hRatio_LdpLmhtSideband_RplusSAndTruth_NJets')
 
@@ -66,11 +80,11 @@ for ibin in range(1, xax.GetNbins()+1):
     PredictionNJet.SetBinContent(ibin, hSyst_njet.GetBinContent(jetbin))
 
 for ibin in range(1,xax.GetNbins()+1):
-    PredictionNJet.GetXaxis().SetBinLabel(ibin, 'QCDNJets')
-    
+    PredictionNJet.GetXaxis().SetBinLabel(ibin, 'QCDNJets')    
 fnew.cd()
 #PredictionNJet.Write('PredictionNJet')
 #fnjetsyst.Close()
+'''
 
 
 hSyst_tail = hStat.Clone('hSyst_tail')
@@ -79,48 +93,53 @@ for ibin in range(1,xax.GetNbins()+1):
 fnew.cd()
 for ibin in range(1,xax.GetNbins()+1):
     hSyst_tail.GetXaxis().SetBinLabel(ibin, 'QCDTail')
+hSyst_tail.GetYaxis().SetRangeUser(0.0001, 5.0)
 hSyst_tail.Write('PredictionTail')
 
-fJerNom = TFile('Vault/Run2017RandS_JerNom.root')
-fJerUp = TFile('Vault/Run2017RandS_JerUp.root')
-fJerUp.ls()
-hUp = fJerUp.Get('hBaseline_SearchBinsRplusS')
-hNom = fJerNom.Get('hBaseline_SearchBinsRplusS')
-kinvar = 'SearchBins'
-if len(redoBinning[kinvar])>3: ##this should be reinstated
-    nbins = len(redoBinning[kinvar])-1
-    newxs = array('d',redoBinning[kinvar])
-    hUp = hUp.Rebin(nbins,'',newxs)
-    hNom = hNom.Rebin(nbins,'',newxs)        
+if not year=='Run2':
+    fJerImpact = TFile('Vault/JerImpact'+year.replace('PreHem','').replace('PostHem','')+'.root')
+    fJerImpact.ls()
+    hUp = fJerImpact.Get('hhLowMhtBaseline_HtRplusSJerUp')
+    hNom = fJerImpact.Get('hhLowMhtBaseline_HtRplusSJerNom')
+    kinvar = 'Ht'
+    if len(redoBinning[kinvar])>3: ##this should be reinstated
+        nbins = len(redoBinning[kinvar])-1
+        newxs = array('d',redoBinning[kinvar])
+        hUp = hUp.Rebin(nbins,'',newxs)
+        hNom = hNom.Rebin(nbins,'',newxs)        
+    else:
+        newbinning = []
+        stepsize = round(1.0*(redoBinning[kinvar][2]-redoBinning[kinvar][1])/redoBinning[kinvar][0],4)
+        for ibin in range(redoBinning[kinvar][0]+1): newbinning.append(redoBinning[kinvar][1]+ibin*stepsize)
+        nbins = len(newbinning)-1
+        newxs = array('d',newbinning)
+        hUp = hUp.Rebin(nbins,'',newxs)
+        hNom = hNom.Rebin(nbins,'',newxs)
+
+    PredictionCore = hStat.Clone('PredictionCore')
+    PredictionCore.Reset()
+    xaxsyst = hUp.GetXaxis()
+    for ibin in range(1, xax.GetNbins()+1): 
+        countkey = SearchBinWindows[ibin][0]
+        valueinbin = 1.0*countkey[0]+0.01
+        #if not countkey in countNom.keys(): 
+        #countNom[countkey] += hNom.GetBinContent(ibin)
+        #countUp[countkey] += hUp.GetBinContent(ibin)        
+        #for ibin in range(1, xaxsyst.GetNbins()+1): 
+        #countkey = SearchBinWindows[ibin][:1]
+        systBin = xaxsyst.FindBin(valueinbin)
+        PredictionCore.SetBinContent(ibin, hUp.GetBinContent(systBin) / hNom.GetBinContent(systBin))
+
+    for ibin in range(1,xax.GetNbins()+1):
+        PredictionCore.GetXaxis().SetBinLabel(ibin, 'QCDCore')
 else:
-    newbinning = []
-    stepsize = round(1.0*(redoBinning[kinvar][2]-redoBinning[kinvar][1])/redoBinning[kinvar][0],4)
-    for ibin in range(redoBinning[kinvar][0]+1): newbinning.append(redoBinning[kinvar][1]+ibin*stepsize)
-    nbins = len(newbinning)-1
-    newxs = array('d',newbinning)
-    hUp = hUp.Rebin(nbins,'',newxs)
-    hNom = hNom.Rebin(nbins,'',newxs)
-
-PredictionCore = hUp.Clone('PredictionCore')
-PredictionCore.Reset()
-xax = hUp.GetXaxis()
-countNom = {}
-countUp = {}
-for ibin in range(1, xax.GetNbins()+1): 
-    countkey = SearchBinWindows[ibin][:2]    
-    if not countkey in countNom.keys(): 
-        countNom[countkey] = 0
-        countUp[countkey] = 0
-    countNom[countkey] += hNom.GetBinContent(ibin)
-    countUp[countkey] += hUp.GetBinContent(ibin)        
-for ibin in range(1, xax.GetNbins()+1): 
-    countkey = SearchBinWindows[ibin][:2]
-    PredictionCore.SetBinContent(ibin, countUp[countkey]/countNom[countkey])
-
-for ibin in range(1,xax.GetNbins()+1):
-    PredictionCore.GetXaxis().SetBinLabel(ibin, 'QCDCore')
+    PredictionCore = hStat.Clone('PredictionCore')
+    PredictionCore.Reset()
+    fForCore = TFile('QcdPredictionRun2_goodforjer.root')
+    PredictionCore = fForCore.Get('PredictionCore')
     
 fnew.cd()
+PredictionCore.GetYaxis().SetRangeUser(0.0001, 5.0)
 PredictionCore.Write()
 
 print 'just created', fnew.GetName()
