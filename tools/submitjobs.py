@@ -9,9 +9,10 @@ parser.add_argument("-bootstrap", "--Bootstrap", type=str, default='0',help="boo
 parser.add_argument("-quickrun", "--quickrun", type=bool, default=False,help="Quick practice run (True, False)")
 parser.add_argument("-forcetemplates", "--forcetemplates", type=str, default=False,help="you can use this to override the template choice")
 parser.add_argument("-hemcut", "--hemcut", type=str, default='',help="you can use this to override the template choice")
+parser.add_argument("-branchonly", "--branchonly", type=bool, default=False,help="skip rebalancing and smearing")
 args = parser.parse_args()
+branchonly = args.branchonly
 hemcut = args.hemcut
-
 fnamekeyword = args.fnamekeyword.strip()
 analyzer = args.analyzer
 JerUpDown = args.JerUpDown

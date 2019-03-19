@@ -146,7 +146,8 @@ ujfu.close()
 
 
 
-varlist = ['Ht','Mht','NJets','BTags','SearchBins', 'MaxDPhi', 'MaxHemJetPt', 'HtRatio']##labeling issue with maxhemjet
+#varlist = ['Ht','Mht','NJets','BTags','SearchBins', 'MaxDPhi', 'MaxHemJetPt', 'HtRatio']##labeling issue with maxhemjet
+varlist = ['Ht','Mht','NJets','BTags','SearchBins', 'MaxDPhi', 'MinDeltaPhiHem', 'HtRatio']
 indexVar = {}
 for ivar, var in enumerate(varlist): indexVar[var] = ivar
 indexVar[''] = -1
@@ -309,7 +310,7 @@ for ientry in range(nevents):
     binNumber = getBinNumber2018(fv[0])    
     fv[0].append(binNumber)        
     fv[0].append(max([bDPhi1,bDPhi2,bDPhi3,bDPhi4]))
-    fv[0].append(GetHighestHemJetPt(recojets))
+    fv[0].append(GetMaxDeltaPhiMhtHemJets(recojets,bMhtVec))
     fv[0].append(htratio)
     fv[0].append(-1)
     fv[0].append(ientry%2==0)    
@@ -364,7 +365,7 @@ for ientry in range(nevents):
     binNumber = getBinNumber2018(fv[0])
     fv[0].append(binNumber)     
     fv[0].append(max([tDPhi1,tDPhi2,tDPhi3,tDPhi4]))
-    fv[0].append(GetHighestHemJetPt(recojets))
+    fv[0].append(GetMaxDeltaPhiMhtHemJets(recojets,tMhtVec))
     fv[0].append(tHt5/max(0.0001,tHt))
     fv[0].append(ientry%2==0)    
     fv[0].append(True)

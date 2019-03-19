@@ -1671,6 +1671,16 @@ def GetMaxDeltaPhiMhtHemJets(jets, mht):
     if highestDPhi<0: return 10
     else: return highestDPhi
 
+def GetMinDeltaPhiMhtHemJets(jets, mht):
+    lowestDPhi = 10
+    for jet in jets:
+        if not jet.Pt()>30: continue
+        if -3.2<jet.Eta() and jet.Eta()<-1.2 and -1.77<jet.Phi() and jet.Phi()<-0.67:
+            if abs(jet.DeltaPhi(mht))<lowestDPhi:
+                lowestDPhi = abs(jet.DeltaPhi(mht))
+    if lowestDPhi<0: return 10
+    else: return lowestDPhi        
+
 
 def FabDraw(cGold,leg,hTruth,hComponents,datamc='mc',lumi=35.9, title = '', LinearScale=False, fractionthing='(bkg-obs)/obs'):
     cGold.cd()

@@ -22,10 +22,12 @@ parser.add_argument("-nprint", "--printevery", type=int, default=100,help="print
 parser.add_argument("-fin", "--fnamekeyword", type=str,default='RunIIFall17MiniAODv2.QCD_HT200to',help="file")
 parser.add_argument("-jersf", "--JerUpDown", type=str, default='Nom',help="JER scale factor (JerNom, JerUp, ...)")
 parser.add_argument("-bootstrap", "--Bootstrap", type=str, default='0',help="boot strapping (0,1of5,2of5,3of5,...)")
-parser.add_argument("-quickrun", "--quickrun", type=bool, default='',help="Quick practice run (True, False)")
+parser.add_argument("-quickrun", "--quickrun", type=bool, default=False,help="Quick practice run (True, False)")
 parser.add_argument("-forcetemplates", "--forcetemplates", type=str, default='',help="you can use this to override the template choice")
 parser.add_argument("-hemcut", "--hemcut", type=str, default='',help="you can use this to override the template choice")
+parser.add_argument("-branchonly", "--branchonly", type=bool, default=False,help="skip rebalancing and smearing")
 args = parser.parse_args()
+branchonly = args.branchonly
 hemcut = args.hemcut
 forcetemplates = args.forcetemplates
 printevery = args.printevery
@@ -222,8 +224,6 @@ def selectionFeatureVector(fvector, regionkey='', omitcuts=''):
 
 StressData = {'Neuts': [pwd+'/Templates/TemplatesSFNomNeuts80x.root'],'Nom':[pwd+'/Templates/TemplatesSFNom80x.root'], 'CoreUp': [pwd+'/Templates/Templates80xCoreUp.root'], 'CoreDown': [pwd+'/Templates/Templates80xCoreDown.root'], 'TailUp': [pwd+'/Templates/Templates80xTailUp.root'], 'TailDown': [pwd+'/Templates/Templates80xTailDown.root'], 'ModPrior': [pwd+'/Templates/Templates80xModPrior.root'], 'NomFine': [pwd+'/Templates/TemplatesSFNom80xFine.root'], 'NomUltraFine':[pwd+'/Templates/TemplatesSFNom80xUltraFine.root'], 'NomV12':[pwd+'/Templates/TemplatesCoreNomTailNomV12.root'], 'NoSFV12':[pwd+'/Templates/TemplatesSFNomV12.root'], 'CoreUpCoarse':[pwd+'/Templates/TemplatesCoreUpTailNomV12coarse.root'], 'CoreDownCoarse':[pwd+'/Templates/TemplatesCoreDownTailNomV12coarse.root'], 'TailUpCoarse':[pwd+'/Templates/TemplatesCoreNomTailUpV12coarse.root'], 'TailDownCoarse':[pwd+'/Templates/TemplatesCoreNomTailDownV12coarse.root'], 'NomCoarse':[pwd+'/Templates/TemplatesCoreNomTailNomV12coarse.root'], 'NomNotProcessed':[pwd+'/Templates/TemplatesSFNomV12.root'], 'NomNotProcessedCoarse':[pwd+'/Templates/TemplatesSFNomV12coarse.root'], 'NomMoriond':[pwd+'/Templates/TemplatesSFNomV12Moriond.root'], 'NomMoriondCodeV11':[pwd+'/Templates/TemplatesSFNomV11MoriondCode.root'],'NomMoriondCodeV11Csvp8':[pwd+'/Templates/TemplatesSFNomV11MoriondCodeCsvp8.root'],'NomAncientMoriondCodeCsvp8':[pwd+'/Templates/TemplatesSFNomAncientMoriondCodeCsvp8.root'],'NomV11MoriondBitFiner':[pwd+'/Templates/TemplatesSFNomV11MoriondBitFiner.root'],'NomV12MoriondGuts':[pwd+'/Templates/TemplatesSFNomV12FixPriorGutEta.root'], 'NomV12MoriondNoFilters':[pwd+'/Templates/TemplatesSFNomV12NoFilters.root']}
 StressData['NomNom'] = [pwd+'/Templates/megatemplateNoSF.root']#sam added Nov29
-
-branchonly = False
 
 if 'Run20' in fnamekeyword: isdata___ = True
 else: isdata___ = False
@@ -658,7 +658,7 @@ for ientry in range(nevents):
     binNumber = getBinNumber2018(fv[0])    
     fv[0].append(binNumber)        
     fv[0].append(max([bDPhi1,bDPhi2,bDPhi3,bDPhi4]))
-    fv[0].append(GetMaxDeltaPhiMhtHemJets(recojets,bMhtVec))
+    fv[0].append(GetMinDeltaPhiMhtHemJets(recojets,bMhtVec))
     fv[0].append(htratio)
     fv[0].append(-1)
     fv[0].append(ientry%2==0)
@@ -704,7 +704,7 @@ for ientry in range(nevents):
     binNumber = getBinNumber2018(fv[0])
     fv[0].append(binNumber)     
     fv[0].append(max([tDPhi1,tDPhi2,tDPhi3,tDPhi4]))
-    fv[0].append(GetMaxDeltaPhiMhtHemJets(recojets,tMhtVec))
+    fv[0].append(GetMinDeltaPhiMhtHemJets(recojets,tMhtVec))
     fv[0].append(tHt5/max(0.0001,tHt))
     fv[0].append(ientry%2==0)    
     fv[0].append(True)
@@ -790,7 +790,7 @@ for ientry in range(nevents):
     binNumber = getBinNumber2018(fv[0])
     fv[0].append(binNumber)
     fv[0].append(max([mDPhi1,mDPhi2,mDPhi3,mDPhi4]))
-    fv[0].append(GetMaxDeltaPhiMhtHemJets(rebalancedJets, mMhtVec))
+    fv[0].append(GetMinDeltaPhiMhtHemJets(rebalancedJets, mMhtVec))
     fv[0].append(mHt5/max(0.0001, mHt))
     fv[0].append(ientry%2==0)
     fv.append([passAndrewsTightHtRatio(mDPhi1, mHt5, mHt), mMhtPt<mHt])
@@ -864,7 +864,7 @@ for ientry in range(nevents):
         binNumber = getBinNumber2018(fv[0])     
         fv[0].append(binNumber)
         fv[0].append(max([rpsDPhi1,rpsDPhi2,rpsDPhi3,rpsDPhi4]))
-        fv[0].append(GetMaxDeltaPhiMhtHemJets(RplusSJets, rpsMhtVec))
+        fv[0].append(GetMinDeltaPhiMhtHemJets(RplusSJets, rpsMhtVec))
         fv[0].append(rpsHt5/max(0.0001, rpsHt))
         fv[0].append(ientry%2==0)
         fv.append([passAndrewsTightHtRatio(rpsDPhi1, rpsHt5, rpsHt), rpsMht<rpsHt])
@@ -924,7 +924,7 @@ for ientry in range(nevents):
     binNumber = getBinNumber2018(fv[0])##for good measure, do some debugging here. it'd be nice to have an understand for why rebalance mht != generator-level mht
     fv[0].append(binNumber)
     fv[0].append(max([gDPhi1,gDPhi2,gDPhi3,gDPhi4]))
-    fv[0].append(GetMaxDeltaPhiMhtHemJets(genjets, gMhtVec))
+    fv[0].append(GetMinDeltaPhiMhtHemJets(genjets, gMhtVec))
     fv[0].append(gHt5/max(0.0001,gHt))
     fv[0].append(ientry%2==0)
 
@@ -969,7 +969,7 @@ for ientry in range(nevents):
         binNumber = getBinNumber2018(fv[0])
         fv[0].append(binNumber)
         fv[0].append(max([mDPhi1,mDPhi2,mDPhi3,mDPhi4]))
-        fv[0].append(GetMaxDeltaPhiMhtHemJets(smearedJets, mMhtVec))
+        fv[0].append(GetMinDeltaPhiMhtHemJets(smearedJets, mMhtVec))
         fv[0].append(mHt5/max(0.0001, mHt))
         fv[0].append(ientry%2==0)
 

@@ -5,10 +5,10 @@ import os,sys
 gROOT.SetBatch(1)
 
 datamc = 'MC'
-lumi = 2.3
-lumi = 24.7
-lumi = 36.3
-lumi = 135
+lumi = 2300
+lumi = 24700
+lumi = 36300
+lumi = 135000
 
 loadSearchBins2018()
 SearchBinNames = {v: k for k, v in SearchBinNumbers.iteritems()}
@@ -108,7 +108,7 @@ newfilename = filenameA.replace('Output/','').replace('TruthAndMethod','Closure'
 newfile = TFile('closure_rands.root','recreate')
 #newfile.ls()
 
-if datamc=='MC': norm = lumi
+if datamc=='MC': norm = lumi*1000
 else: norm = 1
 #hNormNum = fileA.Get('hLowMhtBaseline_MhtTruth').Clone('hNormNum')
 #hNormNum.Scale(norm)
