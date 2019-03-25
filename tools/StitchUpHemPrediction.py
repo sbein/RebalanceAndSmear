@@ -4,12 +4,13 @@ from ra2blibs import *
 from glob import glob
 import os, sys
 
-stitchskims = True
-stitchpredmain = False
+#this script creates one file to represent all of 2018 - later it gets scaled to different luminosities... with the full 2018 data processed and the new mission to split the prediction into pre-HEM and post-HEM, maybe it's best to use processBootstrap.py directly for 2018 pre and post. Then I can come back here and do one mega global bootstrap for all of run 2, to be used for central prediction only. 
+
+stitchskims = False
+stitchpredmain = True
 stitchSmall2018 = False##try to only have one of these set to true
 
 redoBinning = binningAnalysis
-
 #otherwise does prediction
 ''' this first for the skims:
 hadd -f output/MET_2018/Skim_tree_MET_2018_LDPPreHem.root output/MET_2018/Skim_tree_MET_2018B_LDPPreHem.root output/MET_2018/Skim_tree_MET_2018A_LDPPreHem.root
@@ -38,7 +39,7 @@ python tools/ahadd.py -f Partial2018Pit/QcdPred2018PreHem.root output/Run2018A-1
 #Then transfer the PreHem and during HEM 2018 files into VaultHem and follow these directions
 
 if stitchskims: fileskey = 'output/MET_2018/Skim_tree_MET_2018_*PreHem*.root' 
-if stitchpredmain: fileskey = 'VaultHem/*PreHem*.root'
+if stitchpredmain: fileskey = 'VaultHem/*DuringHem*.root'
 if stitchSmall2018: 
     fileskey = 'Partial2018Pit/*PreHem*.root'
     #order in case you have the terrible situation of needing to scale up a prediction because not enough jobs finished for validation
@@ -52,7 +53,7 @@ fnamelistPreHem = glob(fileskey)
 if stitchpredmain: os.system('mkdir VaultHem/OutOfTheWay/')
 for fnamePreHem in fnamelistPreHem:
     fPreHem = TFile(fnamePreHem)
-    fnameDuringHem = fnamePreHem.replace('PreHem','DuringHem')
+    fnameDuringHem = fnamePreHem.replace('DuringHem','PreHem')
     fDuringHem = TFile(fnameDuringHem)
     fnameNew = fnamePreHem.replace('PreHem','')
     fnew = TFile(fnameNew, 'recreate')

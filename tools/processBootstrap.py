@@ -15,6 +15,8 @@ hadd -f Vault/RandS_Run2_5of5.root Vault/RandS_Run2016_5of5.root Vault/RandS_Run
 python tools/processBootstrap.py Run2016
 python tools/processBootstrap.py Run2017
 python tools/processBootstrap.py Run2018
+python tools/processBootstrap.py Run2018PreHem
+python tools/processBootstrap.py Run2018DuringHem
 python tools/processBootstrap.py Run2
 
 '''
