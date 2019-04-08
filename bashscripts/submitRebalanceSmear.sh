@@ -151,4 +151,32 @@ python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fna
 
 
 #2018
-python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018A-17Sep2018-v1.JetHT
+python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018A-17Sep2018-v1.JetHT  --Bootstrap 1of5 &
+python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018B-17Sep2018-v1.JetHT --hemcut PreHem  --Bootstrap 1of5 &
+python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018B-17Sep2018-v1.JetHT --hemcut DuringHem  --Bootstrap 1of5 &
+python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018C-17Sep2018-v1.JetHT  --Bootstrap 1of5 &
+python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018D-PromptReco-v2.JetHT  --Bootstrap 1of5 &
+
+python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018A-17Sep2018-v1.JetHT  --Bootstrap 2of5 &
+python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018B-17Sep2018-v1.JetHT  --hemcut PreHem --Bootstrap 2of5 &
+python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018B-17Sep2018-v1.JetHT  --hemcut DuringHem --Bootstrap 2of5 &
+python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018C-17Sep2018-v1.JetHT  --Bootstrap 2of5 &
+python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018D-PromptReco-v2.JetHT  --Bootstrap 2of5 &
+
+python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018A-17Sep2018-v1.JetHT  --Bootstrap 3of5 &
+python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018B-17Sep2018-v1.JetHT --hemcut PreHem  --Bootstrap 3of5 &
+python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018B-17Sep2018-v1.JetHT --hemcut DuringHem  --Bootstrap 3of5 &
+python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018C-17Sep2018-v1.JetHT  --Bootstrap 3of5 &
+python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018D-PromptReco-v2.JetHT  --Bootstrap 3of5 &
+
+python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018A-17Sep2018-v1.JetHT  --Bootstrap 4of5 &
+python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018B-17Sep2018-v1.JetHT --hemcut PreHem  --Bootstrap 4of5 &
+python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018B-17Sep2018-v1.JetHT --hemcut DuringHem  --Bootstrap 4of5 &
+python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018C-17Sep2018-v1.JetHT  --Bootstrap 4of5 &
+python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018D-PromptReco-v2.JetHT  --Bootstrap 4of5 &
+
+python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018A-17Sep2018-v1.JetHT  --Bootstrap 5of5 &
+python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018B-17Sep2018-v1.JetHT --hemcut PreHem  --Bootstrap 5of5 &
+python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018B-17Sep2018-v1.JetHT --hemcut DuringHem  --Bootstrap 5of5 &
+python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018C-17Sep2018-v1.JetHT  --Bootstrap 5of5 &
+python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018D-PromptReco-v2.JetHT  --Bootstrap 5of5 &

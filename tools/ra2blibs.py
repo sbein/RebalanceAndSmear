@@ -55,14 +55,14 @@ regionCuts['LdpLmhtSideband']   = (1,[[300,Inf],[250,300],[2,Inf],[0,Inf],[-Inf,
 
 #regionCuts['LowMhtBaseHemv15']  = (0,[[300,Inf],[200,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,15],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
 #regionCuts['LdpLmhtBaseHemv15'] = (1,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0,15],      [0,Inf]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
-regionCuts['LowMhtBaseHemv0p7']  = (0,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0.7,Inf],   [0,2]],  [[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
-regionCuts['LdpLmhtBaseHemv0p7'] = (1,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0.7,Inf],   [0,2]],  [[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['LowMhtBaseHemv0p5']  = (0,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0.5,Inf],   [0,2]],  [[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['LdpLmhtBaseHemv0p5'] = (1,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [0.5,Inf],   [0,2]],  [[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
 
 regionCuts['LowMhtBaseHemv1p0']  = (0,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [1.0,Inf],   [0,2]],  [[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
 regionCuts['LdpLmhtBaseHemv1p0'] = (1,[[300,Inf],[250,Inf],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf],    [1.0,Inf],   [0,2]],  [[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
 
-regionCuts['LowMhtSidebandHemv0p7']  = (0,[[300,Inf],[250,300],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf], [0.7,Inf],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
-regionCuts['LdpLmhtSidebandHemv0p7'] = (1,[[300,Inf],[250,300],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf], [0.7,Inf],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['LowMhtSidebandHemv0p5']  = (0,[[300,Inf],[250,300],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf], [0.5,Inf],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
+regionCuts['LdpLmhtSidebandHemv0p5'] = (1,[[300,Inf],[250,300],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf], [0.5,Inf],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
 
 regionCuts['LowMhtSidebandHemv1p0']  = (0,[[300,Inf],[250,300],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf], [1.0,Inf],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
 regionCuts['LdpLmhtSidebandHemv1p0'] = (1,[[300,Inf],[250,300],[2,Inf],[0,Inf],[-Inf, Inf],[0,Inf], [1.0,Inf],      [0,2]],[[0.5,Inf],[0.5,Inf],[0.3,Inf],[0.3,Inf]])
