@@ -77,9 +77,10 @@ elif 'Fall17' in fnamekeyword:
 elif 'Autumn18' in fnamekeyword:
     ntupleV = '17'
     isdata___ = False
+    print 'yep, we got 17'
 else: 
-    ntupleV = '15'
-    isdata = True
+    ntupleV = '17'
+    isdata___ = True
 
 doPileUpSlice = False##########override
 
@@ -268,7 +269,7 @@ fnamefile.close()
 c = TChain('TreeMaker2/PreSelection')
 filelist = []
 for line in lines:
-    shortfname = fnamekeyword
+    shortfname = fnamekeyword.strip()
     if not shortfname in line: continue
     fname = '/eos/uscms//store/user/lpcsusyhad/SusyRA2Analysis2015/Run2ProductionV'+ntupleV+'/'+line#RelValQCD_FlatPt
     fname = fname.strip().replace('/eos/uscms/','root://cmseos.fnal.gov//')
