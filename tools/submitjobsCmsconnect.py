@@ -45,13 +45,15 @@ elif 'V15a' in fnamekeyword or 'RelVal' in fnamekeyword:
     isdata = False
 elif 'Fall17' in fnamekeyword:
 	ntupleV = '16'
+elif 'Autumn18' in fnamekeyword:
+    ntupleV = '17'
 else: 
     ntupleV = '15'
     isdata = True
     
 if 'Run2016' in fnamekeyword: ntupleV = '16'
 if 'Run2017' in fnamekeyword: ntupleV = '16'
-if 'Run2018' in fnamekeyword: ntupleV = '16'
+if 'Run2018' in fnamekeyword: ntupleV = '17'
     
 cwd = os.getcwd()
 

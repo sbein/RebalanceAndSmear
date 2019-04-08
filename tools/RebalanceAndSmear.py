@@ -17,6 +17,7 @@ UsePuWeight = True
 
 import argparse
 parser = argparse.ArgumentParser()
+#Autumn18.GJets_HT-400To600
 parser.add_argument("-v", "--verbosity", type=bool, default=0,help="increase output verbosity")
 parser.add_argument("-nprint", "--printevery", type=int, default=100,help="print every n(events)")
 parser.add_argument("-fin", "--fnamekeyword", type=str,default='RunIIFall17MiniAODv2.QCD_HT200to',help="file")
@@ -73,16 +74,19 @@ elif 'Fall17' in fnamekeyword:
     isdata___ = False    
     doPileUpSlice = True
     print 'we know isdata___', isdata___    
+elif 'Autumn18' in fnamekeyword:
+    ntupleV = '17'
+    isdata___ = False
 else: 
-    ntupleV = '16'
-    isdata___ = True
-
+    ntupleV = '15'
+    isdata = True
 
 doPileUpSlice = False##########override
 
 is2017f = False
 is2017 = False
 is2016 = False
+is2018 = False
 
 if 'Run2016' in fnamekeyword or 'Summer16' in fnamekeyword: 
     BTAG_CSVv2 = 0.8484
@@ -93,9 +97,10 @@ if 'Run2017' in fnamekeyword or 'Fall17' in fnamekeyword:
     BTAG_deepCSV = 0.4941
     is2017 = True
     if 'Run2017F' in fnamekeyword: is2017f = True
-if 'Run2018' in fnamekeyword or 'Fall17' in fnamekeyword: 
+if 'Run2018' in fnamekeyword or 'Autumn18' in fnamekeyword: 
     BTAG_CSVv2 = 0.8838
     BTAG_deepCSV = 0.4941
+    is2018 = True
 
 if UseDeep: BTag_Cut = BTAG_deepCSV
 else: BTag_Cut = BTAG_CSVv2
@@ -234,9 +239,12 @@ print 'just making sure about isdata___', isdata___
 if ('Summer16' in fnamekeyword or 'Run2016' in fnamekeyword): 
     if UseDeep: templateFileName = 'usefulthings/ResponseFunctionsMC16AllFilters'+nametag[JerUpDown]+'_deepCsv.root'
     else: templateFileName = 'usefulthings/ResponseFunctionsMC16AllFilters'+nametag[JerUpDown]+'.root'
-if ('Fall17' in fnamekeyword or 'Run2017' in fnamekeyword or 'Run2018' in fnamekeyword): 
+if ('Fall17' in fnamekeyword or 'Run2017' in fnamekeyword): 
     if UseDeep: templateFileName = 'usefulthings/ResponseFunctionsMC17'+nametag[JerUpDown]+'_deepCsv.root'
     else: templateFileName = 'usefulthings/ResponseFunctionsMC17'+nametag[JerUpDown]+'.root'
+if ('Autumn18' in fnamekeyword or 'Run2018' in fnamekeyword): 
+    if UseDeep: templateFileName = 'usefulthings/ResponseFunctionsMC18'+nametag[JerUpDown]+'_deepCsv.root'
+    else: templateFileName = 'usefulthings/ResponseFunctionsMC18'+nametag[JerUpDown]+'.root'
 
 if not forcetemplates=='': templateFileName = forcetemplates
 

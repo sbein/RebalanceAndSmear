@@ -1410,7 +1410,7 @@ def passesUniversalSelection(t):
     if not t.BadPFMuonFilter: return False
     if not t.CSCTightHaloFilter: return False
     if not passesPhotonVeto(t): return False    
-    if not t.EcalDeadCellTriggerPrimitiveFilter: return False            
+    if not t.EcalDeadCellTriggerPrimitiveFilter: return False      ##I think this one makes a sizeable difference    
     '''#first half filters up edge    
     #first half filters low edge           
     ####if not t.ecalBadCalibFilter: return False #this says it's deprecated
@@ -1757,17 +1757,12 @@ def FabDraw(cGold,leg,hTruth,hComponents,datamc='mc',lumi=35.9, title = '', Line
     pad2.cd()
 
     hTruthCopy = hTruth.Clone('hTruthClone'+hComponents[0].GetName())
-    hRatio = hComponents[0].Clone('hRatioClone')#+hComponents[0].GetName()+'testing
+    hRatio = hTruth.Clone('hTruthClone'+hComponents[0].GetName())#hComponents[0].Clone('hRatioClone')#+hComponents[0].GetName()+'testing
     hRatio.SetMarkerStyle(20)
-    #hFracDiff = hComponents[0].Clone('hFracDiff')
-    #hFracDiff.SetMarkerStyle(20)
     hTruthCopy.SetMarkerStyle(20)
     hTruthCopy.SetMarkerColor(1) 
-    #histoStyler(hFracDiff, 1)
     histoStyler(hTruthCopy, 1)
-    #hFracDiff.Add(hTruthCopy,-1)
-    #hFracDiff.Divide(hTruthCopy)
-    hRatio.Divide(hTruthCopy)
+    hRatio.Divide(hComponents[0])#hTruthCopy)
     hRatio.GetYaxis().SetRangeUser(0.0,.1)###
     hRatio.SetTitle('')
 

@@ -13,10 +13,10 @@ stitchSmall2018 = False##try to only have one of these set to true
 redoBinning = binningAnalysis
 #otherwise does prediction
 ''' this first for the skims:
-hadd -f output/MET_2018/Skim_tree_MET_2018_LDPPreHem.root output/MET_2018/Skim_tree_MET_2018B_LDPPreHem.root output/MET_2018/Skim_tree_MET_2018A_LDPPreHem.root
-hadd -f output/MET_2018/Skim_tree_MET_2018_LDPDuringHem.root output/MET_2018/Skim_tree_MET_2018B_LDPDuringHem.root output/MET_2018/Skim_tree_MET_2018C_LDPDuringHem.root output/MET_2018/Skim_tree_MET_2018D_LDPDuringHem.root
-hadd -f output/MET_2018/Skim_tree_MET_2018_signalSidebandPreHem.root output/MET_2018/Skim_tree_MET_2018B_signalSidebandPreHem.root output/MET_2018/Skim_tree_MET_2018A_signalSidebandPreHem.root
-hadd -f output/MET_2018/Skim_tree_MET_2018_signalSidebandDuringHem.root output/MET_2018/Skim_tree_MET_2018B_signalSidebandDuringHem.root output/MET_2018/Skim_tree_MET_2018C_signalSidebandDuringHem.root output/MET_2018/Skim_tree_MET_2018D_signalSidebandDuringHem.root
+hadd -f Vault/Skim_tree_MET_2018_LDPPreHem.root output/MET_2018/Skim_tree_MET_2018B_LDPPreHem.root output/MET_2018/Skim_tree_MET_2018A_LDPPreHem.root
+hadd -f Vault/Skim_tree_MET_2018_LDPDuringHem.root output/MET_2018/Skim_tree_MET_2018B_LDPDuringHem.root output/MET_2018/Skim_tree_MET_2018C_LDPDuringHem.root output/MET_2018/Skim_tree_MET_2018D_LDPDuringHem.root
+hadd -f Vault/Skim_tree_MET_2018_signalSidebandPreHem.root output/MET_2018/Skim_tree_MET_2018B_signalSidebandPreHem.root output/MET_2018/Skim_tree_MET_2018A_signalSidebandPreHem.root
+hadd -f Vault/Skim_tree_MET_2018_signalSidebandDuringHem.root output/MET_2018/Skim_tree_MET_2018B_signalSidebandDuringHem.root output/MET_2018/Skim_tree_MET_2018C_signalSidebandDuringHem.root output/MET_2018/Skim_tree_MET_2018D_signalSidebandDuringHem.root
 
 python tools/ahadd.py -f Vault/RandS_Run2018_PreHem1of5.root output/Run2018B*J/RandS*PreHem1of5.root output/Run2018A*JetHT/*1of5.root
 python tools/ahadd.py -f Vault/RandS_Run2018_PreHem2of5.root output/Run2018B*J/RandS*PreHem2of5.root output/Run2018A*JetHT/*2of5.root

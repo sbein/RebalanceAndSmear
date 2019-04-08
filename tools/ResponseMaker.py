@@ -12,11 +12,13 @@ parser.add_argument("-fin", "--fnamekeyword", type=str,default='Fall17MiniAODv2.
 parser.add_argument("-nprint", "--printevery", type=int, default=100,help="print every n(events)")
 parser.add_argument("-jersf", "--JerUpDown", type=str, default='Nom',help="JER scale factor (SFNom, SFUp, ...)")
 parser.add_argument("-dmcrw", "--DataMcReweight", type=bool, default=False,help="reweight prior")
+parser.add_argument("-quickrun", "--quickrun", type=bool, default=False,help="Quick practice run (True, False)")
 args = parser.parse_args()
 fnamekeyword = args.fnamekeyword
 JerUpDown = args.JerUpDown
 printevery = args.printevery
 DataMcReweight = args.DataMcReweight
+quickrun = args.quickrun
 nametag = ''
 '''
 /eos/uscms//store/user/lpcsusyhad/SusyRA2Analysis2015/Run2ProductionV
@@ -29,17 +31,15 @@ Run2017B-31Mar2018-v1.JetHT
 if 'Summer16' in fnamekeyword: 
     ntupleV = '16'
     isdata = False
-elif 'V15a' in fnamekeyword or 'RelVal' in fnamekeyword:
-    ntupleV = '15a'
-    isdata = False
 elif 'Fall17' in fnamekeyword:
     ntupleV = '16'
+elif 'Autumn18' in fnamekeyword:
+    ntupleV = '17'
 else: 
     ntupleV = '15'
     isdata = True
 
 UseDeep = True
-ntupleV = '16'
 is2017 = False
 is2016 = False
 is2018 = False
@@ -52,7 +52,7 @@ if 'Run2017' in fnamekeyword or 'Fall17' in fnamekeyword:
     BTAG_CSVv2 = 0.8838
     BTAG_deepCSV = 0.4941
     is2017 = True
-if 'Run2018' in fnamekeyword or 'Fall17' in fnamekeyword: 
+if 'Run2018' in fnamekeyword or 'Autumn18' in fnamekeyword: 
     BTAG_CSVv2 = 0.8838
     BTAG_deepCSV = 0.4941
     is2018 = True
@@ -159,7 +159,7 @@ for ieta in range(1,templateEtaAxis.GetNbins()+1):#changed from +2 March8 2016
         hr.Sumw2()
         hResRecTemplates[-1].append(hr)
 
-
+print 'binningTemplate', binningTemplate
 binHt = binningTemplate['Ht']
 binHtArr = array('d',binHt)
 nBinHt = len(binHtArr)-1
@@ -240,6 +240,7 @@ for line in lines:
     filelist.append(fname)
     break
 nevents = c.GetEntries()
+if quickrun: nevents = min(nevents, 100000)
 c.Show(0)
 print "nevents=", nevents
 

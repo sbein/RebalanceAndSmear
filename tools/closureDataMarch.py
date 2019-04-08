@@ -18,7 +18,7 @@ except: year = 'Run2016'
 aditeescale = 1.0
 
 doit4theprediction = True
-LowDPhi = True
+LowDPhi = False
 
 if LowDPhi: 
     AscertainNorm = True
@@ -111,13 +111,13 @@ elif year=='Run2018PreHem':
     fnametrigmed = 'tEffhMetMhtFakeHt800to1700XMht;3'
     fnametrighig = 'tEffhMetMhtFakeHt1700toInfXMht;3'
     if LowDPhi:
-        fnameTruth = 'output/MET_2018/Skim_tree_MET_2018_LDPPreHem.root'
+        fnameTruth = 'Vault/Skim_tree_MET_2018_LDPPreHem.root'
         fnameNonQcd = 'Vault/NonQcd_LDP_MC2018.root'
         fnameNonQcdZJets = 'Vault/NonQcdZJets_LDP_MC2018.root'
         #fnameAditee = 'Vault/FromAditee/Prediction_0_haddData_LLHadtauPred_LowDphi_WithTF2017_190220_UpdatedcsvWP_PreHEM_Yr2018.root'
         fnameAditee = 'Vault/FromAditeeMarch/Prediction_0_haddData_LLHadtauPred_LowDphi_WithWidenedHEMvetoForJetsWithDphiPt5Cut_1L_190320.root'#march
     else:
-        fnameTruth = 'output/MET_2018/Skim_tree_MET_2018_signalSidebandPreHem.root'
+        fnameTruth = 'Vault/Skim_tree_MET_2018_signalSidebandPreHem.root'
         fnameNonQcd = 'Vault/NonQcd_signalSideband_MC2018.root'
         fnameNonQcdZJets = 'Vault/NonQcdZJets_signalSideband_MC2018.root'
         #fnameAditee = 'Vault/FromAditeeMarch/Prediction_0_haddData_LLHadtauPred_WithTF2017_190220_UpdatedcsvWP_PreHEM_Yr2018.root'
@@ -125,7 +125,7 @@ elif year=='Run2018PreHem':
     hardCodedJobFailureCorrection = 1.02   
 elif year=='Run2018DuringHem': 
     lumi = 38846.
-    aditeescale = lumi/59200
+    aditeescale = 1.0### lumi/59200
     
     fnamePrediction = 'Vault/OutputBootstrapRun2018DuringHem.root'#'Partial2018Pit/QcdPred2018.root'
     fnamePredictionAux = ''#'Vault/OutputBootstrapRun2018DuringHem.root'
@@ -136,17 +136,17 @@ elif year=='Run2018DuringHem':
     fnametrigmed = 'tEffhMetMhtFakeHt800to1700XMht;3'
     fnametrighig = 'tEffhMetMhtFakeHt1700toInfXMht;3'
     if LowDPhi:
-        fnameTruth = 'output/MET_2018/Skim_tree_MET_2018_LDPDuringHem.root'
+        fnameTruth = 'Vault/Skim_tree_MET_2018_LDPDuringHem.root'
         fnameNonQcd = 'Vault/NonQcd_LDP_MC2018.root'
         fnameNonQcdZJets = 'Vault/NonQcdZJets_LDP_MC2018.root'
         ##fnameAditee = 'Vault/FromAditee/Prediction_0_haddData_LLHadtauPred_LowDphi_WithTF2017_190220_UpdatedcsvWP_PostHEM_Yr2018.root'
-        fnameAditee = 'Vault/FromAditeeMarch/Prediction_0_haddData_LLHadtauPred_LowDphi_WithWidenedHEMvetoForJetsWithDphiPt5Cut_1L_190320.root'#march
+        fnameAditee = 'Vault/FromAditeeMarch/Prediction_0_haddData_LLHadtauPred_LowDphi_WithWidenedHEMvetoForJetsWithDphiPt5Cut_1L_PostHEM_190325.root'#march
     else:
-        fnameTruth = 'output/MET_2018/Skim_tree_MET_2018_signalSidebandDuringHem.root'
+        fnameTruth = 'Vault/Skim_tree_MET_2018_signalSidebandDuringHem.root'
         fnameNonQcd = 'Vault/NonQcd_signalSideband_MC2018.root'
         fnameNonQcdZJets = 'Vault/NonQcdZJets_signalSideband_MC2018.root'
         ##fnameAditee = 'Vault/FromAditee/Prediction_0_haddData_LLHadtauPred_WithTF2017_190220_UpdatedcsvWP_PostHEM_Yr2018.root'        
-        fnameAditee = 'Vault/FromAditeeMarch/Prediction_0_haddData_LLHadtauPred_WithWidenedHEMvetoForJetsWithDphiPt5Cut_1L_190320.root' ##march #going to save this as something else
+        fnameAditee = 'Vault/FromAditeeMarch/Prediction_0_haddData_LLHadtauPred_WithWidenedHEMvetoForJetsWithDphiPt5Cut_1L_PostHEM_190325.root' ##march #going to save this as something else
     hardCodedJobFailureCorrection = 1.02   
 elif year=='Run2': 
     lumi = 35900+41500+59200
@@ -245,7 +245,8 @@ else:#xxx
     elif year=='Run2018DuringHem': 
         NORM =0.776294319512
         NORM = 1.3319837735## from March run with new HEM veto based on Aditee's thing with lumi scaling
-        NORM = 1.37401936615# March with veto 0p5
+        #NORM = 1.37401936615# March with veto 0p5
+        NORM = 1.3823026598
     elif year=='Run2018PreHem': 
         NORM =0.428048523897     
         NORM = 1.1822855057##Aditee with lumi weighting   
@@ -348,6 +349,7 @@ for key in keys:
             standard = 'Truth'##
 
     hPrediction = fPrediction.Get('h'+selection+'_'+kinvar+method).Clone('h'+selection+'_'+kinvar+method+'')
+    for ibin in range(1, hPrediction.GetXaxis().GetNbins()+1): hPrediction.SetBinError(ibin, TMath.Sqrt(pow(hPrediction.GetBinError(ibin),2) + pow(0.5*hPrediction.GetBinContent(ibin),2)))
 
 
     if kinvar == 'Ht':
@@ -393,6 +395,7 @@ for key in keys:
     hNonQcdBackup = fNonQcd.Get('h'+selection+'_'+kinvar+standard).Clone('h'+selection+'_'+kinvar+standard+'')
     hNonQcdBackup.Scale(lumi)
     hNonQcd = fNonQcdZJets.Get('h'+selection+'_'+kinvar+standard).Clone('h'+selection+'_'+kinvar+standard+'')
+    for ibin in range(1, hNonQcd.GetXaxis().GetNbins()+1): hNonQcd.SetBinError(ibin, TMath.Sqrt(pow(hNonQcd.GetBinError(ibin),2) + pow(0.2*hNonQcd.GetBinContent(ibin),2)))
     hNonQcd.Scale(lumi)
     hNonQcd.SetLineColor(38)
 
@@ -533,6 +536,8 @@ for key in keys:
             if hAditee.GetBinContent(ibin)==0 or DefinitelyUseMC:
                 hNonQcd.SetBinContent(ibin, hNonQcdBackup.GetBinContent(ibin))
 
+    for ibin in range(1, hNonQcd.GetXaxis().GetNbins()+1): hNonQcd.SetBinError(ibin, TMath.Sqrt(pow(hNonQcd.GetBinError(ibin),2) + pow(0.3*hNonQcd.GetBinContent(ibin),2)))
+
     print key.GetName()
     hpure = hPrediction.Clone(hPrediction.GetName()+'pure')
     htot = hpure.Clone()
@@ -550,7 +555,7 @@ for key in keys:
         print 'hNonQcd.Integral()', hNonQcd.Integral()
         #pause()
         hrat, pad1, pad2 = FabDraw(cGold,leg,hTruth,[hPrediction,hNonQcd],datamc='mc',lumi=round(1.0*lumi/1000,1), title = '', LinearScale=False, fractionthing='predicted/obs.')
-    hrat.GetYaxis().SetRangeUser(-0.4,2.4)
+    hrat.GetYaxis().SetRangeUser(-0.4,32.4)
     if year=='Run2018DuringHem' and 'Mht' in key.GetName(): hrat.GetYaxis().SetRangeUser(-0.8,4.2)
     hrat.GetXaxis().SetTitle(kinvar)
     hrat.SetLineColor(kBlack)
@@ -558,13 +563,12 @@ for key in keys:
     pad1.cd()
     hTruth.Draw("same e")
 
-    if 'DuringHem' in year and (LowDPhi and doit4theprediction):
+    if 'DuringHem' in year and (LowDPhi and doit4theprediction) and False:
         print 'dipping in here with extra', extra
         tname = tname.replace(extra,'')
         if (not LowDPhi) and (not 'Hemv' in tname): tname = tname.replace('Base','Baseline')
         if (not LowDPhi) and ('Hemv' in tname): tname = tname.replace('Baseline','Base')            
         hTruthBadHem = fTruth.Get(tname)
-        print tname.replace(extra,'')
         hTruthBadHem.SetLineColor(kRed)
         hTruthBadHem = hTruthBadHem.Rebin(nbins,'',newxs)
         hTruthBadHem.SetMarkerStyle(hTruth.GetMarkerStyle())
@@ -574,14 +578,14 @@ for key in keys:
 
     pad2.cd()
     leg2 = mklegend(x1=.46, y1=.295, x2=.8805, y2=.42)
-    leg2.AddEntry(hpure, 'QCD-purity','l')
+    ###leg2.AddEntry(hpure, 'QCD-purity','l')
     if 'SearchBins' in kinvar: 
         pad2.SetLogy()
         hrat.GetYaxis().SetRangeUser(0.11,9)
-    hpure.Draw('hist same')
+    ###hpure.Draw('hist same')
 
 
-    if 'DuringHem' in year and 'Mht' in key.GetName() and 'DuringHem' in year and (LowDPhi and doit4theprediction):
+    if 'DuringHem' in year and 'Mht' in key.GetName() and 'DuringHem' in year and (LowDPhi and doit4theprediction) and False:
             hBadHemRatio = hTruthBadHem.Clone('hBadHemRatio')
             hBadHemRatio.Add(hReallyhNonQcd,-1)
             hBadHemRatio.Divide(hInferredQcd)
