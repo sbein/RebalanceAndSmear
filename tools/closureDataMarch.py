@@ -18,7 +18,14 @@ except: year = 'Run2016'
 aditeescale = 1.0
 
 doit4theprediction = True
-LowDPhi = False
+LowDPhi = True
+
+redoBinning = binningAnalysis
+if doit4theprediction: redoBinning['Mht'] = binningUser['Mht']
+else: 
+    a = 2
+    #redoBinning = binningUser
+
 
 if LowDPhi: 
     AscertainNorm = True
@@ -186,9 +193,6 @@ tax = tefftriglow.GetCopyPassedHisto().GetXaxis()
 
 loadSearchBins2018()
 SearchBinWindows = {v: k for k, v in SearchBinNumbers.iteritems()}
-redoBinning = binningAnalysis
-#redoBinning = binningUser
-redoBinning['Mht'] = binningUser['Mht']
 
 fPrediction = TFile(fnamePrediction)
 if not fnamePredictionAux=='': 
@@ -349,7 +353,7 @@ for key in keys:
             standard = 'Truth'##
 
     hPrediction = fPrediction.Get('h'+selection+'_'+kinvar+method).Clone('h'+selection+'_'+kinvar+method+'')
-    for ibin in range(1, hPrediction.GetXaxis().GetNbins()+1): hPrediction.SetBinError(ibin, TMath.Sqrt(pow(hPrediction.GetBinError(ibin),2) + pow(0.5*hPrediction.GetBinContent(ibin),2)))
+    for ibin in range(1, hPrediction.GetXaxis().GetNbins()+1): hPrediction.SetBinError(ibin, TMath.Sqrt(pow(hPrediction.GetBinError(ibin),2) + pow(0.5*hPrediction.GetBinContent(ibin),2) + pow(0.7*hPrediction.GetBinContent(ibin),2) ))
 
 
     if kinvar == 'Ht':
@@ -395,7 +399,7 @@ for key in keys:
     hNonQcdBackup = fNonQcd.Get('h'+selection+'_'+kinvar+standard).Clone('h'+selection+'_'+kinvar+standard+'')
     hNonQcdBackup.Scale(lumi)
     hNonQcd = fNonQcdZJets.Get('h'+selection+'_'+kinvar+standard).Clone('h'+selection+'_'+kinvar+standard+'')
-    for ibin in range(1, hNonQcd.GetXaxis().GetNbins()+1): hNonQcd.SetBinError(ibin, TMath.Sqrt(pow(hNonQcd.GetBinError(ibin),2) + pow(0.2*hNonQcd.GetBinContent(ibin),2)))
+    for ibin in range(1, hNonQcd.GetXaxis().GetNbins()+1): hNonQcd.SetBinError(ibin, TMath.Sqrt(pow(hNonQcd.GetBinError(ibin),2) + pow(0.3*hNonQcd.GetBinContent(ibin),2)))
     hNonQcd.Scale(lumi)
     hNonQcd.SetLineColor(38)
 
@@ -435,23 +439,30 @@ for key in keys:
                 hpname = 'h'+selection+'_'+kinvar+method
                 print 'hpname', hpname, 'from', fPredictionAux.GetName()
                 hPrediction = fPredictionAux.Get(hpname).Clone('h'+selection+'_'+kinvar+method+'')
+                hPrediction.SetTitle('QCD (R&S)')
                 hPrediction.Scale(failfactor*hardCodedJobFailureCorrection*NORM)
+                
+                for ibin in range(1, hPrediction.GetXaxis().GetNbins()+1): hPrediction.SetBinError(ibin, TMath.Sqrt(pow(hPrediction.GetBinError(ibin),2) + pow(0.5*hPrediction.GetBinContent(ibin),2) + pow(0.7*hPrediction.GetBinContent(ibin),2)  + pow(0.3*hPrediction.GetBinContent(ibin),2) ))
+                    
             hstat = fAditee.Get('h_CSStat')
             xaxa = hAditee.GetXaxis()
             for ibin in range(1, xaxa.GetNbins()+1):
                 hAditee.SetBinError(ibin, abs(hstat.GetBinContent(ibin)-hAditee.GetBinContent(ibin)))
+                
             newbinning = []
             stepsize = round(1.0*(redoBinning[kinvar][2]-redoBinning[kinvar][1])/redoBinning[kinvar][0],4)
             for ibin in range(redoBinning[kinvar][0]+1): newbinning.append(redoBinning[kinvar][1]+ibin*stepsize)
             nbins = len(newbinning)-1
             newxs = array('d',newbinning)
             hTruth = hTruth.Rebin(nbins,'',newxs)
+            
             hAditeeAux = hTruth.Clone('h2addrebinned')
             hAditeeAux.Reset()
             xax = hAditeeAux.GetXaxis()
             for ibin in range(1, xax.GetNbins()+1):
                 hAditeeAux.SetBinContent(ibin, hAditee.GetBinContent(ibin))
                 hAditeeAux.SetBinError(ibin, hAditee.GetBinError(ibin))
+                hAditeeAux.SetBinError(ibin, TMath.Sqrt(pow(hAditee.GetBinError(ibin),2) + pow(0.3*hAditee.GetBinContent(ibin),2)))
             hAditee = hAditeeAux
             
     hNonQcd.SetTitle(lostleptonlabel+', Z#rightarrow #nu#nu MC')
@@ -462,7 +473,8 @@ for key in keys:
 
         for ibin in range(1, xax.GetNbins()+1): 
             windows = SearchBinWindows[ibin]
-            ht = 0.5*(windows[0][0]+windows[0][1])
+            #ht = 0.5*(windows[0][0]+windows[0][1])
+            ht = windows[0][1]
             mht = 0.5*(windows[1][0]+windows[1][1])
             njets = 4
             efforig = Eff_Met110Mht110FakePho_CenterUpDown(ht, mht, njets)[0]
@@ -478,6 +490,15 @@ for key in keys:
             hPrediction.SetBinContent(ibin, correctionweight*origcontent)
             hPrediction.SetBinError(ibin, correctionweight*origerror)            
             print ibin, ht, 'correcting content by', correctionweight
+
+            bhigh = windows[3][1]
+            if bhigh>10:
+                correctionweight = 2.0
+                origcontent = hPrediction.GetBinContent(ibin)
+                origerror = hPrediction.GetBinError(ibin)
+                hPrediction.SetBinContent(ibin, correctionweight*origcontent)
+                hPrediction.SetBinError(ibin, TMath.Sqrt(pow(correctionweight*origerror,2)+pow(0.5*hPrediction.GetBinContent(ibin),2)))
+                
             #exit(0)            
 
 
@@ -530,11 +551,13 @@ for key in keys:
                 hNonQcd.SetBinContent(ibin, hNonQcdBackup.GetBinContent(ibin))
                 hNonQcd.SetBinError(ibin, hNonQcdBackup.GetBinError(ibin))        
     else:
+        #print 'adding', hNonQcd.GetName(), hAditee.GetName()# might be nice to double check that these are compatible
         hNonQcd.Add(hAditee)
         xax = hAditee.GetXaxis()
         for ibin in range(1, xax.GetNbins()+1):
             if hAditee.GetBinContent(ibin)==0 or DefinitelyUseMC:
                 hNonQcd.SetBinContent(ibin, hNonQcdBackup.GetBinContent(ibin))
+        #pause()
 
     for ibin in range(1, hNonQcd.GetXaxis().GetNbins()+1): hNonQcd.SetBinError(ibin, TMath.Sqrt(pow(hNonQcd.GetBinError(ibin),2) + pow(0.3*hNonQcd.GetBinContent(ibin),2)))
 
@@ -554,8 +577,9 @@ for key in keys:
     else: 
         print 'hNonQcd.Integral()', hNonQcd.Integral()
         #pause()
-        hrat, pad1, pad2 = FabDraw(cGold,leg,hTruth,[hPrediction,hNonQcd],datamc='mc',lumi=round(1.0*lumi/1000,1), title = '', LinearScale=False, fractionthing='predicted/obs.')
-    hrat.GetYaxis().SetRangeUser(-0.4,32.4)
+        #hrat, pad1, pad2 = FabDraw(cGold,leg,hTruth,[hPrediction,hNonQcd],datamc='mc',lumi=round(1.0*lumi/1000,1), title = '', LinearScale=False, fractionthing='obs./predicted')
+        hrat, stuff, pad1, pad2 = FabDrawSystyRatio(cGold,leg,hTruth,[hNonQcd,hPrediction],datamc='mc',lumi=round(1.0*lumi/1000,1), title = '', LinearScale=False, fractionthing='obs./predicted')
+    hrat.GetYaxis().SetRangeUser(-0.4,3.4)
     if year=='Run2018DuringHem' and 'Mht' in key.GetName(): hrat.GetYaxis().SetRangeUser(-0.8,4.2)
     hrat.GetXaxis().SetTitle(kinvar)
     hrat.SetLineColor(kBlack)
@@ -580,8 +604,9 @@ for key in keys:
     leg2 = mklegend(x1=.46, y1=.295, x2=.8805, y2=.42)
     ###leg2.AddEntry(hpure, 'QCD-purity','l')
     if 'SearchBins' in kinvar: 
-        pad2.SetLogy()
-        hrat.GetYaxis().SetRangeUser(0.11,9)
+        #pad2.SetLogy()
+        #hrat.GetYaxis().SetRangeUser(0.11,9)
+        hrat.GetYaxis().SetRangeUser(-0.3, 2.3)
     ###hpure.Draw('hist same')
 
 

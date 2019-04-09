@@ -556,8 +556,9 @@ for key in keys:
     leg2 = mklegend(x1=.46, y1=.295, x2=.8805, y2=.42)
     leg2.AddEntry(hpure, 'QCD-purity','l')
     if 'SearchBins' in kinvar: 
-        pad2.SetLogy()
-        hrat.GetYaxis().SetRangeUser(0.11,9)
+        #pad2.SetLogy()##commented/replaced in april
+        #hrat.GetYaxis().SetRangeUser(0.11,9)##commented/replaced in april
+        hrat.GetYaxis().SetRangeUser(-0.3, 2.3)
     hpure.Draw('hist same')
 
 

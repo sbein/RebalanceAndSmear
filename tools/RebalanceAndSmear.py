@@ -100,7 +100,7 @@ if 'Run2017' in fnamekeyword or 'Fall17' in fnamekeyword:
     if 'Run2017F' in fnamekeyword: is2017f = True
 if 'Run2018' in fnamekeyword or 'Autumn18' in fnamekeyword: 
     BTAG_CSVv2 = 0.8838
-    BTAG_deepCSV = 0.4941
+    BTAG_deepCSV = 0.4184#0.4941####
     is2018 = True
 
 if UseDeep: BTag_Cut = BTAG_deepCSV

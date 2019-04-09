@@ -54,7 +54,8 @@ if 'Run2017' in fnamekeyword or 'Fall17' in fnamekeyword:
     is2017 = True
 if 'Run2018' in fnamekeyword or 'Autumn18' in fnamekeyword: 
     BTAG_CSVv2 = 0.8838
-    BTAG_deepCSV = 0.4941
+    #BTAG_deepCSV = 0.4941
+    BTAG_deepCSV = 0.4184#0.4941####    
     is2018 = True
 
 if is2016: jerScaleFactors = ScaleFactors2016
