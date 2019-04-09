@@ -25,10 +25,13 @@ if '16' in filenameA:
     lumi = 35.9
 elif '17' in filenameA:
     year = 'Fall17'
-    lumi = 100.7
+    lumi = 45.0
+elif '18' in filenameA:
+    year = 'Autumn18'
+    lumi = 58.0
 else: 
-    year = 'Summer16'
-    lumi = 100.7
+    year = 'MC'
+    lumi = 136
     
 redoBinning = binningAnalysis
 #redoBinning = binningUser

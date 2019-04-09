@@ -1434,7 +1434,7 @@ def passesUniversalSelectionForResponses(t):
     if not t.BadPFMuonFilter: return False
     if not t.CSCTightHaloFilter: return False
     if not passesPhotonVeto(t): return False    
-    #if not t.EcalDeadCellTriggerPrimitiveFilter: return False            
+    if not t.EcalDeadCellTriggerPrimitiveFilter: return False ### this was just off, turning it back on...
     '''#first half filters up edge    
     #first half filters low edge           
     ####if not t.ecalBadCalibFilter: return False #this says it's deprecated
