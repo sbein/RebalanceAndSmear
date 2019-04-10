@@ -89,7 +89,9 @@ def main():
             os.system('chmod +x '+'jobs/'+job+'.sh')
             if not os.path.exists('output/'+fnamekeyword.replace(' ','')): 
                 os.system('mkdir output/'+fnamekeyword.replace(' ',''))
-        os.chdir('output/'+fnamekeyword.replace(' ',''))
+        outdir = 'output/'+fnamekeyword.replace(' ','')
+        print 'cd '+ outdir
+        os.chdir(outdir)
         if OnlyDoMissingFiles:
             newFileName = 'RandS_'+fname.split('/')[-1].replace('.root','')+'.root'
             newFileName = newFileName.replace('.root',nametag[JerUpDown]+'.root')
