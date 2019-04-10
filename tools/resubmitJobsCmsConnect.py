@@ -113,9 +113,11 @@ def main():
                 rmcmd = 'rm '+newFileName
                 print 'rmcmd', rmcmd
                 if isthere and not istest: os.system(rmcmd)
+                isthere = os.path.exists(newFileName)
             #from utils import pause
             #print newFileName
             #pause()
+            print 'isthere again', isthere            
             if isthere: 
                 os.chdir('../../')
                 continue
