@@ -98,6 +98,7 @@ def main():
             errfile.close()
             print 'errlines', errlines
             if not resubmessage in errlines: continue
+            print 'here we are going to submit!'
         outdir = 'output/'+fnamekeyword.replace(' ','')
         print 'cd '+ outdir
         os.chdir(outdir)
