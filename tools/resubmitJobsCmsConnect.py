@@ -108,7 +108,7 @@ def main():
             if bootstrapmode: newFileName = newFileName.replace('.root',Bootstrap+'.root')
             #print 'checking for ', newFileName
             isthere = os.path.exists(newFileName)
-            print isthere
+            print 'isthere', isthere
             #from utils import pause
             #print newFileName
             #pause()
