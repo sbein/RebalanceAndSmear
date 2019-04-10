@@ -97,7 +97,7 @@ def main():
             errlines = errfile.readlines()
             errfile.close()
             print 'errlines', errlines
-            if not resubmessage in lines: continue
+            if not resubmessage in errlines: continue
         outdir = 'output/'+fnamekeyword.replace(' ','')
         print 'cd '+ outdir
         os.chdir(outdir)
