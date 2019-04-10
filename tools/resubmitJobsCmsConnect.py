@@ -107,6 +107,7 @@ def main():
         print cmd
         if not istest: os.system(cmd)
         os.chdir('../../')
+        if istest: break
 
 
 jdltemplate = '''
