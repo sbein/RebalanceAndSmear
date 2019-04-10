@@ -17,6 +17,7 @@ analyzer = args.analyzer
 JerUpDown = args.JerUpDown
 Bootstrap = args.Bootstrap
 nametag = {'Nom':'', 'Up': 'JerUp'}
+resubmessage = "Cannot read entry 0"
 
 if Bootstrap=='0': 
     bootstrapmode = False
@@ -89,6 +90,12 @@ def main():
             os.system('chmod +x '+'jobs/'+job+'.sh')
             if not os.path.exists('output/'+fnamekeyword.replace(' ','')): 
                 os.system('mkdir output/'+fnamekeyword.replace(' ',''))
+        if resub:
+            errname = 'jobs/'+job+'.err'
+            if not os.path.exists(errname): continue
+            errfile = open(errname)
+            lines = errfile.readlines()
+            if not resubmessage in lines: continue
         outdir = 'output/'+fnamekeyword.replace(' ','')
         print 'cd '+ outdir
         os.chdir(outdir)
