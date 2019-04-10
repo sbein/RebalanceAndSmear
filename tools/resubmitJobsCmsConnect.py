@@ -92,12 +92,11 @@ def main():
                 os.system('mkdir output/'+fnamekeyword.replace(' ',''))
         if resub:
             errname = 'jobs/'+job+'.err'
-            print 'errname', errname
             if not os.path.exists(errname): continue
             errfile = open(errname)
-            lines = errfile.readlines()
+            errlines = errfile.readlines()
             errfile.close()
-            print 'lines', lines
+            print 'errlines', errlines
             if not resubmessage in lines: continue
         outdir = 'output/'+fnamekeyword.replace(' ','')
         print 'cd '+ outdir
