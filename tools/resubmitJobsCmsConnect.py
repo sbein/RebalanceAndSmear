@@ -109,6 +109,10 @@ def main():
             #print 'checking for ', newFileName
             isthere = os.path.exists(newFileName)
             print 'isthere', isthere
+            if resub:
+                rmcmd = 'rm '+newFileName
+                print 'rmcmd', rmcmd
+                if isthere and not istest: os.system(rmcmd)
             #from utils import pause
             #print newFileName
             #pause()
