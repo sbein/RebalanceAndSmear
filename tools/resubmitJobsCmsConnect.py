@@ -94,7 +94,7 @@ def main():
             errname = 'jobs/'+job+'.err'
             if not os.path.exists(errname): continue
             errfile = open(errname)
-            errlines = errfile.readlines()
+            errlines = errfile.read()
             errfile.close()
             print 'errlines', errlines
             if not resubmessage in errlines: continue
