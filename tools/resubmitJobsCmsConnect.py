@@ -25,7 +25,7 @@ else:
     bootstrapmode = True
 
 
-istest = True
+istest = False
 OnlyDoMissingFiles = True
 
 
