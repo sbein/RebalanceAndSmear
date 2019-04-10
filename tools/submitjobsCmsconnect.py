@@ -8,12 +8,14 @@ parser.add_argument("-jersf", "--JerUpDown", type=str, default='Nom',help="JER s
 parser.add_argument("-bootstrap", "--Bootstrap", type=str, default='0',help="boot strapping (0,1of5,2of5,3of5,...)")
 parser.add_argument("-forcetemplates", "--forcetemplates", type=str, default=False,help="you can use this to override the template choice")
 parser.add_argument("-hemcut", "--hemcut", type=str, default='',help="you can use this to override the template choice")
+parser.add_argument("-quickrun", "--quickrun", type=bool, default=False,help="Quick practice run (True, False)")
 args = parser.parse_args()
 hemcut = args.hemcut
 fnamekeyword = args.fnamekeyword.strip()
 analyzer = args.analyzer
 JerUpDown = args.JerUpDown
 Bootstrap = args.Bootstrap
+quickrun = args.quickrun
 nametag = {'Nom':'', 'Up': 'JerUp'}
 
 if Bootstrap=='0': 
@@ -100,7 +102,7 @@ def main():
             if isthere: 
                 os.chdir('../../')
                 continue
-        cmd =  'condor_submit '+'../../jobs/'+job+'.jdl'        
+        cmd =  'condor_submit '+'../../jobs/'+job+'.jdl'
         print cmd
         if not istest: os.system(cmd)
         os.chdir('../../')
