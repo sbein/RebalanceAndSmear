@@ -1394,6 +1394,8 @@ def passQCDHighMETFilter2(t):
     return True
 
 #globalSuperTightHalo2016Filter==1 && HBHENoiseFilter==1 && HBHEIsoNoiseFilter==1 && eeBadScFilter==1 && EcalDeadCellTriggerPrimitiveFilter==1 && BadChargedCandidateFilter && BadPFMuonFilter && NVtx > 0
+
+#globalSuperTightHalo2016Filter==1 && HBHENoiseFilter==1 && HBHEIsoNoiseFilter==1 && eeBadScFilter==1 && EcalDeadCellTriggerPrimitiveFilter==1 && BadChargedCandidateFilter && BadPFMuonFilter && NVtx > 0
 def passesUniversalSelection(t):
     if not (bool(t.JetID) and  t.NVtx>0): return False
     if not (t.NElectrons==0 and t.NMuons==0 and t.isoElectronTracks==0 and t.isoMuonTracks==0 and t.isoPionTracks==0): return False
@@ -1411,6 +1413,8 @@ def passesUniversalSelection(t):
     if not t.CSCTightHaloFilter: return False
     if not passesPhotonVeto(t): return False    
     if not t.EcalDeadCellTriggerPrimitiveFilter: return False      ##I think this one makes a sizeable difference    
+    if not t.ecalBadCalibReducedExtraFilter: return False
+    if not t.ecalBadCalibReducedFilter: return False
     '''#first half filters up edge    
     #first half filters low edge           
     ####if not t.ecalBadCalibFilter: return False #this says it's deprecated
@@ -1454,6 +1458,7 @@ def passesUniversalDataSelectionOld(t):#first figure out why crashing, then run 
     if not  passQCDHighMETFilter(t): return False
     if not t.PFCaloMETRatio<5: return False
     return True
+
 
 def passesUniversalDataSelection(t):#first figure out why crashing, then run with isomuon tracks
     if not (bool(t.JetID) and  t.NVtx>0): return False
@@ -1500,7 +1505,7 @@ def passesForwardJetID(t):
 
 def passesPhotonVeto(c):
     for p, pho in enumerate(c.Photons):
-        if c.Photons_fullID[p] and pho.Pt()>100 and c.Photons_hasPixelSeed[p]==0: return False
+        if c.Photons_fullID[p] and pho.Pt()>100 and not bool(c.Photons_hasPixelSeed[p]): return False
     return True
 
 
@@ -1713,7 +1718,7 @@ def FabDraw(cGold,leg,hTruth,hComponents,datamc='mc',lumi=35.9, title = '', Line
     hTruth.SetMarkerStyle(20)
     histheight = 1.5*max(hComponents[0].GetMaximum(),hTruth.GetMaximum())
     if LinearScale: low, high = 0, histheight
-    else: low, high = max(0.001,max(hComponents[0].GetMinimum(),hTruth.GetMinimum())), 1000*histheight
+    else: low, high = max(0.001,0.1*max(hComponents[0].GetMinimum(),hTruth.GetMinimum())), 500*histheight
 
     title0 = hTruth.GetTitle()
     if datamc=='MC':
@@ -1725,7 +1730,7 @@ def FabDraw(cGold,leg,hTruth,hComponents,datamc='mc',lumi=35.9, title = '', Line
         leg.AddEntry(hTruth,title0,'lp')    
     hTruth.SetTitle('')
     hComponents[0].SetTitle('')	
-    hComponents[0].GetYaxis().SetRangeUser(0.05, 10000*hComponents[0].GetMaximum())
+    hComponents[0].GetYaxis().SetRangeUser(0.005, 2000*hComponents[0].GetMaximum())
     hComponents[0].GetYaxis().SetTitleOffset(0.8)
     hComponents[0].Draw('hist e')
     for h in hComponents[1:]: 
@@ -1806,10 +1811,10 @@ def FabDrawSystyRatio(cGold,leg,hTruth,hComponents,datamc='mc',lumi=35.9, title 
     for ih in range(1,len(hComponents[1:])+1):
         hComponents[ih].Add(hComponents[ih-1])
     hComponents.reverse()
-    hComponents[0].GetYaxis().SetRangeUser(0.05, 10000*hComponents[0].GetMaximum())    
+    hComponents[0].GetYaxis().SetRangeUser(0.01, 3000*hComponents[0].GetMaximum())    
     if abs(hComponents[0].Integral(-1,999)-1)<0.001:
         hComponents[0].GetYaxis().SetTitle('Normalized')
-    else: hComponents[0].GetYaxis().SetTitle('#Events')
+    else: hComponents[0].GetYaxis().SetTitle('Events')
     cGold.Update()
     hTruth.GetYaxis().SetTitle('Normalized')
     hTruth.GetYaxis().SetTitleOffset(1.15)
@@ -1871,7 +1876,7 @@ def FabDrawSystyRatio(cGold,leg,hTruth,hComponents,datamc='mc',lumi=35.9, title 
     pad2.cd()
     hTruthCopy = hTruth.Clone('hTruthClone'+hComponents[0].GetName())
     hRatio = hTruthCopy.Clone('hRatioClone')#hComponents[0].Clone('hRatioClone')#+hComponents[0].GetName()+'testing
-    hRatio.SetMarkerStyle(20)
+    hRatio.SetMarkerSize(0.7)    
     #hFracDiff = hComponents[0].Clone('hFracDiff')
     #hFracDiff.SetMarkerStyle(20)
     hTruthCopy.SetMarkerStyle(20)
@@ -1906,7 +1911,7 @@ def FabDrawSystyRatio(cGold,leg,hTruth,hComponents,datamc='mc',lumi=35.9, title 
     histoMethodFracErrorUp = hComponents[0].Clone(hComponents[0].GetName()+'hMethodSystUp')
     histoMethodFracErrorUp.SetFillStyle(3001)
     histoMethodFracErrorUp.SetLineColor(kWhite)	
-    histoMethodFracErrorUp.SetFillColor(hComponents[0].GetFillColor())	
+    histoMethodFracErrorUp.SetFillColor(38)
     histoMethodFracErrorDown = hComponents[0].Clone(hComponents[0].GetName()+'hMethodSystDown')
     histoMethodFracErrorDown.SetLineColor(kWhite)
     #histoMethodFracErrorDown.SetFillStyle(1001)
@@ -1922,6 +1927,7 @@ def FabDrawSystyRatio(cGold,leg,hTruth,hComponents,datamc='mc',lumi=35.9, title 
         histoMethodFracErrorNom.SetBinContent(ibin, 1)		
         histoMethodFracErrorNom.SetBinError(ibin, 0)
     hRatio.GetYaxis().SetRangeUser(-0.2,3.2)	
+    print 'we are setting things'
     hRatio.Draw('e0')    
     histoMethodFracErrorUp.Draw('same hist')	
     histoMethodFracErrorNom.Draw('same')
@@ -1940,10 +1946,10 @@ def stampFab(lumi,datamc='MC'):
     tl.SetTextSize(1.55*tl.GetTextSize())
     tl.DrawLatex(0.152,0.82, 'CMS')
     tl.SetTextFont(extraTextFont)
-    tl.DrawLatex(0.14,0.74, ('MC' in datamc)*' simulation'+' preliminary')
+    tl.DrawLatex(0.14,0.74, ('MC' in datamc)*' simulation'+0*' preliminary')
     tl.SetTextFont(regularfont)
-    if lumi=='': tl.DrawLatex(0.62,0.82,'#sqrt{s} = 13 TeV')
-    else: tl.DrawLatex(0.42,0.82,'#sqrt{s} = 13 TeV, L = '+str(lumi)+' fb^{-1}')
+    if lumi=='': tl.DrawLatex(0.62,0.82,str(lumi)+' fb^{-1} (13 TeV)')
+    else: tl.DrawLatex(0.52,0.82,str(lumi)+' fb^{-1} (13 TeV)')
     #tl.DrawLatex(0.64,0.82,'#sqrt{s} = 13 TeV')#, L = '+str(lumi)+' fb^{-1}')	
     tl.SetTextSize(tl.GetTextSize()/1.55)
 

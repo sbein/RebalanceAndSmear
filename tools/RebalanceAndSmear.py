@@ -20,7 +20,7 @@ parser = argparse.ArgumentParser()
 #Autumn18.GJets_HT-400To600
 parser.add_argument("-v", "--verbosity", type=bool, default=0,help="increase output verbosity")
 parser.add_argument("-nprint", "--printevery", type=int, default=100,help="print every n(events)")
-parser.add_argument("-fin", "--fnamekeyword", type=str,default='RunIIFall17MiniAODv2.QCD_HT200to',help="file")
+parser.add_argument("-fin", "--fnamekeyword", type=str,default='RunIIFall17MiniAODv2.QCD_HT2000to',help="file")
 parser.add_argument("-jersf", "--JerUpDown", type=str, default='Nom',help="JER scale factor (JerNom, JerUp, ...)")
 parser.add_argument("-bootstrap", "--Bootstrap", type=str, default='0',help="boot strapping (0,1of5,2of5,3of5,...)")
 parser.add_argument("-quickrun", "--quickrun", type=bool, default=False,help="Quick practice run (True, False)")
@@ -184,10 +184,10 @@ indexVarDPhi['']=-1
 nmain = len(varlist)
 
 def selectionFeatureVector(fvector, regionkey='', omitcuts='', omitcuts_dphi=''):
-    if not fvector[0][1]>200: return False #let's speed this up a bit    
+    if not fvector[0][1]>200: return False #let's speed this up a bit
     fvmain, fvdphi, fvfilters = fvector
     if not sum(fvfilters)==len(fvfilters): return False
-    iomits, iomits_dphi = [], []    
+    iomits, iomits_dphi = [], []
     for cut in omitcuts.split('Vs'): iomits.append(indexVar[cut])
     for i, feature in enumerate(fvmain):
         if i==nmain: break
@@ -203,9 +203,9 @@ def selectionFeatureVector(fvector, regionkey='', omitcuts='', omitcuts_dphi='')
         for i, feature in enumerate(fvdphi[:fvmain[2]]):
             if i in iomits_dphi: continue
             if not (feature>=regionCuts[regionkey][2][i][0] and feature<=regionCuts[regionkey][2][i][1]): return True
-        return False    
+        return False
     print 'should never see this'
-    return passmain 
+    return passmain
 
 '''
 def selectionFeatureVector(fvector, regionkey='', omitcuts=''):
@@ -278,7 +278,7 @@ for line in lines:
     filelist.append(fname)
     if not chasedown200: break
 nevents = c.GetEntries()
-if quickrun: nevents = min(4000,nevents)
+if quickrun: nevents = min(20000,nevents)
 c.Show(0)
 print "nevents=", nevents
 

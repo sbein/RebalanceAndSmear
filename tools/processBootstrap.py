@@ -15,8 +15,8 @@ hadd -f Vault/RandS_Run2_5of5.root Vault/RandS_Run2016_5of5.root Vault/RandS_Run
 python tools/processBootstrap.py Run2016
 python tools/processBootstrap.py Run2017
 python tools/processBootstrap.py Run2018
-python tools/processBootstrap.py Run2018PreHem
-python tools/processBootstrap.py Run2018DuringHem
+python tools/processBootstrap.py Run2018_PreHem
+python tools/processBootstrap.py Run2018_DuringHem
 python tools/processBootstrap.py Run2
 
 '''
@@ -32,11 +32,13 @@ nBoot = 5
 try: year = sys.argv[1]
 except: year = 'Run2017'
 
+globword = 'Vault/*'+year+'_*of'+str(nBoot)+'.root'
+print 'globbing', globword
+flist = glob(globword)
+#print 'flist', flist
+#exit(0)
 
-flist = glob('Vault/*'+year+'_*of'+str(nBoot)+'.root')
-print 'flist', flist
-
-fnew = TFile('OutputBootstrap'+year+'.root','recreate')
+fnew = TFile('OutputBootstrap'+year.replace('_','')+'.root','recreate')
 loadSearchBins2018()
 SearchBinWindows = {v: k for k, v in SearchBinNumbers.iteritems()}
 redoBinning = binningAnalysis
@@ -88,7 +90,7 @@ for name in names:
         newxs = array('d',newbinning)
         #hMaster = hMaster.Rebin(nbins,'',newxs) 
 
-    if 'hLowMhtBaseline_SearchBins' in name: 
+    if 'hLowMhtBaseline_SearchBins' in name or 'SearchBins' in name: 
         hMaster = hMaster.Rebin(nbins,'',newxs)
         xax = hMaster.GetXaxis()
         countByHtMht = {}

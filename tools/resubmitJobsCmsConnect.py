@@ -26,7 +26,7 @@ else:
 
 
 istest = False
-removemode = True
+removemode = False
 OnlyDoMissingFiles = True
 
 

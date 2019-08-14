@@ -69,9 +69,11 @@ def mkLabel(str_,kinvar,selection=''):
     newstr = newstr.replace('Rebalanced',' rebalanced ')
     if year=='Summer16': newstr = newstr.replace('RplusS',' Summer16 QCD R&S')
     elif year=='Fall17': newstr = newstr.replace('RplusS',' Fall17 QCD R&S')
+    elif year=='Autumn18': newstr = newstr.replace('RplusS',' Autumn18 QCD R&S')        
     if datamc=='Data': newstr = newstr.replace('Truth','Data')
     if year=='Summer16': newstr = newstr.replace('Truth',' Summer16 QCD (truth) ')
     elif year=='Fall17': newstr = newstr.replace('Truth',' Fall17 QCD (truth) ')
+    elif year=='Autumn18': newstr = newstr.replace('Truth',' Autumn18 QCD (truth) ')        
     if datamc == 'Data': newstr = newstr.replace('Truth',' Data ')
     newstr = newstr.replace(kinvar,'')
     newstr = newstr.replace('_b','').replace('_','')
@@ -271,7 +273,7 @@ for key in keys:
     tl.DrawLatex(0.14,0.925, cutlabel)
 
     tl.SetTextAlign(31)
-    tl.DrawLatex(0.894,0.84,'#sqrt{s} = 13 TeV (L = '+str(lumi)+' fb^{-1})')
+    tl.DrawLatex(0.894,0.84,str(lumi)+' fb^{-1} (13 TeV)')
     tl.SetTextAlign(oldalign)
 
     print 'ybottom, xbottom, xpos, ypos', ybottom, xbottom, xpos, ypos

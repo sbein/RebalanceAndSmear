@@ -9,6 +9,8 @@ python tools/submitjobsSkims.py --analyzer tools/SkimValidation.py --fnamekeywor
 python tools/submitjobsSkims.py --analyzer tools/SkimValidation.py --fnamekeyword WZ --selection signalSideband
 python tools/submitjobsSkims.py --analyzer tools/SkimValidation.py --fnamekeyword ZZ --selection signalSideband
 python tools/submitjobsSkims.py --analyzer tools/SkimValidation.py --fnamekeyword ST --selection signalSideband
+python tools/submitjobsSkims.py --analyzer tools/SkimValidation.py --fnamekeyword TTZ --selection signalSideband
+python tools/submitjobsSkims.py --analyzer tools/SkimValidation.py --fnamekeyword TTW --selection signalSideband
 
 
 python tools/submitjobsSkims.py --analyzer tools/SkimValidation.py --fnamekeyword TTJets_MC --selection LDP 
@@ -19,6 +21,8 @@ python tools/submitjobsSkims.py --analyzer tools/SkimValidation.py --fnamekeywor
 python tools/submitjobsSkims.py --analyzer tools/SkimValidation.py --fnamekeyword WZ --selection LDP 
 python tools/submitjobsSkims.py --analyzer tools/SkimValidation.py --fnamekeyword ZZ --selection LDP 
 python tools/submitjobsSkims.py --analyzer tools/SkimValidation.py --fnamekeyword ST --selection LDP 
+python tools/submitjobsSkims.py --analyzer tools/SkimValidation.py --fnamekeyword TTZ --selection LDP 
+python tools/submitjobsSkims.py --analyzer tools/SkimValidation.py --fnamekeyword TTW --selection LDP
 
 python tools/submitjobsSkims.py --analyzer tools/SkimValidation.py --fnamekeyword MET_2018 --selection signalSideband  --periodwrthem PreHem
 python tools/submitjobsSkims.py --analyzer tools/SkimValidation.py --fnamekeyword MET_2018 --selection signalSideband --periodwrthem DuringHem

@@ -12,6 +12,12 @@ AnMhtJetPtCut = 30
 
 debugmode = False
 
+
+whichthird = ''
+#whichthird = 'first'
+#whichthird = 'second'
+#whichthird = 'third'    
+
 #wget https://github.com/AditeeRane/LostLepton_avgTF/blob/LL_Run2_V16for2016_CMSLPC/btag/L1prefiring_jetpt_2017BtoF.root
 #wget https://raw.githubusercontent.com/AditeeRane/LostLepton_avgTF/LL_Run2_V16for2017_CMSLPC/btag/DeepCSV_94XSF_V3_B_F.csv
 #wget https://github.com/AditeeRane/LostLepton_avgTF/blob/LL_Run2_V16for2016_CMSLPC/btag/L1prefiring_photonpt_2017BtoF.root
@@ -19,7 +25,7 @@ debugmode = False
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("-v", "--verbosity", type=bool, default=0,help="increase output verbosity")
-parser.add_argument("-nprint", "--printevery", type=int, default=100,help="print every n(events)")
+parser.add_argument("-nprint", "--printevery", type=int, default=1000,help="print every n(events)")
 parser.add_argument("-fin", "--fnamekeyword", type=str,default='tree_TTJets_HT-600to800_MC2017.root',help="file")
 parser.add_argument("-jersf", "--JerUpDown", type=str, default='Nom',help="JER scale factor (JerNom, JerUp, ...)")
 parser.add_argument("-selection", "--selection", type=str, default='signal',help="signal, LDP")
@@ -37,6 +43,7 @@ UseDeep = True
 
 
 ntupleV = '16'
+ntupleV = '17'
 if 'MC' in fnamekeyword: isdata = False
 else: isdata = True
 
@@ -93,11 +100,26 @@ if not isdata:
 
 nevents = c.GetEntries()
 if quickrun: nevents = min(5000,nevents)
+
+dothird = False
+if whichthird == '':
+    erange = [-1,9999999999]
+if whichthird == 'first':
+    dothird = True
+    erange = [-1,1.0*nevents/3]
+if whichthird == 'second':
+    dothird = True
+    erange = [1.0*nevents/3,2.0*nevents/3]
+if whichthird == 'third':
+    dothird = True
+    erange = [2.0*nevents/3,3.0*nevents/3]
+            
 c.Show(0)
 print "nevents=", nevents
 
 newFileName = 'Skim_'+filelist[0].split('/')[-1].replace('.root','')+'_'+selection+periodwrthem+'.root'
 newFileName = newFileName.replace('.root',nametag[JerUpDown]+'.root')
+if dothird: newFileName = newFileName.replace('.root',whichthird+'third.root')
 fnew = TFile(newFileName,'recreate')
 print 'creating new file:',fnew.GetName()
 
@@ -120,6 +142,7 @@ if '_2017' in filelist[0] or 'MC2017' in filelist[0]:
 if '_2018' in fnamekeyword or 'MC2018' in filelist[0]: 
     BTAG_CSVv2 = 0.8838
     BTAG_deepCSV = 0.4941
+    BTAG_deepCSV = 0.4184#0.4941####    
 
 if UseDeep: BTag_Cut = BTAG_deepCSV
 else: BTag_Cut = BTAG_CSVv2
@@ -158,10 +181,10 @@ indexVarDPhi['']=-1
 nmain = len(varlist)
 
 def selectionFeatureVector(fvector, regionkey='', omitcuts='', omitcuts_dphi=''):
+    if not fvector[0][1]>200: return False #let's speed this up a bit
     fvmain, fvdphi, fvfilters = fvector
-    if not fvmain[1]>200: return False #let's speed this up a bit
     if not sum(fvfilters)==len(fvfilters): return False
-    iomits, iomits_dphi = [], []    
+    iomits, iomits_dphi = [], []
     for cut in omitcuts.split('Vs'): iomits.append(indexVar[cut])
     for i, feature in enumerate(fvmain):
         if i==nmain: break
@@ -177,9 +200,9 @@ def selectionFeatureVector(fvector, regionkey='', omitcuts='', omitcuts_dphi='')
         for i, feature in enumerate(fvdphi[:fvmain[2]]):
             if i in iomits_dphi: continue
             if not (feature>=regionCuts[regionkey][2][i][0] and feature<=regionCuts[regionkey][2][i][1]): return True
-        return False 
+        return False
     print 'should never see this'
-    return passmain 
+    return passmain
 
 
 
@@ -237,6 +260,7 @@ if ntupleV=='15': triggerIndeces = triggerIndecesV15
 if ntupleV=='15a': triggerIndeces = triggerIndecesV15
 if ntupleV=='14': triggerIndeces = triggerIndecesV14
 if ntupleV=='16a': triggerIndeces = triggerIndecesV16a
+if ntupleV=='17': triggerIndeces = triggerIndecesV16a
 
 def PassTrig(c,trigname):
     for trigidx in triggerIndeces[trigname]: 
@@ -252,6 +276,8 @@ for ientry in range(nevents):
     if ientry%printevery==0:
         print "processing event", ientry, '/', nevents
         print 'time=',time.time()-t0
+    if dothird:
+        if not (ientry>erange[0] and ientry<=erange[1]): continue
     c.GetEntry(ientry)
 
     if True and ientry==0:
@@ -277,7 +303,8 @@ for ientry in range(nevents):
 
     if not passesUniversalSelection(c): continue
         
-
+    #if not c.MHT>600: continue
+    
     if UseDeep: recojets = CreateUsefulJetVector(c.Jets, c.Jets_bJetTagDeepCSVBvsAll)#fiducial
     else: recojets = CreateUsefulJetVector(c.Jets, c.Jets_bDiscriminatorCSV)#fiducial    
 
@@ -310,7 +337,7 @@ for ientry in range(nevents):
     binNumber = getBinNumber2018(fv[0])    
     fv[0].append(binNumber)        
     fv[0].append(max([bDPhi1,bDPhi2,bDPhi3,bDPhi4]))
-    fv[0].append(GetMaxDeltaPhiMhtHemJets(recojets,bMhtVec))
+    fv[0].append(GetMinDeltaPhiMhtHemJets(recojets,bMhtVec))
     fv[0].append(htratio)
     fv[0].append(-1)
     fv[0].append(ientry%2==0)    
@@ -365,7 +392,7 @@ for ientry in range(nevents):
     binNumber = getBinNumber2018(fv[0])
     fv[0].append(binNumber)     
     fv[0].append(max([tDPhi1,tDPhi2,tDPhi3,tDPhi4]))
-    fv[0].append(GetMaxDeltaPhiMhtHemJets(recojets,tMhtVec))
+    fv[0].append(GetMinDeltaPhiMhtHemJets(recojets,tMhtVec))
     fv[0].append(tHt5/max(0.0001,tHt))
     fv[0].append(ientry%2==0)    
     fv[0].append(True)
@@ -374,7 +401,7 @@ for ientry in range(nevents):
 
 
 
-    if not (fvb[0][0]== fv[0][0] and fvb[0][1]== fv[0][1] and fvb[0][2]== fv[0][2]):
+    if False:# not (fvb[0][0]== fv[0][0] and fvb[0][1]== fv[0][1] and fvb[0][2]== fv[0][2]):
         print ientry, 'truth ', fv[0]
         print ientry, 'branch ',fvb[0]        
         print ientry, 'truth ', fv[1]
@@ -401,7 +428,7 @@ for ientry in range(nevents):
     for nb, bprob in enumerate(btagprob):        
         if isdata: 
             weight = 1
-            fv[0][3] = c.BTags
+            fv[0][3] = tBTags
             ht = c.HTOnline
             fillth1(hHtWeighted, ht, weight)
             fillth1(hMhtWeighted, c.MHT, weight)                
@@ -415,6 +442,8 @@ for ientry in range(nevents):
             for ivar, varname in enumerate(varlist):
                 hname = regionkey+'_'+varname
                 if selectionFeatureVector(fv,regionkey,varname,''): 
+                    if 'Bin10' in regionkey and fv[0][4]==10 and fv[0][3]>0:
+                        print ientry, regionkey, varname, 'btag issue', fv, 'branch', c.BTags, 'truth', tBTags, 'huh?'
                     fillth1(histoStructDict[hname].Truth, fv[0][ivar],weight)
             for ivar, varname in enumerate(varlistDPhi):
                 hname = regionkey+'_'+varname

@@ -7,11 +7,7 @@ import os, sys
 try: year = sys.argv[1]
 except: year = 'Run2016'
 
-
-#if year=='Run2016': NORM = 1.48 #these come from closureData.root!!!!
-#elif year=='Run2017': NORM = 1.41
-#elif year=='Run2018': NORM = 2.79
-
+hem_filter = 'Hemv0p5'
         
 redoBinning = binningAnalysis
 labelfilename = 'Vault/QcdPredictionSUS-16-033.root'
@@ -20,40 +16,32 @@ labeledhist = labelfile.Get('PredictionCV')
 labeledhist.Reset()
 xax = labeledhist.GetXaxis()
 
-fnew = TFile('QcdPrediction'+year+'.root','recreate')
+newname = 'QcdPrediction'+year+'.root'
+if year=='Run2': newname = newname.replace('.root','-OnlyUsedForStat.root')
+fnew = TFile(newname,'recreate')
 loadSearchBins2018()
 SearchBinWindows = {v: k for k, v in SearchBinNumbers.iteritems()}
 redoBinning = binningAnalysis
 
-if not year== 'Run2':
-    hCentral = labeledhist.Clone('')
-    fCentral = TFile('validation_data'+year+'HDP.root')
-    hCentral_ = fCentral.Get('hLowMhtBaseline_SearchBinsRplusS').Clone('hLowMhtBaseline_SearchBinsRplusS_aux')
-    for ibin in range(1,xax.GetNbins()+1):
-        hCentral.SetBinContent(ibin, hCentral_.GetBinContent(ibin))
-        hCentral.SetBinError(ibin, hCentral_.GetBinError(ibin))   
-        print ibin, 'setting bin error', hCentral_.GetBinError(ibin)
-else:
-    fCentral16 = TFile('validation_dataRunPreHem/validation_dataRun2016HDP.root')
-    fCentral17 = TFile('validation_dataRunPreHem/validation_dataRun2017HDP.root')
-    fCentral18PreHem = TFile('validation_dataRun2018PreHemHDP.root')
-    fCentral18DuringHem = TFile('validation_dataRun2018DuringHemHDP.root')    
-    
-    hCentral16_ = fCentral16.Get('hLowMhtBaseline_SearchBinsRplusS').Clone('hLowMhtBaseline_SearchBinsRplusS_16')
-    hCentral = hCentral16_.Clone('')
-    hCentral.Reset()
-    hCentral17_ = fCentral17.Get('hLowMhtBaseline_SearchBinsRplusS').Clone('hLowMhtBaseline_SearchBinsRplusS_17')    
-    hCentral18PH_ = fCentral18PreHem.Get('hLowMhtBaseline_SearchBinsRplusS').Clone('hLowMhtBaseline_SearchBinsRplusS_18')
-    hCentral18DH_ = fCentral18DuringHem.Get('hLowMhtBaseline_SearchBinsRplusS').Clone('hLowMhtBaseline_SearchBinsRplusS_18')            
-    hCentral.Add(hCentral16_)
-    hCentral.Add(hCentral17_)
-    hCentral.Add(hCentral18PH_)
-    hCentral.Add(hCentral18DH_)    
+
+hCentral = labeledhist.Clone('')
+fCentral = TFile('validation_data'+year+'HDP.root')
+centralname = 'hLowMhtBaseline_SearchBinsRplusS'
+if year=='Run2018DuringHem': centralname = centralname.replace('Baseline','Base').replace('_',hem_filter+'_')
+hCentral_ = fCentral.Get(centralname).Clone('hLowMhtBaseline_SearchBinsRplusS_aux')
+for ibin in range(1,xax.GetNbins()+1):
+    hCentral.SetBinContent(ibin, hCentral_.GetBinContent(ibin))
+    hCentral.SetBinError(ibin, hCentral_.GetBinError(ibin))   
+    print ibin, 'setting bin error', hCentral_.GetBinError(ibin)
 
 hStat = hCentral.Clone('hStat')
 xax = hStat.GetXaxis()
 for ibin in range(1,xax.GetNbins()+1):
-    hStat.SetBinContent(ibin, 1+TMath.Sqrt(pow(0.5,2)+pow(hStat.GetBinError(ibin)/hStat.GetBinContent(ibin),2)))
+    bc = hCentral_.GetBinContent(ibin)
+    if bc>0:
+        hStat.SetBinContent(ibin, 1+hCentral_.GetBinError(ibin)/bc)
+    else:
+        hStat.SetBinContent(ibin, 2)
     hCentral.GetXaxis().SetBinLabel(ibin, labeledhist.GetXaxis().GetBinLabel(ibin))
 fnew.cd()
 hCentral.Write('PredictionCV')
@@ -61,11 +49,11 @@ hCentral.Write('PredictionCV')
 
 for ibin in range(1, xax.GetNbins()+1): 
     bxwindow = SearchBinWindows[ibin][3]
-    print 'bxwindow', bxwindow
-    if bxwindow[0]>=2: 
-        origerror = hStat.GetBinError(ibin)-1
+    if bxwindow[0]+1>=3: 
+        origerror = hStat.GetBinContent(ibin)-1
         newerrr = 0.2
-        hStat.SetBinError(ibin, 1+TMath.Sqrt(pow(origerror,2)+pow(newerrr,2)))
+        hStat.SetBinContent(ibin, 1+TMath.Sqrt(pow(origerror,2)+pow(newerrr,2)))
+    print 'stat', ibin, hStat.GetBinContent(ibin)
 
 hStat.Write('PredictionUncorrelated')
 #fCentral.Close()
@@ -106,7 +94,7 @@ if not year=='Run2':
     hUp = fJerImpact.Get('hhLowMhtBaseline_HtRplusSJerUp')
     hNom = fJerImpact.Get('hhLowMhtBaseline_HtRplusSJerNom')
     kinvar = 'Ht'
-    if len(redoBinning[kinvar])>3: ##this should be reinstated
+    if len(redoBinning[kinvar])>3: 
         nbins = len(redoBinning[kinvar])-1
         newxs = array('d',redoBinning[kinvar])
         hUp = hUp.Rebin(nbins,'',newxs)

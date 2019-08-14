@@ -2,6 +2,8 @@ python tools/submitjobs.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword 
 python tools/submitjobs.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Summer16MiniAODv3.QCD_HT --quickrun True
 
 python tools/submitjobs.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Autumn18.QCD_HT --quickrun True
+python tools/submitjobs.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Autumn18.QCD_HT1500 --quickrun True
+python tools/submitjobs.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Autumn18.QCD_HT1000 --quickrun True
 
 python tools/submitjobs.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2017B-31Mar2018-v1.JetHT --JerUpDown Nom
 python tools/submitjobs.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2017C-31Mar2018-v1.JetHT --JerUpDown Nom
@@ -180,3 +182,4 @@ python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fna
 python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018B-17Sep2018-v1.JetHT --hemcut DuringHem  --Bootstrap 5of5 &
 python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018C-17Sep2018-v1.JetHT  --Bootstrap 5of5 &
 python tools/submitjobsCmsconnect.py --analyzer tools/RebalanceAndSmear.py --fnamekeyword Run2018D-PromptReco-v2.JetHT  --Bootstrap 5of5 &
+
