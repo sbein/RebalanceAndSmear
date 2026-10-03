@@ -31,6 +31,8 @@ def main():
         g.SetMarkerStyle(20+i);g.SetLineWidth(2);g.Draw("LP SAME")
         legend.AddEntry(g,label,"lp");graphs.append(g)
         report.append(dict(label=label,path=path,bins=rows))
+    ymax=max([3.]+[1.1*(row["ratio"]+row["ratio_error"]) for variant in report for row in variant["bins"] if row["low"]<700])
+    frame.SetMaximum(ymax)
     one=R.TLine(0,1,700,1);one.SetLineStyle(2);one.Draw();legend.Draw()
     title=R.TLatex();title.SetNDC();title.SetTextSize(.03)
     title.DrawLatex(.11,.95,"2024 NanoAODv15 QCD HT1200-1500; held-out split")

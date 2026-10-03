@@ -13,10 +13,15 @@ std::unique_ptr<correction::CorrectionSet> Run3JetIDSet, Run3VetoSet;
 correction::Correction::Ref Run3TightCorrection, Run3LepVetoCorrection, Run3VetoCorrection;
 std::string Run3VetoType;
 bool Run3IsData=false;
+bool Run3AnalysisLepVeto=false;
 std::map<unsigned int,std::vector<std::pair<unsigned int,unsigned int>>> Run3LumiRanges;
 
 void ConfigureRun3Cleaning(const std::string &idpath,const std::string &vetopath,
-                          const std::string &vetoname,const std::string &vetotype) {
+                          const std::string &vetoname,const std::string &vetotype,
+                          const std::string &analysisID="AK4PUPPI_Tight") {
+  if(analysisID!="AK4PUPPI_Tight" && analysisID!="AK4PUPPI_TightLeptonVeto")
+    throw std::runtime_error("Unsupported analysis jet-ID working point");
+  Run3AnalysisLepVeto=analysisID=="AK4PUPPI_TightLeptonVeto";
   Run3JetIDSet=correction::CorrectionSet::from_file(idpath);
   Run3VetoSet=correction::CorrectionSet::from_file(vetopath);
   Run3TightCorrection=Run3JetIDSet->at("AK4PUPPI_Tight");
@@ -40,8 +45,13 @@ bool Run3InVetoMap(double eta,double phi) {
   return Run3VetoCorrection->evaluate({Run3VetoType,eta,phi})!=0;
 }
 
-// Working phase-space choice: stored jets pT>15, |eta|<5, TightLeptonVeto ID,
-// and electromagnetic fraction <0.9. Reject the event, never remove its recoil jet.
+bool Run3AnalysisJetID(double eta,double chf,double nhf,double cef,double nef,double muf,
+                       int nch,int nneutral) {
+  return Run3JetID(eta,chf,nhf,cef,nef,muf,nch,nneutral,Run3AnalysisLepVeto);
+}
+
+// JERC Run 3 minimum: pT>15, TightLeptonVeto ID, EM fraction <0.9.
+// Use the stored |eta|<5 jet acceptance. Reject the entire event.
 bool Run3VetoEligible(double pt,double eta,double chf,double nhf,double cef,
                       double nef,double muf,int nch,int nneutral) {
   return pt>15 && std::abs(eta)<5 && cef+nef<0.9 &&
@@ -65,8 +75,28 @@ template<class F,class I>
 bool Run3PassAnalysisJetID(const F &pt,const F &eta,const F &chf,const F &nhf,
                           const F &cef,const F &nef,const F &muf,const I &nch,const I &nne) {
   for(unsigned int i=0;i<pt.size();++i)
-    if(pt[i]>30 && std::abs(eta[i])<5 && !Run3JetID(eta[i],chf[i],nhf[i],cef[i],nef[i],muf[i],nch[i],nne[i])) return false;
+    if(pt[i]>30 && std::abs(eta[i])<5 && !Run3AnalysisJetID(eta[i],chf[i],nhf[i],cef[i],nef[i],muf[i],nch[i],nne[i])) return false;
   return true;
+}
+
+template<class F,class I>
+std::vector<float> Run3VetoJetCoordinates(bool usePhi,const F &pt,const F &eta,const F &phi,
+    const F &chf,const F &nhf,const F &cef,const F &nef,const F &muf,const I &nch,const I &nne) {
+  std::vector<float> result;
+  for(unsigned int i=0;i<pt.size();++i)
+    if(Run3VetoEligible(pt[i],eta[i],chf[i],nhf[i],cef[i],nef[i],muf[i],nch[i],nne[i]))
+      result.push_back(usePhi ? phi[i] : eta[i]);
+  return result;
+}
+
+template<class F,class I>
+int Run3CountMaskedVetoJets(const F &pt,const F &eta,const F &phi,const F &chf,const F &nhf,
+                          const F &cef,const F &nef,const F &muf,const I &nch,const I &nne) {
+  int count=0;
+  for(unsigned int i=0;i<pt.size();++i)
+    if(Run3VetoEligible(pt[i],eta[i],chf[i],nhf[i],cef[i],nef[i],muf[i],nch[i],nne[i]) &&
+       Run3InVetoMap(eta[i],phi[i])) ++count;
+  return count;
 }
 template<class F,class I>
 bool Run3PassVetoMap(const F &pt,const F &eta,const F &phi,const F &chf,const F &nhf,

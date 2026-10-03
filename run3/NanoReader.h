@@ -69,7 +69,7 @@ struct Run3NanoReader {
     if(!pass) return false;
     ++afterFilters;
     for(unsigned int i=0;i<pt.GetSize();++i)
-      if(pt[i]>30 && fabs(eta[i])<5 && !Run3JetID(eta[i],chf[i],nhf[i],cef[i],nef[i],muf[i],nch[i],nneutral[i])) return false;
+      if(pt[i]>30 && fabs(eta[i])<5 && !Run3AnalysisJetID(eta[i],chf[i],nhf[i],cef[i],nef[i],muf[i],nch[i],nneutral[i])) return false;
     ++afterJetID;
     for(unsigned int i=0;i<pt.GetSize();++i)
       if(Run3VetoEligible(pt[i],eta[i],chf[i],nhf[i],cef[i],nef[i],muf[i],nch[i],nneutral[i]) && Run3InVetoMap(eta[i],phi[i])) return false;

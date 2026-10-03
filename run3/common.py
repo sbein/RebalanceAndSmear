@@ -19,6 +19,8 @@ def config(path=None):
         raise ValueError("Validate jet ID and b tagging before changing era")
     if cfg.get("additional_jec",False):
         raise ValueError("Additional JEC is not implemented in this MC pilot")
+    if cfg.get("analysis_jet_id_wp","AK4PUPPI_Tight") not in ["AK4PUPPI_Tight","AK4PUPPI_TightLeptonVeto"]:
+        raise ValueError("Unsupported analysis jet-ID working point")
     return cfg
 
 def root(load_core=False):
@@ -45,7 +47,8 @@ def configure_cleaning(ROOT, cfg, is_data=False, golden_json=None):
         if hashlib.sha256(path.read_bytes()).hexdigest()!=spec["sha256"]:
             raise ValueError("Payload checksum differs from pinned configuration: "+str(path))
     ROOT.ConfigureRun3Cleaning(cfg["jet_id_payload"]["path"],cfg["jet_veto_payload"]["path"],
-                              cfg["jet_veto_payload"]["name"],cfg["jet_veto_payload"]["type"])
+                              cfg["jet_veto_payload"]["name"],cfg["jet_veto_payload"]["type"],
+                              cfg.get("analysis_jet_id_wp","AK4PUPPI_Tight"))
     ROOT.Run3ResetLumiMask(is_data)
     if is_data:
         if not golden_json: raise ValueError("Data requires an explicit certified golden JSON")

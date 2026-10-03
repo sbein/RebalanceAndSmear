@@ -53,6 +53,12 @@ def main():
             except ValueError:pass
             else:raise AssertionError("Data/MC certification guard not enforced")
     configure_cleaning(R,cfg)
+    # A muon-dominated central jet passes Tight and fails TightLeptonVeto.
+    for wp,expected in [("AK4PUPPI_Tight",True),("AK4PUPPI_TightLeptonVeto",False)]:
+        alternate=dict(cfg,analysis_jet_id_wp=wp);configure_cleaning(R,alternate)
+        if R.Run3AnalysisJetID(0.,.5,.1,.1,.1,.8,10,10)!=expected:
+            raise AssertionError("Analysis jet-ID working point was not applied")
+    configure_cleaning(R,cfg)
     # Exercise the complete data-cleaning CLI on a toy Events tree with no gen branches.
     with tempfile.TemporaryDirectory() as tmp:
         tmp=Path(tmp);nano=tmp/"data.root";golden=tmp/"golden.json";report=tmp/"report.json"
@@ -73,18 +79,23 @@ def main():
             frame=frame.Define(flag,"rdfentry_!=1" if flag=="Flag_BadPFMuonFilter" else "true")
         frame.Snapshot("Events",str(nano))
         command=[sys.executable,str(BASE/"audit_selection.py"),"--nano",str(nano),"--is-data",
-                 "--golden-json",str(golden),"--output",str(report),"--snapshot",str(tmp/"cleaned.root")]
+                 "--golden-json",str(golden),"--output",str(report),"--snapshot",str(tmp/"cleaned.root"),
+                 "--jet-map-dir",str(tmp/"jet_maps")]
         if args.config:command += ["--config",args.config]
         subprocess.run(command,check=True,capture_output=True,text=True)
         counts=json.loads(report.read_text())["cumulative"]
         assert counts["input"]==6 and counts["golden_json"]==3
         assert counts["Flag_ecalBadCalibFilter"]==2 and counts["jet_veto_map"]==1, counts
+        jet_maps=json.loads(report.read_text())["jet_maps"]
+        assert jet_maps["before_jets"]==4 and jet_maps["after_jets"]==2, jet_maps
+        assert jet_maps["masked_before_jets"]==1 and jet_maps["masked_after_jets"]==0, jet_maps
         f=open_root(R,tmp/"cleaned.root")
         assert f.Get("Events").GetEntries()==1 and not f.Get("Events").GetBranch("genWeight")
         f.Close()
     result=dict(passed=True,jet_id_boundary_comparisons=checked,map_comparisons=maps,
                 masked_point=masked,unmasked_point=unmasked,golden_json_boundary_and_mode_checks=True,
                 data_cli_without_gen_branches=True,data_cli_cutflow=counts,
+                analysis_jet_id_working_point_checks=True,jet_map_toy_checks=jet_maps,
                 scope="Validates adapter and pinned payload evaluation; does not certify a physics analysis")
     write_json(args.output,result);print(result)
 

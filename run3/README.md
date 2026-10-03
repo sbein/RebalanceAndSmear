@@ -21,7 +21,7 @@ config_2024.json is authoritative and is embedded in every output. It uses store
 
 The initial pT grid is coarser than the legacy fine grid to obtain usable pilot statistics, and extends above 1 TeV. Its last bin extends to 10 TeV for lookup coverage, not as a claim of measured response at that scale. Reassess the binning, conditioning variables and high-pT support with a larger training sample.
 
-Real v15 files lack Jet_jetId. The reader evaluates the official CAT Summer24 `AK4PUPPI_Tight` correction using constituent fractions and Jet_chMultiplicity + Jet_neMultiplicity. Events are rejected if a jet above 30 GeV and within |eta|<5 fails ID. Lower-pT seed jets are retained. The pinned 2024 `jetvetomap` rejects entire events containing eligible jets in masked regions. Payload checksums, references, exact eligibility and authentication limitations are documented in [SOURCES.md](SOURCES.md). The current 2024 BTV JSON provides UParTAK4_wp_values:M=0.1272; this cut is used for both response and prior categories. B tagging is restricted to |eta|<2.4 to maintain the legacy acceptance, and scores are mapped to binary 0/1 internally.
+Real v15 files lack Jet_jetId. The reader evaluates the official CAT Summer24 `AK4PUPPI_TightLeptonVeto` correction using constituent fractions and Jet_chMultiplicity + Jet_neMultiplicity. This follows current JMAR guidance for the inclusive pilot without dedicated jet-lepton cleaning. The configurable `analysis_jet_id_wp` can select Tight when appropriate; omitting it reproduces the earlier Tight configuration. Events are rejected if a jet above 30 GeV and within |eta|<5 fails ID. Lower-pT seed jets are retained. The pinned `Summer24Prompt24_RunBCDEFGHI_V1` map rejects entire events containing eligible jets in masked regions. All eight noise flags and map eligibility are now verified against authenticated current JME documentation; see [SOURCES.md](SOURCES.md). The current 2024 BTV JSON provides UParTAK4_wp_values:M=0.1272; this cut is used for response and prior categories. B tagging is restricted to |eta|<2.4 to maintain the legacy acceptance, and scores are mapped to binary 0/1 internally.
 
 Analysis HT and jet counts use pT>30 GeV and |eta|<2.4. Analysis MHT uses pT>30 and |eta|<5. The fit and generator prior use pT>15 and |eta|<5, retaining the legacy prior threshold. Priors require two central gen jets above 30 GeV, or three for the >=3 b-tag category, as in the CMS code. The fit retains its 12-jet parameter cap, initialization target min(120,HT/3), parameter bounds [0.3,3.5], step 0.05 and legacy negative absolute posterior objective. A converged fit must give rebalanced analysis MHT<160 GeV to be smeared.
 
@@ -39,19 +39,19 @@ The default articulator fails when a reachable bin lacks the required effective 
 
 ## Reproduce the pilot on FNAL
 
-The first-run products below are historical and retain their original configuration in metadata. For the current cleaning and numerical corrections use fresh names:
+Earlier products below are historical and retain their configuration in metadata. Selection version 3 uses the authenticated JME guidance and TightLeptonVeto ID. Reuse the existing version 2 caches; jet ID is evaluated during processing. Use fresh output names:
 
     source run3/setup.sh
-    python3 run3/cache.py --manifest run3_work/manifest.json --out run3_work/cleaned2024/cached_manifest.json --max-events-per-file 100000
-    python3 run3/response_maker.py --manifest run3_work/cleaned2024/cached_manifest.json --output-dir run3_work/cleaned2024/raw
-    python3 run3/articulate_splines.py --inputs 'run3_work/cleaned2024/raw/*.root' --output run3_work/cleaned2024/templates_pilot.root --allow-sparse
-    python3 run3/audit_splines.py --templates run3_work/cleaned2024/templates_pilot.root --out run3_work/cleaned2024/spline_audit
-    python3 run3/validate_cleaning.py --output run3_work/cleaned2024/cleaning_validation.json
-    python3 run3/validate.py --templates run3_work/cleaned2024/templates_pilot.root --nano run3_work/cleaned2024/cache/HT1200to1500_0.root --output run3_work/cleaned2024/validation.json
-    python3 run3/closure.py --manifest run3_work/cleaned2024/cached_manifest.json --templates run3_work/cleaned2024/templates_pilot.root --bin 1200to1500 --max-events 100000 --smears 20 --allow-sparse --output run3_work/cleaned2024/closure_HT1200.root
-    python3 run3/plot_closure.py run3_work/cleaned2024/closure_HT1200.root --outdir run3_work/cleaned2024/plots
+    python3 run3/response_maker.py --manifest run3_work/cleaned2024/cached_manifest.json --output-dir run3_work/verified2024/raw
+    python3 run3/articulate_splines.py --inputs 'run3_work/verified2024/raw/*.root' --output run3_work/verified2024/templates_pilot.root --allow-sparse
+    python3 run3/audit_splines.py --templates run3_work/verified2024/templates_pilot.root --out run3_work/verified2024/spline_audit
+    python3 run3/validate_cleaning.py --output run3_work/verified2024/cleaning_validation.json
+    python3 run3/validate.py --templates run3_work/verified2024/templates_pilot.root --nano run3_work/cleaned2024/cache/HT1200to1500_0.root --output run3_work/verified2024/validation.json
+    python3 run3/closure.py --manifest run3_work/cleaned2024/cached_manifest.json --templates run3_work/verified2024/templates_pilot.root --bin 1200to1500 --max-events 100000 --smears 20 --allow-sparse --output run3_work/verified2024/closure_HT1200.root
+    python3 run3/plot_closure.py run3_work/verified2024/closure_HT1200.root --outdir run3_work/verified2024/plots
+    python3 run3/audit_selection.py --nano run3_work/cleaned2024/cache/HT1200to1500_0.root --output run3_work/verified2024/selection_HT1200.json --jet-map-dir run3_work/verified2024/jet_maps
 
-Use `audit_selection.py --nano INPUT --output REPORT.json` for a standalone MC cutflow, or add `--is-data --golden-json PATH` for data. `--snapshot OUTPUT.root` optionally writes an Events-only cleaned file without requiring generator branches. It preserves original event weights and does not copy Runs/LuminosityBlocks. The template and closure programs remain MC-only. This is certified event cleaning, not a complete data R&S analysis.
+Use `audit_selection.py --nano INPUT --output REPORT.json` for a standalone MC cutflow, or add `--is-data --golden-json PATH` for data. `--jet-map-dir DIR` saves unit-count eligible-jet eta/phi maps before/after the event veto and checks that no masked eligible jets survive. `--snapshot OUTPUT.root` optionally writes an Events-only cleaned file without requiring generator branches. It preserves original event weights and does not copy Runs/LuminosityBlocks. The template and closure programs remain MC-only.
 
 Historical first-run commands (use the first-run source archive/commit for exact reproduction):
 
@@ -96,6 +96,12 @@ validate.py compares every cached density, paired cached/uncached fits on real j
 Initial benchmark: on 2,000 scanned HT800–1000 events (986 validation events, 934 selected seeds, 5 smears per accepted seed), the cached C++ event loop took 0.802 seconds versus 57.112 seconds for the uncached path. Every closure histogram's bin contents and errors was identical. The separate regression checked 28,512 spline evaluations and 100 paired fits, also with zero observed difference. The approximately 71x timing improvement applies to this benchmark and excludes interpreter startup and remote I/O.
 
 ## First executed result (2026-10-03)
+
+The current authenticated-recipe result is recorded in `RESULTS_VERIFIED_2024.json` and `run3_work/verified2024`. One million scanned events yielded 396,975 selected training events and 1,121,247 isolated matched responses. The 352-slot audit contains 255 measured, 77 borrowed and 20 unused PDFs; bounded integrals agree with unity to about 0.002%. This remains a sparse pilot, without a convergence claim for every response bin.
+
+HT1200 closure selected 39,116 validation seeds, accepted 37,863 fits and generated 757,260 smears in a 50.25-second C++ loop. Ratios remain 2.002 +/- 0.090 at MHT 160-200 GeV and 1.837 +/- 0.147 at 200-250 GeV. TightLeptonVeto changes selected seeds by about 0.5% relative to the preceding cleaned Tight pilot. In the full 100,000-event HT1200 selection audit, 94,413 events pass noise filters and analysis jet ID, then 77,626 survive the map. Eligible-jet maps contain 18,355 masked jets before the event veto and zero afterward. These are unweighted diagnostics. Additional JEC/JER and MC golden-JSON certification remain disabled.
+
+Historical first execution:
 
 RESULTS.json records the first complete pilot. Each of the ten QCD HT datasets contributed a 100,000-event prefix from one DAS-selected file. The training split contained 499,532 events, of which 470,172 passed the inclusive pilot selection, yielding 1,350,924 isolated matched jet responses. The template audit found 76 deficient reachable bins and 20 structurally unused forward-tag slots. The pilot records all donors; strict mode rejected the deficient bins as intended.
 

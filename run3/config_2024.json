@@ -4,9 +4,10 @@
   "btag_branch": "Jet_btagUParTAK4B",
   "btag_cut": 0.1272,
   "btag_source": "/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/BTV/2024_Summer24/btagging.json.gz:UParTAK4_wp_values:M",
-  "jet_id": "official correctionlib AK4PUPPI_Tight; event veto for failing jets pT>30, |eta|<5",
+  "jet_id": "official correctionlib AK4PUPPI_TightLeptonVeto; event veto for failing jets pT>30, |eta|<5",
+  "analysis_jet_id_wp": "AK4PUPPI_TightLeptonVeto",
   "jet_id_constituents": "Jet_chMultiplicity + Jet_neMultiplicity (CMSSW PFJetIDSelectionFunctor)",
-  "jet_id_source": "https://twiki.cern.ch/twiki/bin/view/CMSPublic/PhysicsResultsDP24028",
+  "jet_id_source": "https://cms-jme-jmar.docs.cern.ch/recommendations/jet-identification/",
   "input_jet_pt": 15.0,
   "prior_mht_jet_pt": 15.0,
   "analysis_jet_pt": 30.0,
@@ -71,7 +72,9 @@
     "Flag_ecalBadCalibFilter"
   ],
   "selection_scope": "inclusive QCD pilot; no analysis lepton/photon/isolated-track veto or trigger selection",
-  "selection_version": 2,
+  "selection_version": 3,
+  "noise_filter_source": "https://cms-jme-jmar.docs.cern.ch/recommendations/met/noise_filters/",
+  "jet_veto_source": "https://cms-jme-jerc.docs.cern.ch/recommendations/jet-veto-maps/",
   "jet_id_payload": {
     "path": "/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/2026-07-16/jetid.json.gz",
     "sha256": "2ae07e7b7c67332fa4ccc374c7b3cfe667c653ce65c3f421f956460e46b1eb35"
@@ -82,7 +85,7 @@
     "name": "Summer24Prompt24_RunBCDEFGHI_V1",
     "type": "jetvetomap"
   },
-  "jet_veto_selection": "event veto; pT>15, |eta|<5, AK4PUPPI_TightLeptonVeto, Jet_chEmEF+Jet_neEmEF<0.9; working phase-space choice, no muon overlap removal",
+  "jet_veto_selection": "JERC Run 3 minimum; event veto; pT>15, stored |eta|<5 acceptance, AK4PUPPI_TightLeptonVeto, Jet_chEmEF+Jet_neEmEF<0.9",
   "golden_json_policy": "MC: never apply; standalone data cleaning: require explicit golden JSON",
   "additional_jec": false,
   "spline_pdf_policy": "bounded_nonnegative"
