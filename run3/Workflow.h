@@ -5,6 +5,7 @@
 #include <TRandom.h>
 #include <TTree.h>
 #include <chrono>
+#include "LegacyJetSelection.h"
 struct Run3RawSummary {
   Long64_t scanned=0, training=0, selected=0, responses=0, negative=0;
   double sumw=0, seconds=0;
@@ -62,11 +63,12 @@ struct Run3ClosureSummary {
   double sumw=0, seconds=0;
   Long64_t after_filters=0, after_jet_id=0, after_jet_veto=0;
   vector<Long64_t> flag_failed, flag_cumulative;
+  Long64_t rejected_rebalanced_mht=0,nonfinite_rebalanced=0,rejected_smeared_mht=0,nonfinite_smears=0;
 };
 Run3ClosureSummary Run3Closure(const string &path,const string &tagbranch,double cut,
    const vector<string> &filters, const string &output, Long64_t maxEvents,
    int nsmears, double rebMax, unsigned int randomSeed=12345,
-   bool cached=true, int split=1) {
+   bool cached=true, int split=1,double smearMax=2000,bool perSeedRandom=false) {
   if(nsmears<1) throw runtime_error("nsmears must be positive");
   Run3UseCachedSplines=cached;
   gRandom->SetSeed(randomSeed);
@@ -79,6 +81,7 @@ Run3ClosureSummary Run3Closure(const string &path,const string &tagbranch,double
   TH1D truth("MHT_observed","Observed reco QCD;MHT [GeV];weighted seeds",edges.size()-1,edges.data());
   TH1D pred("MHT_prediction","R&S QCD;MHT [GeV];weighted seeds",edges.size()-1,edges.data());
   TH1D rebalanced("MHT_rebalanced","Rebalanced;MHT [GeV];weighted seeds",edges.size()-1,edges.data());
+  TH1D allRebalanced("MHT_rebalanced_allFits","Successful fits before seed acceptance;MHT [GeV];weighted seeds",edges.size()-1,edges.data());
   TH1D cross("MHT_cross_covariance","sum observed * predicted per seed",edges.size()-1,edges.data());
   TH1D httruth("HT_observed","Observed;HT [GeV];weighted seeds",50,0,2500);
   TH1D htpred("HT_prediction","R&S;HT [GeV];weighted seeds",50,0,2500);
@@ -88,7 +91,20 @@ Run3ClosureSummary Run3Closure(const string &path,const string &tagbranch,double
   TH1D nbpred("BTags_prediction","R&S;BTags;weighted seeds",5,0,5);
   TH1D hdpTruth("DPhi1_observed","Observed;DeltaPhi(j1,MHT);weighted seeds",32,0,3.2);
   TH1D hdpPred("DPhi1_prediction","R&S;DeltaPhi(j1,MHT);weighted seeds",32,0,3.2);
-  for(auto h:{&truth,&pred,&rebalanced,&cross,&httruth,&htpred,&njtruth,&njpred,&nbtruth,&nbpred,&hdpTruth,&hdpPred}) h->Sumw2();
+  for(auto h:{&truth,&pred,&rebalanced,&allRebalanced,&cross,&httruth,&htpred,&njtruth,&njpred,&nbtruth,&nbpred,&hdpTruth,&hdpPred}) h->Sumw2();
+  vector<double> searchEdges;for(int i=0;i<=174;++i) searchEdges.push_back(i+.5);
+  Run3ClosurePair highMht("MHT_jetOnlyHighDPhi",edges),lowMht("MHT_jetOnlyLowDPhi",edges);
+  Run3ClosurePair highBins("SearchBins_jetOnlyHighDPhi",searchEdges),lowBins("SearchBins_jetOnlyLowDPhi",searchEdges);
+  Run3ClosurePair highSide("MHT_jetOnlyHighDPhiSideband",edges),lowSide("MHT_jetOnlyLowDPhiSideband",edges);
+  vector<Run3ClosurePair*> regions={&highMht,&lowMht,&highBins,&lowBins,&highSide,&lowSide};
+  auto fillRegions=[&](const Run3LegacyJetFeatures &v,double w,bool observed) {
+    auto fill=[&](Run3ClosurePair &pair,double value) { if(observed) pair.fillObserved(value,w);else pair.fillPrediction(value,w); };
+    int bin=v.searchBin();
+    if(v.highRegion()) {fill(highMht,v.mht);if(bin>0)fill(highBins,bin);}
+    if(v.lowRegion()) {fill(lowMht,v.mht);if(bin>0)fill(lowBins,bin);}
+    if(v.sideband(true))fill(highSide,v.mht);
+    if(v.sideband(false))fill(lowSide,v.mht);
+  };
   ULong64_t event; UInt_t run,lumi;
   double weight,ht,mht,gmht,rmht;
   int nj,nb,np,fit,accepted;
@@ -113,6 +129,8 @@ Run3ClosureSummary Run3Closure(const string &path,const string &tagbranch,double
     event=*n.event;run=*n.run;lumi=*n.lumi;
     ht=getHT(n.jets,30);mht=getMHT(n.jets,30).Pt();
     gmht=getMHT(n.genjets,30).Pt();nj=countJets(n.jets,30);nb=countBJets_Useful(n.jets,30);
+    for(auto *region:regions)region->beginSeed();
+    fillRegions(Run3LegacyJetFeatures(n.jets),weight,true);
     bool baseline=ht>300 && nj>=2;
     int tb=-1;
     if(baseline) {
@@ -123,20 +141,33 @@ Run3ClosureSummary Run3Closure(const string &path,const string &tagbranch,double
     }
     fit=RebalanceJets_BayesFitter(n.jets);np=_Templates_.nparams;
     rmht=getMHT(_Templates_.dynamicJets,30).Pt();
-    accepted=fit && std::isfinite(rmht) && rmht<rebMax;
-    if(fit) ++out.fitted;
+    accepted=Run3AcceptRebalancedSeed(fit,rmht,rebMax);
+    if(fit) {
+      ++out.fitted;
+      if(!std::isfinite(rmht))++out.nonfinite_rebalanced;
+      else {allRebalanced.Fill(rmht,weight);if(rmht>=rebMax)++out.rejected_rebalanced_mht;}
+    }
     seeds.Fill();
     if(!accepted) continue;
     ++out.accepted;
+    if(perSeedRandom) {
+      // Common random draws for the same accepted seed across threshold scans.
+      auto keyed=n.splitKey() ^ (ULong64_t(randomSeed)*0x9e3779b97f4a7c15ULL);
+      UInt_t seed=UInt_t(keyed ^ (keyed>>32));gRandom->SetSeed(seed?seed:1);
+    }
     auto balanced=_Templates_.dynamicJets;
     rebalanced.Fill(rmht,weight);
     vector<double> contrib(truth.GetNbinsX()+2,0);
     vector<vector<double>> extra;
     for(auto &p:other) extra.push_back(vector<double>(p.second->GetNbinsX()+2,0));
     for(int is=0;is<nsmears;++is) {
-      auto smeared=smearJets_CC(balanced,999);
+      // Original CMS script: "one key difference between the golden and space ages".
+      auto smeared=smearJets_CC(balanced,99+_Templates_.nparams);
       ++out.smears;
       double sh=getHT(smeared,30), sm=getMHT(smeared,30).Pt();
+      if(!std::isfinite(sm)) {++out.nonfinite_smears;continue;}
+      if(!Run3AcceptSmearedMht(sm,smearMax)) {++out.rejected_smeared_mht;continue;}
+      fillRegions(Run3LegacyJetFeatures(smeared),weight/nsmears,false);
       int sn=countJets(smeared,30), sb=countBJets_Useful(smeared,30);
       if(sh<=300 || sn<2) continue;
       double sw=weight/nsmears;
@@ -155,6 +186,7 @@ Run3ClosureSummary Run3Closure(const string &path,const string &tagbranch,double
     }
     for(unsigned int k=0;k<other.size();++k)
       for(unsigned int ib=0;ib<extra[k].size();++ib) vars[k][ib]+=extra[k][ib]*extra[k][ib];
+    for(auto *region:regions)region->endSeed();
   }
   for(unsigned int ib=0;ib<varM.size();++ib) pred.SetBinError(ib,sqrt(varM[ib]));
   for(unsigned int k=0;k<other.size();++k)
@@ -167,7 +199,8 @@ Run3ClosureSummary Run3Closure(const string &path,const string &tagbranch,double
     double variance=pred.GetBinError(ib)*pred.GetBinError(ib)+r*r*truth.GetBinError(ib)*truth.GetBinError(ib)-2*r*cross.GetBinContent(ib);
     ratio.SetBinContent(ib,r);ratio.SetBinError(ib,sqrt(std::max(0.0,variance))/fabs(t));
   }
-  for(auto h:{&truth,&pred,&rebalanced,&cross,&httruth,&htpred,&njtruth,&njpred,&nbtruth,&nbpred,&hdpTruth,&hdpPred,&ratio}) h->Write();
+  for(auto h:{&truth,&pred,&rebalanced,&allRebalanced,&cross,&httruth,&htpred,&njtruth,&njpred,&nbtruth,&nbpred,&hdpTruth,&hdpPred,&ratio}) h->Write();
+  for(auto *region:regions)region->write();
   seeds.Write();f.Close();
   out.seconds=chrono::duration<double>(chrono::steady_clock::now()-start).count();
   out.after_filters=n.afterFilters; out.after_jet_id=n.afterJetID; out.after_jet_veto=n.afterVeto;
