@@ -1,4 +1,6 @@
 # RebalanceAndSmear
+For the isolated Run 3 NanoAODv15 workflow, see [run3/README.md](run3/README.md).
+
 This is the package for running rebalance and smear on Ra2/b-style ntuples while on an LPC machine. 
 ## Set up code
 

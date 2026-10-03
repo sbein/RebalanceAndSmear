@@ -1,0 +1,5 @@
+/run3_work/
+__pycache__/
+*.pyc
+core.*
+._*
