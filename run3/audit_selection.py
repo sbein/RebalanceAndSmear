@@ -88,7 +88,9 @@ def main():
             if i<3: label.DrawLatex(.13,.025,f"Eligible jets: {int(histogram.GetEntries())}; masked: {masked_before if i==1 else masked_after}")
             else: label.DrawLatex(.13,.025,"Empty denominator cells shown as 0")
             labels.append(label)
-        canvas.cd();canvas.Print(str(directory/"jet_veto_maps.png"));canvas.Print(str(directory/"jet_veto_maps.pdf"))
+        R.gStyle.SetPaperSize(28.,10.5)
+        for suffix in ["png","pdf"]:
+            canvas.cd();canvas.Print(str(directory/("jet_veto_maps."+suffix)))
     if args.snapshot:
         if Path(args.snapshot).exists(): raise FileExistsError(args.snapshot)
         current.Snapshot("Events",args.snapshot,vector(R,"string",original_columns))
