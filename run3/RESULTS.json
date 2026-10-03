@@ -226,8 +226,8 @@
       "low": 700.0,
       "observed_pb": 0.0,
       "predicted_pb": 0.0003855104339278623,
-      "ratio": 0.0,
-      "ratio_error": 0.0,
+      "ratio": null,
+      "ratio_error": null,
       "ratio_error_scope": "paired seed clusters"
     },
     {
@@ -235,8 +235,8 @@
       "low": 1000.0,
       "observed_pb": 0.0,
       "predicted_pb": 0.0,
-      "ratio": 0.0,
-      "ratio_error": 0.0,
+      "ratio": null,
+      "ratio_error": null,
       "ratio_error_scope": "paired seed clusters"
     },
     {
@@ -244,8 +244,8 @@
       "low": 1500.0,
       "observed_pb": 0.0,
       "predicted_pb": 0.0,
-      "ratio": 0.0,
-      "ratio_error": 0.0,
+      "ratio": null,
+      "ratio_error": null,
       "ratio_error_scope": "paired seed clusters"
     }
   ],
