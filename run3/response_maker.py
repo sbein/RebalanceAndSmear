@@ -15,6 +15,7 @@ def main():
     p.add_argument("--split",type=int,choices=[0,1,2],default=0,help="0 training, 1 validation, 2 all")
     args=p.parse_args()
     cfg=config(args.config); ROOT=root(True)
+    configure_cleaning(ROOT,cfg)
     manifest=json.loads(Path(args.manifest).read_text())
     outdir=Path(args.output_dir);outdir.mkdir(parents=True,exist_ok=True)
     for sample in manifest["samples"]:
@@ -42,6 +43,7 @@ def main():
             stats=ROOT.Run3BuildRaw(path,cfg["btag_branch"],cfg["btag_cut"],vector(ROOT,"string",cfg["filters"]),
                 hp,he,hh,vector(ROOT,"TH1F*",responses),vector(ROOT,"TH1F*",priors),args.max_events_per_file,args.split)
             record=summary(stats,["scanned","training","selected","responses","negative","sumw","seconds"])
+            record["cleaning"]=cleaning_summary(stats,cfg)
             records.append(dict(file,statistics=record))
             print(sample["name"],record,flush=True)
         sumw=sum(r["statistics"]["sumw"] for r in records)

@@ -1,0 +1,781 @@
+{
+  "date": "2026-10-03",
+  "workspace": "sbein@cmslpc342.fnal.gov:/uscms_data/d3/sbein/Ra2slashB2026/RebalanceAndSmear",
+  "branch": "run3",
+  "config": {
+    "additional_jec": false,
+    "analysis_jet_pt": 30.0,
+    "btag_branch": "Jet_btagUParTAK4B",
+    "btag_cut": 0.1272,
+    "btag_source": "/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/BTV/2024_Summer24/btagging.json.gz:UParTAK4_wp_values:M",
+    "era": "2024",
+    "eta_edges": [
+      0,
+      0.4,
+      0.8,
+      1.2,
+      1.6,
+      2.0,
+      2.5,
+      5.0
+    ],
+    "filters": [
+      "Flag_goodVertices",
+      "Flag_globalSuperTightHalo2016Filter",
+      "Flag_EcalDeadCellTriggerPrimitiveFilter",
+      "Flag_BadPFMuonFilter",
+      "Flag_BadPFMuonDzFilter",
+      "Flag_hfNoisyHitsFilter",
+      "Flag_eeBadScFilter",
+      "Flag_ecalBadCalibFilter"
+    ],
+    "golden_json_policy": "MC: never apply; standalone data cleaning: require explicit golden JSON",
+    "ht_edges": [
+      0,
+      200,
+      300,
+      500,
+      700,
+      1000,
+      1500,
+      2000,
+      10000
+    ],
+    "ht_eta": 2.4,
+    "input_jet_pt": 15.0,
+    "isolation_dr": 0.7,
+    "isolation_fraction": 0.98,
+    "jet_collection": "AK4 PUPPI, stored JEC, no extra JER smearing",
+    "jet_id": "official correctionlib AK4PUPPI_Tight; event veto for failing jets pT>30, |eta|<5",
+    "jet_id_constituents": "Jet_chMultiplicity + Jet_neMultiplicity (CMSSW PFJetIDSelectionFunctor)",
+    "jet_id_payload": {
+      "path": "/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/2026-07-16/jetid.json.gz",
+      "sha256": "2ae07e7b7c67332fa4ccc374c7b3cfe667c653ce65c3f421f956460e46b1eb35"
+    },
+    "jet_id_source": "https://twiki.cern.ch/twiki/bin/view/CMSPublic/PhysicsResultsDP24028",
+    "jet_veto_payload": {
+      "name": "Summer24Prompt24_RunBCDEFGHI_V1",
+      "path": "/cvmfs/cms-griddata.cern.ch/cat/metadata/JME/Run3-24CDEReprocessingFGHIPrompt-Summer24-NanoAODv15/2026-07-16/jetvetomaps.json.gz",
+      "sha256": "849cd1098814175ab58faac4834df0a353de63482f4017e22c0134ee7e840aec",
+      "type": "jetvetomap"
+    },
+    "jet_veto_selection": "event veto; pT>15, |eta|<5, AK4PUPPI_TightLeptonVeto, Jet_chEmEF+Jet_neEmEF<0.9; working phase-space choice, no muon overlap removal",
+    "mht_eta": 5.0,
+    "prior_mht_jet_pt": 15.0,
+    "pt_edges": [
+      0,
+      8,
+      10,
+      15,
+      20,
+      25,
+      30,
+      40,
+      50,
+      70,
+      100,
+      150,
+      200,
+      300,
+      450,
+      650,
+      1000,
+      1500,
+      2500,
+      4000,
+      10000
+    ],
+    "rebalance_mht_max": 160.0,
+    "response_match_dr": 0.4,
+    "selection_scope": "inclusive QCD pilot; no analysis lepton/photon/isolated-track veto or trigger selection",
+    "selection_version": 2,
+    "spline_pdf_policy": "bounded_nonnegative"
+  },
+  "training": {
+    "scanned": 1000000,
+    "training": 499532,
+    "selected": 398679,
+    "responses": 1126593
+  },
+  "training_cleaning": {
+    "after_filters": 498037,
+    "after_jet_id": 472906,
+    "after_jet_veto": 401615
+  },
+  "training_flags": [
+    {
+      "name": "Flag_goodVertices",
+      "failed_independently": 0,
+      "passed_cumulative": 499532
+    },
+    {
+      "name": "Flag_globalSuperTightHalo2016Filter",
+      "failed_independently": 155,
+      "passed_cumulative": 499377
+    },
+    {
+      "name": "Flag_EcalDeadCellTriggerPrimitiveFilter",
+      "failed_independently": 1019,
+      "passed_cumulative": 498358
+    },
+    {
+      "name": "Flag_BadPFMuonFilter",
+      "failed_independently": 74,
+      "passed_cumulative": 498284
+    },
+    {
+      "name": "Flag_BadPFMuonDzFilter",
+      "failed_independently": 103,
+      "passed_cumulative": 498255
+    },
+    {
+      "name": "Flag_hfNoisyHitsFilter",
+      "failed_independently": 23,
+      "passed_cumulative": 498232
+    },
+    {
+      "name": "Flag_eeBadScFilter",
+      "failed_independently": 0,
+      "passed_cumulative": 498232
+    },
+    {
+      "name": "Flag_ecalBadCalibFilter",
+      "failed_independently": 195,
+      "passed_cumulative": 498037
+    }
+  ],
+  "original_spline_audit": {
+    "borrowed": 76,
+    "fitter_significant_negative": 256,
+    "integral_range": [
+      0.5987094862498665,
+      1.0385780335510155
+    ],
+    "max_negative_area": 0.0011758888477812384,
+    "measured": 256,
+    "nonfinite": 0,
+    "significant_negative": 311,
+    "significant_negative_reachable": 291,
+    "total": 352,
+    "unused": 20
+  },
+  "updated_spline_audit": {
+    "borrowed": 77,
+    "bounded_integral_range": [
+      0.9999994720094078,
+      1.00001973861367
+    ],
+    "fitter_significant_negative": 257,
+    "integral_range": [
+      0.9632167996247851,
+      0.999999995057405
+    ],
+    "max_negative_area": 0.0009117281499355717,
+    "measured": 255,
+    "nonfinite": 0,
+    "significant_negative": 313,
+    "significant_negative_reachable": 293,
+    "total": 352,
+    "unused": 20
+  },
+  "cleaning_validation": {
+    "data_cli_cutflow": {
+      "Flag_BadPFMuonDzFilter": 2,
+      "Flag_BadPFMuonFilter": 2,
+      "Flag_EcalDeadCellTriggerPrimitiveFilter": 3,
+      "Flag_ecalBadCalibFilter": 2,
+      "Flag_eeBadScFilter": 2,
+      "Flag_globalSuperTightHalo2016Filter": 3,
+      "Flag_goodVertices": 3,
+      "Flag_hfNoisyHitsFilter": 2,
+      "golden_json": 3,
+      "input": 6,
+      "jet_id": 2,
+      "jet_veto_map": 1
+    },
+    "data_cli_without_gen_branches": true,
+    "golden_json_boundary_and_mode_checks": true,
+    "jet_id_boundary_comparisons": 31104,
+    "map_comparisons": 6237,
+    "masked_point": [
+      2.5999999999999996,
+      -2.2
+    ],
+    "passed": true,
+    "scope": "Validates adapter and pinned payload evaluation; does not certify a physics analysis",
+    "unmasked_point": [
+      4.9,
+      3.1
+    ]
+  },
+  "fitter_validation": {
+    "fit_pairs": 100,
+    "fixed_recoil": true,
+    "max_fitted_pt_difference": 0,
+    "max_spline_relative_difference": 0,
+    "spline_evaluations": 28512
+  },
+  "closure_corrected": {
+    "accepted": 38081,
+    "cleaning": {
+      "after_filters": 50142,
+      "after_jet_id": 47751,
+      "after_jet_veto": 39307,
+      "flags": [
+        {
+          "failed_independently": 0,
+          "name": "Flag_goodVertices",
+          "passed_cumulative": 50356
+        },
+        {
+          "failed_independently": 25,
+          "name": "Flag_globalSuperTightHalo2016Filter",
+          "passed_cumulative": 50331
+        },
+        {
+          "failed_independently": 148,
+          "name": "Flag_EcalDeadCellTriggerPrimitiveFilter",
+          "passed_cumulative": 50183
+        },
+        {
+          "failed_independently": 10,
+          "name": "Flag_BadPFMuonFilter",
+          "passed_cumulative": 50173
+        },
+        {
+          "failed_independently": 12,
+          "name": "Flag_BadPFMuonDzFilter",
+          "passed_cumulative": 50171
+        },
+        {
+          "failed_independently": 0,
+          "name": "Flag_hfNoisyHitsFilter",
+          "passed_cumulative": 50171
+        },
+        {
+          "failed_independently": 0,
+          "name": "Flag_eeBadScFilter",
+          "passed_cumulative": 50171
+        },
+        {
+          "failed_independently": 29,
+          "name": "Flag_ecalBadCalibFilter",
+          "passed_cumulative": 50142
+        }
+      ]
+    },
+    "fitted": 38215,
+    "scanned": 100000,
+    "seconds": 51.159053158,
+    "selected": 39307,
+    "smears": 761620,
+    "sumw": 254495788.5961914,
+    "validation": 50356
+  },
+  "closure_cleaning_only": {
+    "accepted": 38012,
+    "cleaning": {
+      "after_filters": 50142,
+      "after_jet_id": 47751,
+      "after_jet_veto": 39307,
+      "flags": [
+        {
+          "failed_independently": 0,
+          "name": "Flag_goodVertices",
+          "passed_cumulative": 50356
+        },
+        {
+          "failed_independently": 25,
+          "name": "Flag_globalSuperTightHalo2016Filter",
+          "passed_cumulative": 50331
+        },
+        {
+          "failed_independently": 148,
+          "name": "Flag_EcalDeadCellTriggerPrimitiveFilter",
+          "passed_cumulative": 50183
+        },
+        {
+          "failed_independently": 10,
+          "name": "Flag_BadPFMuonFilter",
+          "passed_cumulative": 50173
+        },
+        {
+          "failed_independently": 12,
+          "name": "Flag_BadPFMuonDzFilter",
+          "passed_cumulative": 50171
+        },
+        {
+          "failed_independently": 0,
+          "name": "Flag_hfNoisyHitsFilter",
+          "passed_cumulative": 50171
+        },
+        {
+          "failed_independently": 0,
+          "name": "Flag_eeBadScFilter",
+          "passed_cumulative": 50171
+        },
+        {
+          "failed_independently": 29,
+          "name": "Flag_ecalBadCalibFilter",
+          "passed_cumulative": 50142
+        }
+      ]
+    },
+    "fitted": 38158,
+    "scanned": 100000,
+    "seconds": 44.586869397,
+    "selected": 39307,
+    "smears": 760240,
+    "sumw": 254495788.5961914,
+    "validation": 50356
+  },
+  "closure_comparison": [
+    {
+      "low": 0.0,
+      "high": 30.0,
+      "original": {
+        "high": 30.0,
+        "low": 0.0,
+        "observed_pb": 81.96402022311143,
+        "predicted_pb": 69.6316049962945,
+        "ratio": 0.8495386732709391,
+        "ratio_error": 0.006845762247257643,
+        "ratio_error_scope": "paired seed clusters"
+      },
+      "cleaning_only": {
+        "high": 30.0,
+        "low": 0.0,
+        "observed_pb": 69.64486607948474,
+        "predicted_pb": 58.4341040722356,
+        "ratio": 0.839029599188913,
+        "ratio_error": 0.0072938249314747645,
+        "ratio_error_scope": "paired seed clusters"
+      },
+      "cleaning_plus_pdf_repair": {
+        "high": 30.0,
+        "low": 0.0,
+        "observed_pb": 69.64486607948474,
+        "predicted_pb": 58.22488138361524,
+        "ratio": 0.8360254626258304,
+        "ratio_error": 0.0072526146943645495,
+        "ratio_error_scope": "paired seed clusters"
+      }
+    },
+    {
+      "low": 30.0,
+      "high": 60.0,
+      "original": {
+        "high": 60.0,
+        "low": 30.0,
+        "observed_pb": 128.94250988027326,
+        "predicted_pb": 114.20230817420033,
+        "ratio": 0.8856839244112773,
+        "ratio_error": 0.00536680978043934,
+        "ratio_error_scope": "paired seed clusters"
+      },
+      "cleaning_only": {
+        "high": 60.0,
+        "low": 30.0,
+        "observed_pb": 106.95966885769492,
+        "predicted_pb": 95.2011662739742,
+        "ratio": 0.890066015449572,
+        "ratio_error": 0.005911547911626391,
+        "ratio_error_scope": "paired seed clusters"
+      },
+      "cleaning_plus_pdf_repair": {
+        "high": 60.0,
+        "low": 30.0,
+        "observed_pb": 106.95966885769492,
+        "predicted_pb": 95.51697292128704,
+        "ratio": 0.8930185923478139,
+        "ratio_error": 0.0059201833816421665,
+        "ratio_error_scope": "paired seed clusters"
+      }
+    },
+    {
+      "low": 60.0,
+      "high": 90.0,
+      "original": {
+        "high": 90.0,
+        "low": 60.0,
+        "observed_pb": 85.88664253383426,
+        "predicted_pb": 80.82228230334415,
+        "ratio": 0.941034367148593,
+        "ratio_error": 0.007769089988038888,
+        "ratio_error_scope": "paired seed clusters"
+      },
+      "cleaning_only": {
+        "high": 90.0,
+        "low": 60.0,
+        "observed_pb": 70.45830289544729,
+        "predicted_pb": 66.58410520662359,
+        "ratio": 0.9450143201068496,
+        "ratio_error": 0.008622446461032269,
+        "ratio_error_scope": "paired seed clusters"
+      },
+      "cleaning_plus_pdf_repair": {
+        "high": 90.0,
+        "low": 60.0,
+        "observed_pb": 70.45830289544729,
+        "predicted_pb": 67.31321769091613,
+        "ratio": 0.9553624615512223,
+        "ratio_error": 0.008720662134844546,
+        "ratio_error_scope": "paired seed clusters"
+      }
+    },
+    {
+      "low": 90.0,
+      "high": 120.0,
+      "original": {
+        "high": 120.0,
+        "low": 90.0,
+        "observed_pb": 40.08695409393409,
+        "predicted_pb": 44.90140355029433,
+        "ratio": 1.1201001564019741,
+        "ratio_error": 0.014065543806292739,
+        "ratio_error_scope": "paired seed clusters"
+      },
+      "cleaning_only": {
+        "high": 120.0,
+        "low": 90.0,
+        "observed_pb": 32.50700514310026,
+        "predicted_pb": 37.014792199292096,
+        "ratio": 1.1386712505919245,
+        "ratio_error": 0.015822359595946463,
+        "ratio_error_scope": "paired seed clusters"
+      },
+      "cleaning_plus_pdf_repair": {
+        "high": 120.0,
+        "low": 90.0,
+        "observed_pb": 32.50700514310026,
+        "predicted_pb": 36.99010585152892,
+        "ratio": 1.1379118343475025,
+        "ratio_error": 0.015772146007575732,
+        "ratio_error_scope": "paired seed clusters"
+      }
+    },
+    {
+      "low": 120.0,
+      "high": 160.0,
+      "original": {
+        "high": 160.0,
+        "low": 120.0,
+        "observed_pb": 18.9504793177741,
+        "predicted_pb": 27.399480165621977,
+        "ratio": 1.4458462873771938,
+        "ratio_error": 0.027393530338193327,
+        "ratio_error_scope": "paired seed clusters"
+      },
+      "cleaning_only": {
+        "high": 160.0,
+        "low": 120.0,
+        "observed_pb": 14.755320752830121,
+        "predicted_pb": 22.180469237476625,
+        "ratio": 1.5032183718013947,
+        "ratio_error": 0.032591815225723,
+        "ratio_error_scope": "paired seed clusters"
+      },
+      "cleaning_plus_pdf_repair": {
+        "high": 160.0,
+        "low": 120.0,
+        "observed_pb": 14.755320752830121,
+        "predicted_pb": 21.996128672258266,
+        "ratio": 1.4907252130076083,
+        "ratio_error": 0.03227166277354784,
+        "ratio_error_scope": "paired seed clusters"
+      }
+    },
+    {
+      "low": 160.0,
+      "high": 200.0,
+      "original": {
+        "high": 200.0,
+        "low": 160.0,
+        "observed_pb": 5.257378085622481,
+        "predicted_pb": 9.613279982164267,
+        "ratio": 1.8285312232829538,
+        "ratio_error": 0.06779706674990622,
+        "ratio_error_scope": "paired seed clusters"
+      },
+      "cleaning_only": {
+        "high": 200.0,
+        "low": 160.0,
+        "observed_pb": 3.682681222896893,
+        "predicted_pb": 7.538687473472746,
+        "ratio": 2.0470649011381488,
+        "ratio_error": 0.09073342172839058,
+        "ratio_error_scope": "paired seed clusters"
+      },
+      "cleaning_plus_pdf_repair": {
+        "high": 200.0,
+        "low": 160.0,
+        "observed_pb": 3.682681222896893,
+        "predicted_pb": 7.446298956056702,
+        "ratio": 2.0219776041867803,
+        "ratio_error": 0.08996649867041241,
+        "ratio_error_scope": "paired seed clusters"
+      }
+    },
+    {
+      "low": 200.0,
+      "high": 250.0,
+      "original": {
+        "high": 250.0,
+        "low": 200.0,
+        "observed_pb": 2.109269683989953,
+        "predicted_pb": 3.5051500305575156,
+        "ratio": 1.6617837240836253,
+        "ratio_error": 0.10042335771375654,
+        "ratio_error_scope": "paired seed clusters"
+      },
+      "cleaning_only": {
+        "high": 250.0,
+        "low": 200.0,
+        "observed_pb": 1.2607921166550347,
+        "predicted_pb": 2.3643619498919954,
+        "ratio": 1.8752988051391095,
+        "ratio_error": 0.1468533186452354,
+        "ratio_error_scope": "paired seed clusters"
+      },
+      "cleaning_plus_pdf_repair": {
+        "high": 250.0,
+        "low": 200.0,
+        "observed_pb": 1.2607921166550347,
+        "predicted_pb": 2.3486615283456462,
+        "ratio": 1.862845981760103,
+        "ratio_error": 0.14613048710969426,
+        "ratio_error_scope": "paired seed clusters"
+      }
+    },
+    {
+      "low": 250.0,
+      "high": 300.0,
+      "original": {
+        "high": 300.0,
+        "low": 250.0,
+        "observed_pb": 0.6954012611565732,
+        "predicted_pb": 0.9508018915368011,
+        "ratio": 1.3672708760341508,
+        "ratio_error": 0.14621929411399356,
+        "ratio_error_scope": "paired seed clusters"
+      },
+      "cleaning_only": {
+        "high": 300.0,
+        "low": 250.0,
+        "observed_pb": 0.32858797177460036,
+        "predicted_pb": 0.4722227151513915,
+        "ratio": 1.4371272101077377,
+        "ratio_error": 0.22305449178767006,
+        "ratio_error_scope": "paired seed clusters"
+      },
+      "cleaning_plus_pdf_repair": {
+        "high": 300.0,
+        "low": 250.0,
+        "observed_pb": 0.32858797177460036,
+        "predicted_pb": 0.46726406022772127,
+        "ratio": 1.4220364114491926,
+        "ratio_error": 0.22133024329156512,
+        "ratio_error_scope": "paired seed clusters"
+      }
+    },
+    {
+      "low": 300.0,
+      "high": 400.0,
+      "original": {
+        "high": 400.0,
+        "low": 300.0,
+        "observed_pb": 0.5810334813751504,
+        "predicted_pb": 0.5692734350327683,
+        "ratio": 0.9797601227479193,
+        "ratio_error": 0.11520933120162055,
+        "ratio_error_scope": "paired seed clusters"
+      },
+      "cleaning_only": {
+        "high": 400.0,
+        "low": 300.0,
+        "observed_pb": 0.29829924932465995,
+        "predicted_pb": 0.22387675638988339,
+        "ratio": 0.7505106261471769,
+        "ratio_error": 0.12435097944705016,
+        "ratio_error_scope": "paired seed clusters"
+      },
+      "cleaning_plus_pdf_repair": {
+        "high": 400.0,
+        "low": 300.0,
+        "observed_pb": 0.29829924932465995,
+        "predicted_pb": 0.2178271589205313,
+        "ratio": 0.7302303288180747,
+        "ratio_error": 0.12083052050239815,
+        "ratio_error_scope": "paired seed clusters"
+      }
+    },
+    {
+      "low": 400.0,
+      "high": 500.0,
+      "original": {
+        "high": 500.0,
+        "low": 400.0,
+        "observed_pb": 0.12993165861890016,
+        "predicted_pb": 0.1490232465614939,
+        "ratio": 1.146935613271827,
+        "ratio_error": 0.28429423824480893,
+        "ratio_error_scope": "paired seed clusters"
+      },
+      "cleaning_only": {
+        "high": 500.0,
+        "low": 400.0,
+        "observed_pb": 0.038178788621864676,
+        "predicted_pb": 0.0481524456959826,
+        "ratio": 1.261235556028252,
+        "ratio_error": 0.5752985039854135,
+        "ratio_error_scope": "paired seed clusters"
+      },
+      "cleaning_plus_pdf_repair": {
+        "high": 500.0,
+        "low": 400.0,
+        "observed_pb": 0.038178788621864676,
+        "predicted_pb": 0.055372761256166456,
+        "ratio": 1.4503540645198714,
+        "ratio_error": 0.6598603785136236,
+        "ratio_error_scope": "paired seed clusters"
+      }
+    },
+    {
+      "low": 500.0,
+      "high": 700.0,
+      "original": {
+        "high": 700.0,
+        "low": 500.0,
+        "observed_pb": 0.022975069219168517,
+        "predicted_pb": 0.03438003878147905,
+        "ratio": 1.4964063199772717,
+        "ratio_error": 0.8785505256833037,
+        "ratio_error_scope": "paired seed clusters"
+      },
+      "cleaning_only": {
+        "high": 700.0,
+        "low": 500.0,
+        "observed_pb": 0.022975069219168517,
+        "predicted_pb": 0.010304927718062852,
+        "ratio": 0.4485265145345139,
+        "ratio_error": 0.2739638284544764,
+        "ratio_error_scope": "paired seed clusters"
+      },
+      "cleaning_plus_pdf_repair": {
+        "high": 700.0,
+        "low": 500.0,
+        "observed_pb": 0.022975069219168517,
+        "predicted_pb": 0.014120597555329248,
+        "ratio": 0.6146052236285833,
+        "ratio_error": 0.3689507165076728,
+        "ratio_error_scope": "paired seed clusters"
+      }
+    },
+    {
+      "low": 700.0,
+      "high": 1000.0,
+      "original": {
+        "high": 1000.0,
+        "low": 700.0,
+        "observed_pb": 0.0,
+        "predicted_pb": 0.0003855104339278623,
+        "ratio": null,
+        "ratio_error": null,
+        "ratio_error_scope": "paired seed clusters"
+      },
+      "cleaning_only": {
+        "high": 1000.0,
+        "low": 700.0,
+        "observed_pb": 0.0,
+        "predicted_pb": 0.0007639733762509045,
+        "ratio": null,
+        "ratio_error": null,
+        "ratio_error_scope": "paired seed clusters"
+      },
+      "cleaning_plus_pdf_repair": {
+        "high": 1000.0,
+        "low": 700.0,
+        "observed_pb": 0.0,
+        "predicted_pb": 0.00038308180589877747,
+        "ratio": null,
+        "ratio_error": null,
+        "ratio_error_scope": "paired seed clusters"
+      }
+    },
+    {
+      "low": 1000.0,
+      "high": 1500.0,
+      "original": {
+        "high": 1500.0,
+        "low": 1000.0,
+        "observed_pb": 0.0,
+        "predicted_pb": 0.0,
+        "ratio": null,
+        "ratio_error": null,
+        "ratio_error_scope": "paired seed clusters"
+      },
+      "cleaning_only": {
+        "high": 1500.0,
+        "low": 1000.0,
+        "observed_pb": 0.0,
+        "predicted_pb": 0.0,
+        "ratio": null,
+        "ratio_error": null,
+        "ratio_error_scope": "paired seed clusters"
+      },
+      "cleaning_plus_pdf_repair": {
+        "high": 1500.0,
+        "low": 1000.0,
+        "observed_pb": 0.0,
+        "predicted_pb": 0.0,
+        "ratio": null,
+        "ratio_error": null,
+        "ratio_error_scope": "paired seed clusters"
+      }
+    },
+    {
+      "low": 1500.0,
+      "high": 2500.0,
+      "original": {
+        "high": 2500.0,
+        "low": 1500.0,
+        "observed_pb": 0.0,
+        "predicted_pb": 0.0,
+        "ratio": null,
+        "ratio_error": null,
+        "ratio_error_scope": "paired seed clusters"
+      },
+      "cleaning_only": {
+        "high": 2500.0,
+        "low": 1500.0,
+        "observed_pb": 0.0,
+        "predicted_pb": 0.0,
+        "ratio": null,
+        "ratio_error": null,
+        "ratio_error_scope": "paired seed clusters"
+      },
+      "cleaning_plus_pdf_repair": {
+        "high": 2500.0,
+        "low": 1500.0,
+        "observed_pb": 0.0,
+        "predicted_pb": 0.0,
+        "ratio": null,
+        "ratio_error": null,
+        "ratio_error_scope": "paired seed clusters"
+      }
+    }
+  ],
+  "conclusions": [
+    "All ten HT-bin pilot derivations and held-out HT1200 closure execute with shared event cleaning.",
+    "Eight noise flags were already active; official jet ID and the 2024 jet-veto map are now applied with independent/cumulative cutflows.",
+    "The bounded positive interpolants are numerically normalized, but 77 reachable slots still borrow PDFs; this is not statistical convergence in every bin.",
+    "The current model still has significant MHT nonclosure; no nonclosure correction was applied.",
+    "The detailed private PdmV/NanoAOD web index/MET-filter guidance requires CERN authentication; checked sources and choices are documented in SOURCES.md."
+  ],
+  "additional_jec_applied": false,
+  "golden_json_applied_to_mc": false,
+  "golden_json_reference": {
+    "path": "/cvmfs/cms-griddata.cern.ch/cat/metadata/DC/Collisions24/2026-08-04/Cert_Collisions2024_378981_386951_Golden.json",
+    "sha256": "32572466413b0b2ee72ebe18b1e556e7e083f550e74e596830be4f10aa25bf9d"
+  }
+}

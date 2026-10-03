@@ -8,6 +8,8 @@
 struct Run3RawSummary {
   Long64_t scanned=0, training=0, selected=0, responses=0, negative=0;
   double sumw=0, seconds=0;
+  Long64_t after_filters=0, after_jet_id=0, after_jet_veto=0;
+  vector<Long64_t> flag_failed, flag_cumulative;
 };
 Run3RawSummary Run3BuildRaw(const string &path, const string &tagbranch, double cut,
    const vector<string> &filters, TH1F *hp, TH1F *he, TH1F *hh,
@@ -51,11 +53,15 @@ Run3RawSummary Run3BuildRaw(const string &path, const string &tagbranch, double 
     priors[offset+1]->Fill(fabs(leading.DeltaPhi(mht)),w);
   }
   out.seconds=chrono::duration<double>(chrono::steady_clock::now()-start).count();
+  out.after_filters=n.afterFilters; out.after_jet_id=n.afterJetID; out.after_jet_veto=n.afterVeto;
+  out.flag_failed=n.flagFailed; out.flag_cumulative=n.flagCumulative;
   return out;
 }
 struct Run3ClosureSummary {
   Long64_t scanned=0, validation=0, selected=0, fitted=0, accepted=0, smears=0;
   double sumw=0, seconds=0;
+  Long64_t after_filters=0, after_jet_id=0, after_jet_veto=0;
+  vector<Long64_t> flag_failed, flag_cumulative;
 };
 Run3ClosureSummary Run3Closure(const string &path,const string &tagbranch,double cut,
    const vector<string> &filters, const string &output, Long64_t maxEvents,
@@ -164,6 +170,8 @@ Run3ClosureSummary Run3Closure(const string &path,const string &tagbranch,double
   for(auto h:{&truth,&pred,&rebalanced,&cross,&httruth,&htpred,&njtruth,&njpred,&nbtruth,&nbpred,&hdpTruth,&hdpPred,&ratio}) h->Write();
   seeds.Write();f.Close();
   out.seconds=chrono::duration<double>(chrono::steady_clock::now()-start).count();
+  out.after_filters=n.afterFilters; out.after_jet_id=n.afterJetID; out.after_jet_veto=n.afterVeto;
+  out.flag_failed=n.flagFailed; out.flag_cumulative=n.flagCumulative;
   return out;
 }
 #endif

@@ -9,19 +9,24 @@ def main():
     p.add_argument("--nano",required=True);p.add_argument("--config");p.add_argument("--events",type=int,default=100)
     p.add_argument("--output",default="run3_work/validation.json");args=p.parse_args()
     cfg=config(args.config);R=root(True);f=open_root(R,args.templates);R.GleanTemplatesFromFile(f)
+    configure_cleaning(R,cfg)
+    assert R.Run3PdfDomains.size()==f.Get("splines").GetListOfKeys().GetSize(), "Incomplete PDF loading"
     # Compare every cached spline to ROOT's original path, including tails/extrapolation.
     maxdiff=0;count=0
     directory=f.Get("splines")
     for key in directory.GetListOfKeys():
-        g=directory.Get(key.GetName())
+        g=R.Run3LoadPdfGraph(f,"splines/"+key.GetName())
         for i in range(81):
             low,high=(g.GetX()[0],g.GetX()[g.GetN()-1])
             x=low+(high-low)*(i-2)/76
-            a=g.Eval(x,0,"S");b=R.Run3Eval(g,x)
+            a=g.Eval(x,0,"S");b=R.Run3EvalCubic(g,x)
             maxdiff=max(maxdiff,abs(a-b)/max(1,abs(a)))
             if not math.isclose(a,b,rel_tol=1e-11,abs_tol=1e-12):
                 raise AssertionError(f"Spline mismatch for {g.GetName()} at {x}: {a}, {b}")
             count+=1
+            R.Run3UseCachedSplines=False; safe_a=R.Run3Eval(g,x)
+            R.Run3UseCachedSplines=True; safe_b=R.Run3Eval(g,x)
+            assert safe_a==safe_b and math.isfinite(safe_b) and safe_b>=0, "Bounded density regression"
     # Directly test the posterior's recoil against every jet + fixed object.
     R.gInterpreter.Declare("""
     bool Run3CheckFixedRecoil() {

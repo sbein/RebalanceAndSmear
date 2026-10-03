@@ -13,15 +13,43 @@
 #include "TSpline.h"
 #include <memory>
 #include <unordered_map>
+#include <TFile.h>
 // Derived from src/BayesRandS.h at fd9821f; legacy files stay untouched.
 // Cache exactly the cubic spline constructed by TGraph::Eval(x,0,"S").
 std::unordered_map<TGraph*, std::unique_ptr<TSpline3>> Run3SplineCache;
 bool Run3UseCachedSplines = true;
-double Run3Eval(TGraph* graph, double x) {
+bool Run3BoundedPdf = false; // Explicitly enabled by the Run 3 configuration.
+std::unordered_map<TGraph*, std::pair<double,double>> Run3PdfDomains;
+TGraph* Run3LoadPdfGraph(TFile* file,const char* path) {
+  auto graph=static_cast<TGraph*>(file->Get(path));
+  std::string name=path;
+  name=name.substr(name.find_last_of('/')+1);
+  auto histogram=static_cast<TH1*>(file->Get(name.substr(0,name.size()-6).c_str()));
+  if(!graph || !histogram) throw std::runtime_error("Missing PDF graph/histogram: "+name);
+  // ROOT may deserialize a fresh TGraph on every Get: register the exact returned pointer.
+  Run3PdfDomains[graph]={histogram->GetXaxis()->GetXmin(),histogram->GetXaxis()->GetXmax()};
+  return graph;
+}
+double Run3PriorHtHigh(TAxis* axis,int bin) {
+  // Explicit overflow naming matches common.prior_name on this nonuniform HT grid.
+  return bin>axis->GetNbins() ? axis->GetXmax()+axis->GetBinWidth(axis->GetNbins()) : axis->GetBinUpEdge(bin);
+}
+double Run3EvalCubic(TGraph* graph, double x) {
   if (!Run3UseCachedSplines) return graph->Eval(x,0,"S");
   auto &s = Run3SplineCache[graph];
   if (!s) s = std::make_unique<TSpline3>("run3_cached",graph->GetX(),graph->GetY(),graph->GetN());
   return s->Eval(x);
+}
+double Run3Eval(TGraph* graph, double x) {
+  if(!Run3BoundedPdf) return Run3EvalCubic(graph,x);
+  auto domain=Run3PdfDomains.find(graph);
+  if(domain==Run3PdfDomains.end()) throw std::runtime_error("Missing PDF support");
+  if(!std::isfinite(x) || x<domain->second.first || x>=domain->second.second) return 0;
+  // Constant extension only across the outer half-bin; zero outside stored support.
+  x=std::clamp(x,graph->GetX()[0],graph->GetX()[graph->GetN()-1]);
+  double value=Run3EvalCubic(graph,x);
+  if(!std::isfinite(value)) throw std::runtime_error("Nonfinite spline density");
+  return std::max(0.0,value);
 }
 TLorentzVector Run3FixedObjects;
 void SetRun3FixedObjects(const TLorentzVector &objects) { Run3FixedObjects = objects; }
@@ -295,6 +323,7 @@ std::vector<UsefulJet> smearJets_CC(std::vector<UsefulJet> jetVec, int n2smear){
 void GleanTemplatesFromFile(TFile* ftemplate)
 {
   Run3SplineCache.clear();
+  Run3PdfDomains.clear();
 
   TH1F* hPtTemplate = (TH1F*)ftemplate->Get("hPtTemplate");
   TAxis* templatePtAxis = (TAxis*)hPtTemplate->GetXaxis();
@@ -349,11 +378,11 @@ void GleanTemplatesFromFile(TFile* ftemplate)
 
           char gname[100];
           name = sprintf (gname, "splines/hRTemplate(gPt%2.1f-%2.1f, gEta%2.1f-%2.1f)_graph", templatePtAxis->GetBinLowEdge(ipt), templatePtAxis->GetBinUpEdge(ipt), templateEtaAxis->GetBinLowEdge(ieta), templateEtaAxis->GetBinUpEdge(ieta));
-          TGraph* g = (TGraph*)ftemplate->Get(gname);
+          TGraph* g = Run3LoadPdfGraph(ftemplate,gname);
           gRebTemplates_CC.back().push_back(g);
 
           name = sprintf (gname, "splines/hRTemplate(gPt%2.1f-%2.1f, gEta%2.1f-%2.1f)B_graph", templatePtAxis->GetBinLowEdge(ipt), templatePtAxis->GetBinUpEdge(ipt), templateEtaAxis->GetBinLowEdge(ieta), templateEtaAxis->GetBinUpEdge(ieta));
-          TGraph* gB = (TGraph*)ftemplate->Get(gname);
+          TGraph* gB = Run3LoadPdfGraph(ftemplate,gname);
           gRebTemplatesB_CC.back().push_back(gB);//Instead of gB
         }
     }
@@ -380,30 +409,30 @@ void GleanTemplatesFromFile(TFile* ftemplate)
   for(unsigned int iht = 1; iht < templateHtAxis->GetNbins()+2; iht++)
     {
       char gname[100];
-      name = sprintf (gname, "splines/hGen%sPtB0(ght%2.1f-%2.1f)_graph", keyvar.c_str(), templateHtAxis->GetBinLowEdge(iht), templateHtAxis->GetBinUpEdge(iht));
-      TGraph* fb0 = (TGraph*)ftemplate->Get(gname);
+      name = sprintf (gname, "splines/hGen%sPtB0(ght%2.1f-%2.1f)_graph", keyvar.c_str(), templateHtAxis->GetBinLowEdge(iht), Run3PriorHtHigh(templateHtAxis,iht));
+      TGraph* fb0 = Run3LoadPdfGraph(ftemplate,gname);
       gGenMhtPtTemplatesB0_CC.push_back(fb0);
       char gnamePhi[100];
-      name = sprintf (gnamePhi, "splines/hGen%sPhiB0(ght%2.1f-%2.1f)_graph", keyvar.c_str(), templateHtAxis->GetBinLowEdge(iht), templateHtAxis->GetBinUpEdge(iht));
-      TGraph* fb0phi = (TGraph*)ftemplate->Get(gnamePhi);
+      name = sprintf (gnamePhi, "splines/hGen%sPhiB0(ght%2.1f-%2.1f)_graph", keyvar.c_str(), templateHtAxis->GetBinLowEdge(iht), Run3PriorHtHigh(templateHtAxis,iht));
+      TGraph* fb0phi = Run3LoadPdfGraph(ftemplate,gnamePhi);
       gGenMhtDPhiTemplatesB0_CC.push_back(fb0phi);
-      name = sprintf (gname, "splines/hGen%sPtB1(ght%2.1f-%2.1f)_graph", keyvar.c_str(), templateHtAxis->GetBinLowEdge(iht), templateHtAxis->GetBinUpEdge(iht));
-      TGraph* fb1 = (TGraph*)ftemplate->Get(gname);
+      name = sprintf (gname, "splines/hGen%sPtB1(ght%2.1f-%2.1f)_graph", keyvar.c_str(), templateHtAxis->GetBinLowEdge(iht), Run3PriorHtHigh(templateHtAxis,iht));
+      TGraph* fb1 = Run3LoadPdfGraph(ftemplate,gname);
       gGenMhtPtTemplatesB1_CC.push_back(fb1);
-      name = sprintf (gnamePhi, "splines/hGen%sPhiB1(ght%2.1f-%2.1f)_graph", keyvar.c_str(), templateHtAxis->GetBinLowEdge(iht), templateHtAxis->GetBinUpEdge(iht));
-      TGraph* fb1phi = (TGraph*)ftemplate->Get(gnamePhi);
+      name = sprintf (gnamePhi, "splines/hGen%sPhiB1(ght%2.1f-%2.1f)_graph", keyvar.c_str(), templateHtAxis->GetBinLowEdge(iht), Run3PriorHtHigh(templateHtAxis,iht));
+      TGraph* fb1phi = Run3LoadPdfGraph(ftemplate,gnamePhi);
       gGenMhtDPhiTemplatesB1_CC.push_back(fb1phi);
-      name = sprintf (gname, "splines/hGen%sPtB2(ght%2.1f-%2.1f)_graph", keyvar.c_str(), templateHtAxis->GetBinLowEdge(iht), templateHtAxis->GetBinUpEdge(iht));
-      TGraph* fb2 = (TGraph*)ftemplate->Get(gname);
+      name = sprintf (gname, "splines/hGen%sPtB2(ght%2.1f-%2.1f)_graph", keyvar.c_str(), templateHtAxis->GetBinLowEdge(iht), Run3PriorHtHigh(templateHtAxis,iht));
+      TGraph* fb2 = Run3LoadPdfGraph(ftemplate,gname);
       gGenMhtPtTemplatesB2_CC.push_back(fb2);
-      name = sprintf (gnamePhi, "splines/hGen%sPhiB2(ght%2.1f-%2.1f)_graph", keyvar.c_str(), templateHtAxis->GetBinLowEdge(iht), templateHtAxis->GetBinUpEdge(iht));
-      TGraph* fb2phi = (TGraph*)ftemplate->Get(gnamePhi);
+      name = sprintf (gnamePhi, "splines/hGen%sPhiB2(ght%2.1f-%2.1f)_graph", keyvar.c_str(), templateHtAxis->GetBinLowEdge(iht), Run3PriorHtHigh(templateHtAxis,iht));
+      TGraph* fb2phi = Run3LoadPdfGraph(ftemplate,gnamePhi);
       gGenMhtDPhiTemplatesB2_CC.push_back(fb2phi);
-      name = sprintf (gname, "splines/hGen%sPtB3(ght%2.1f-%2.1f)_graph", keyvar.c_str(), templateHtAxis->GetBinLowEdge(iht), templateHtAxis->GetBinUpEdge(iht));
-      TGraph* fb3 = (TGraph*)ftemplate->Get(gname);
+      name = sprintf (gname, "splines/hGen%sPtB3(ght%2.1f-%2.1f)_graph", keyvar.c_str(), templateHtAxis->GetBinLowEdge(iht), Run3PriorHtHigh(templateHtAxis,iht));
+      TGraph* fb3 = Run3LoadPdfGraph(ftemplate,gname);
       gGenMhtPtTemplatesB3_CC.push_back(fb3);
-      name = sprintf (gnamePhi, "splines/hGen%sPhiB3(ght%2.1f-%2.1f)_graph", keyvar.c_str(), templateHtAxis->GetBinLowEdge(iht), templateHtAxis->GetBinUpEdge(iht));
-      TGraph* fb3phi = (TGraph*)ftemplate->Get(gnamePhi);
+      name = sprintf (gnamePhi, "splines/hGen%sPhiB3(ght%2.1f-%2.1f)_graph", keyvar.c_str(), templateHtAxis->GetBinLowEdge(iht), Run3PriorHtHigh(templateHtAxis,iht));
+      TGraph* fb3phi = Run3LoadPdfGraph(ftemplate,gnamePhi);
       gGenMhtDPhiTemplatesB3_CC.push_back(fb3phi);
     }
 

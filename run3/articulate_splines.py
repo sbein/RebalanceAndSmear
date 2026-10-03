@@ -18,6 +18,7 @@ def main():
     p.add_argument("--min-entries",type=float,default=50)
     p.add_argument("--allow-sparse",action="store_true",help="Pilot only: explicitly record every borrowed distribution")
     p.add_argument("--smooth",type=int,default=5)
+    p.add_argument("--legacy-density-normalization",action="store_true",help="Diagnostic only: reproduce the initial pilot's normalization before smoothing")
     args=p.parse_args()
     if Path(args.output).exists(): raise FileExistsError(args.output)
     ROOT=root()
@@ -103,8 +104,10 @@ def main():
     report=dict(config=cfg,training_records=records,raw_files=files,min_entries=args.min_entries,
                 sparse_pilot=bool(audit),borrowed=audit,deficient=deficient,
                 effective_entries=entries,smoothing=args.smooth,structurally_unused=unused,
+                density_normalization="before smoothing (diagnostic)" if args.legacy_density_normalization else "after smoothing and bounded cubic numerical integral; evaluator uses histogram support",
                 limitations=["NanoAOD Jet_pt>15 storage truncates low-response tails for low-pT gen jets",
-                  "Inclusive QCD pilot selection; full Run 3 analysis vetoes and data corrections are not applied"])
+                  "NanoAOD GenJet_pt>10 storage omits softer neighbors from the isolation calculation",
+                  "Event flags, official jet ID and jet-veto map are applied; analysis lepton/photon/track vetoes, triggers and data corrections are not applied"])
     write_json(args.output+".coverage.json",report)
     if deficient and not args.allow_sparse:
         raise ValueError(f"{len(deficient)} deficient bins; see coverage report. Use --allow-sparse only for a pilot")
@@ -118,7 +121,19 @@ def main():
         if any(density.GetBinContent(i)<0 for i in range(1,density.GetNbinsX()+1)):
             raise ValueError(f"Negative probability bin: {name}")
         density.Scale(1.0/density.Integral(),"width");density.Smooth(args.smooth)
-        graph=ROOT.TGraph(density);graph.Write(name+"_graph")
+        if not args.legacy_density_normalization:
+            density.Scale(1.0/density.Integral("width"))
+        graph=ROOT.TGraph(density)
+        if not args.legacy_density_normalization:
+            spline=ROOT.TSpline3("normalization_spline",graph)
+            low,high=density.GetXaxis().GetXmin(),density.GetXaxis().GetXmax()
+            first,last=graph.GetX()[0],graph.GetX()[graph.GetN()-1]
+            steps=16384;dx=(high-low)/steps
+            integral=sum(max(0.,spline.Eval(min(last,max(first,low+i*dx))))*dx*
+                         (0.5 if i in (0,steps) else 1) for i in range(steps+1))
+            if not math.isfinite(integral) or integral<=0: raise ValueError("Invalid bounded PDF integral: "+name)
+            for i in range(graph.GetN()):graph.SetPoint(i,graph.GetX()[i],graph.GetY()[i]/integral)
+        graph.Write(name+"_graph")
     f.cd();write_metadata(ROOT,report);f.Close()
     # Read back exactly the complete naming grid consumed by GleanTemplatesFromFile.
     f=open_root(ROOT,args.output)

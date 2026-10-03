@@ -11,21 +11,13 @@
 using namespace std;
 #include "../src/UsefulJet.h"
 #include "BayesRandSRun3.h"
+#include "EventCleaning.h"
 
-// DP-2024/028 tight PUPPI ID. v15 does not store Jet_jetId.
-bool Run3TightID(double eta, double nhf, double nef, double chf,
-                 int nch, int nneutral, int nconst) {
-  double a = fabs(eta);
-  if (a<=2.6) return nhf<0.99 && nef<0.90 && nconst>1 && chf>0 && nch>0;
-  if (a<=2.7) return nhf<0.90 && nef<0.99;
-  if (a<=3.0) return nhf<0.99;
-  return nef<0.4 && nneutral>1;
-}
 struct Run3NanoReader {
   unique_ptr<TFile> file;
   TTree *tree;
   TTreeReader reader;
-  TTreeReaderArray<Float_t> pt, eta, phi, mass, btag, nhf, nef, chf;
+  TTreeReaderArray<Float_t> pt, eta, phi, mass, btag, nhf, nef, chf, cef, muf;
   TTreeReaderArray<UChar_t> nch, nneutral, nconst;
   TTreeReaderArray<Short_t> genidx;
   TTreeReaderArray<Float_t> gpt, geta, gphi, gmass;
@@ -37,6 +29,8 @@ struct Run3NanoReader {
   vector<int> indices;
   double tagcut;
   Long64_t seen=0;
+  Long64_t afterFilters=0, afterJetID=0, afterVeto=0;
+  vector<Long64_t> flagFailed, flagCumulative;
   Run3NanoReader(const string &path, const string &tagbranch, double cut,
                 const vector<string> &filterNames):
     file(TFile::Open(path.c_str())),
@@ -44,6 +38,7 @@ struct Run3NanoReader {
     reader(tree),
     pt(reader,"Jet_pt"),eta(reader,"Jet_eta"),phi(reader,"Jet_phi"),mass(reader,"Jet_mass"),
     btag(reader,tagbranch.c_str()),nhf(reader,"Jet_neHEF"),nef(reader,"Jet_neEmEF"),chf(reader,"Jet_chHEF"),
+    cef(reader,"Jet_chEmEF"),muf(reader,"Jet_muEF"),
     nch(reader,"Jet_chMultiplicity"),nneutral(reader,"Jet_neMultiplicity"),nconst(reader,"Jet_nConstituents"),
     genidx(reader,"Jet_genJetIdx"),
     gpt(reader,"GenJet_pt"),geta(reader,"GenJet_eta"),gphi(reader,"GenJet_phi"),gmass(reader,"GenJet_mass"),
@@ -54,6 +49,7 @@ struct Run3NanoReader {
       if (!tree->GetBranch(name.c_str())) throw runtime_error("Missing required filter "+name);
       filters.push_back(make_unique<TTreeReaderValue<Bool_t>>(reader,name.c_str()));
     }
+    flagFailed.resize(filters.size(),0); flagCumulative.resize(filters.size(),0);
   }
   bool next() {
     if (!reader.Next()) {
@@ -65,13 +61,23 @@ struct Run3NanoReader {
     return true;
   }
   bool selected() {
-    for (auto &flag:filters) if (!**flag) return false;
+    bool pass=true;
+    for(unsigned int i=0;i<filters.size();++i) {
+      if(!**filters[i]) {++flagFailed[i];pass=false;}
+      if(pass) ++flagCumulative[i];
+    }
+    if(!pass) return false;
+    ++afterFilters;
+    for(unsigned int i=0;i<pt.GetSize();++i)
+      if(pt[i]>30 && fabs(eta[i])<5 && !Run3JetID(eta[i],chf[i],nhf[i],cef[i],nef[i],muf[i],nch[i],nneutral[i])) return false;
+    ++afterJetID;
+    for(unsigned int i=0;i<pt.GetSize();++i)
+      if(Run3VetoEligible(pt[i],eta[i],chf[i],nhf[i],cef[i],nef[i],muf[i],nch[i],nneutral[i]) && Run3InVetoMap(eta[i],phi[i])) return false;
+    ++afterVeto;
     jets.clear(); genjets.clear(); indices.clear();
     // Veto events with failing analysis jets; retain low-pT seed jets for migration.
     for (unsigned int i=0;i<pt.GetSize();++i) {
       if (fabs(eta[i])>=5 || pt[i]<=15) continue;
-      if (pt[i]>30 && !Run3TightID(eta[i],nhf[i],nef[i],chf[i],nch[i],nneutral[i],int(nch[i])+int(nneutral[i])))
-        return false;
       TLorentzVector v; v.SetPtEtaPhiM(pt[i],eta[i],phi[i],mass[i]);
       // Only central jets are b-tagged in the prior and response categories.
       jets.emplace_back(v,fabs(eta[i])<2.4 && btag[i]>tagcut ? 1.0:0.0,pt[i]);

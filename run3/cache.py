@@ -16,7 +16,7 @@ def main():
     manifest=json.loads(Path(args.manifest).read_text())
     branches=["run","luminosityBlock","event","genWeight","Jet_pt","Jet_eta","Jet_phi","Jet_mass",
       cfg["btag_branch"],"Jet_neHEF","Jet_neEmEF","Jet_chHEF","Jet_chMultiplicity",
-      "Jet_neMultiplicity","Jet_nConstituents","Jet_genJetIdx","GenJet_pt","GenJet_eta","GenJet_phi","GenJet_mass"]+cfg["filters"]
+      "Jet_neMultiplicity","Jet_nConstituents","Jet_chEmEF","Jet_muEF","Jet_genJetIdx","GenJet_pt","GenJet_eta","GenJet_phi","GenJet_mass"]+cfg["filters"]
     cache=Path(args.out).resolve().parent/"cache";cache.mkdir(parents=True,exist_ok=True)
     for s in manifest["samples"]:
         for i,record in enumerate(s["files"]):

@@ -21,11 +21,11 @@ config_2024.json is authoritative and is embedded in every output. It uses store
 
 The initial pT grid is coarser than the legacy fine grid to obtain usable pilot statistics, and extends above 1 TeV. Its last bin extends to 10 TeV for lookup coverage, not as a claim of measured response at that scale. Reassess the binning, conditioning variables and high-pT support with a larger training sample.
 
-Real v15 files lack Jet_jetId. The reader recomputes tight PUPPI ID using the energy fractions and multiplicities in [CMS DP-2024/028](https://twiki.cern.ch/twiki/bin/view/CMSPublic/PhysicsResultsDP24028). The constituent-count requirement uses Jet_chMultiplicity + Jet_neMultiplicity, following CMSSW PFJetIDSelectionFunctor, rather than the unweighted Jet_nConstituents. Events are rejected if a jet above 30 GeV and within |eta|<5 fails the ID. Lower-pT seed jets are retained. The current 2024 BTV JSON provides UParTAK4_wp_values:M=0.1272; this cut is used for both response and prior categories. B tagging is restricted to |eta|<2.4 to maintain the legacy acceptance, and scores are mapped to binary 0/1 internally.
+Real v15 files lack Jet_jetId. The reader evaluates the official CAT Summer24 `AK4PUPPI_Tight` correction using constituent fractions and Jet_chMultiplicity + Jet_neMultiplicity. Events are rejected if a jet above 30 GeV and within |eta|<5 fails ID. Lower-pT seed jets are retained. The pinned 2024 `jetvetomap` rejects entire events containing eligible jets in masked regions. Payload checksums, references, exact eligibility and authentication limitations are documented in [SOURCES.md](SOURCES.md). The current 2024 BTV JSON provides UParTAK4_wp_values:M=0.1272; this cut is used for both response and prior categories. B tagging is restricted to |eta|<2.4 to maintain the legacy acceptance, and scores are mapped to binary 0/1 internally.
 
 Analysis HT and jet counts use pT>30 GeV and |eta|<2.4. Analysis MHT uses pT>30 and |eta|<5. The fit and generator prior use pT>15 and |eta|<5, retaining the legacy prior threshold. Priors require two central gen jets above 30 GeV, or three for the >=3 b-tag category, as in the CMS code. The fit retains its 12-jet parameter cap, initialization target min(120,HT/3), parameter bounds [0.3,3.5], step 0.05 and legacy negative absolute posterior objective. A converged fit must give rebalanced analysis MHT<160 GeV to be smeared.
 
-This first closure has an inclusive QCD selection with the listed event-cleaning flags; it does not yet reproduce the Ra2/b electron, muon, photon, isolated-track, trigger, detector veto-map or search-bin selections. Its diagnostic baseline is HT>300 and NJets>=2, applied separately to reco and smeared events. There is no cut on seed MHT.
+The current closure has an inclusive QCD selection with eight required event-cleaning flags, official jet ID and the 2024 detector veto map. It does not yet reproduce the Ra2/b electron, muon, photon, isolated-track, trigger or search-bin selections. Its diagnostic baseline is HT>300 and NJets>=2, applied separately to reco and smeared events. There is no cut on seed MHT.
 
 Response filling retains the legacy unit weighting of isolated matched jets. Matching uses nearest DeltaR<0.4; gen and reco isolation use a 0.7 cone and pT/sum-pT>0.98. The older CMS script allowed matching up to 0.5, with a break below 0.4, and mixed a CSV discriminator with a DeepCSV threshold in one response-filling path. The Nano port uses one consistent configured tagger and an explicit 0.4 matching requirement.
 
@@ -35,9 +35,25 @@ Priors are filled with raw genWeight, grouped across all shards of each dataset,
 
 NanoAOD stores Jet_pt>15 GeV. Matched response distributions at low generator pT consequently miss jets that would have reconstructed below that storage threshold. Low-pT response tails and jet reconstruction inefficiency cannot be recovered by smoothing the stored jets. CorrT1METJet has reduced information and is not silently substituted as a complete jet collection. Before production use, measure this effect and choose a validated treatment, potentially deriving low-pT templates from MiniAOD or a dedicated jet table.
 
-The default articulator fails when a reachable bin lacks the required effective entries. Tagged forward-jet slots are structurally unused because of the central b-tag acceptance; they are explicitly listed and populated with the corresponding untagged distribution only for file compatibility. --allow-sparse is an explicit pilot approximation: it borrows a populated distribution in the same flavour/observable category and records the donor for every substitution in the coverage JSON. No extrapolated bin should be mistaken for a measured density. Histograms retain the legacy smoothing count and ROOT cubic interpolation, including their possible spline overshoot.
+The default articulator fails when a reachable bin lacks the required effective entries. Tagged forward-jet slots are structurally unused because of the central b-tag acceptance; they are explicitly listed and populated with the corresponding untagged distribution only for file compatibility. --allow-sparse is an explicit pilot approximation: it borrows a populated distribution in the same flavour/observable category and records the donor for every substitution in the coverage JSON. No extrapolated bin should be mistaken for a measured density. Histograms retain the legacy smoothing count and ROOT cubic interpolation. Densities are normalized after smoothing; the configured evaluator clips negative cubic undershoots and returns zero outside histogram support. Histogram sampling remains unchanged. The raw graphs and all sparse donors remain inspectable.
 
 ## Reproduce the pilot on FNAL
+
+The first-run products below are historical and retain their original configuration in metadata. For the current cleaning and numerical corrections use fresh names:
+
+    source run3/setup.sh
+    python3 run3/cache.py --manifest run3_work/manifest.json --out run3_work/cleaned2024/cached_manifest.json --max-events-per-file 100000
+    python3 run3/response_maker.py --manifest run3_work/cleaned2024/cached_manifest.json --output-dir run3_work/cleaned2024/raw
+    python3 run3/articulate_splines.py --inputs 'run3_work/cleaned2024/raw/*.root' --output run3_work/cleaned2024/templates_pilot.root --allow-sparse
+    python3 run3/audit_splines.py --templates run3_work/cleaned2024/templates_pilot.root --out run3_work/cleaned2024/spline_audit
+    python3 run3/validate_cleaning.py --output run3_work/cleaned2024/cleaning_validation.json
+    python3 run3/validate.py --templates run3_work/cleaned2024/templates_pilot.root --nano run3_work/cleaned2024/cache/HT1200to1500_0.root --output run3_work/cleaned2024/validation.json
+    python3 run3/closure.py --manifest run3_work/cleaned2024/cached_manifest.json --templates run3_work/cleaned2024/templates_pilot.root --bin 1200to1500 --max-events 100000 --smears 20 --allow-sparse --output run3_work/cleaned2024/closure_HT1200.root
+    python3 run3/plot_closure.py run3_work/cleaned2024/closure_HT1200.root --outdir run3_work/cleaned2024/plots
+
+Use `audit_selection.py --nano INPUT --output REPORT.json` for a standalone MC cutflow, or add `--is-data --golden-json PATH` for data. `--snapshot OUTPUT.root` optionally writes an Events-only cleaned file without requiring generator branches. It preserves original event weights and does not copy Runs/LuminosityBlocks. The template and closure programs remain MC-only. This is certified event cleaning, not a complete data R&S analysis.
+
+Historical first-run commands (use the first-run source archive/commit for exact reproduction):
 
 From /uscms_data/d3/sbein/Ra2slashB2026/RebalanceAndSmear:
 
@@ -68,6 +84,7 @@ The generated jobs target LPC's shared filesystem, use one CPU and the configure
 BayesRandSRun3.h differs from the baseline in these ways:
 
 - Cache TSpline3 objects with the same construction as [ROOT TGraph::Eval(x,0,"S")](https://root.cern/doc/v632/TGraph_8cxx_source.html); --uncached-splines is the numerical reference path.
+- Current Run 3 policy adds bounded, nonnegative evaluation; `--legacy-pdf-evaluation` provides an explicit diagnostic comparison on the same templates.
 - Free Minuit and fit-parameter allocations after each event.
 - Bound response lookup and interpolation to valid template bins.
 - Include jets beyond the 12-parameter cap in recoil and HT as fixed jets.
