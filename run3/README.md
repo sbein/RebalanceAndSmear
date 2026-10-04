@@ -70,14 +70,14 @@ Commands refuse to overwrite their main outputs. Use a fresh output name or dire
 
 ROOT files preserve the histogram/graph names expected by GleanTemplatesFromFile. They also contain metadata, coverage, failed-fit information and one seeds TTree row per selected validation seed. Prediction errors are computed from per-seed contributions, treating repeated smears as correlated. The MHT ratio includes the covariance with the paired observed seeds. Other plotting ratios currently use an explicitly labelled uncorrelated approximation. These errors describe finite seed statistics and finite smearing, not template uncertainty; an independent-file closure and a bootstrap/template-uncertainty study are still needed for production.
 
-## Scale up after validating the pilot
+## Historical batch prototype (superseded)
 
     python3 run3/discover.py --out run3_work/full/manifest.json --files-per-bin 0
     python3 run3/make_condor.py --manifest run3_work/full/manifest.json --outdir run3_work/full/condor
     condor_submit run3_work/full/condor/templates.jdl
     python3 run3/articulate_splines.py --inputs 'run3_work/full/condor/*/raw/*.root' --output run3_work/templates_production.root
 
-The generated jobs target LPC's shared filesystem, use one CPU and the configured proxy, and preserve per-file provenance. Review their runtime environment and coverage before submitting all samples. The code does not submit jobs automatically.
+The earlier make_condor.py shared-filesystem launcher is unsuitable for current LPC worker nodes. It remains a historical prototype. Use production_inventory.py and prepare_production.py for the portable full-statistics workflow described in PRODUCTION_20261004.md; workers transfer their inputs and outputs and run inside EL9 scratch space.
 
 ## Core changes and speed checks
 
