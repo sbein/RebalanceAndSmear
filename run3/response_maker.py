@@ -13,6 +13,7 @@ def main():
     p.add_argument("--max-events-per-file",type=int,default=-1)
     p.add_argument("--bins",nargs="*")
     p.add_argument("--split",type=int,choices=[0,1,2],default=0,help="0 training, 1 validation, 2 all")
+    p.add_argument("--unit-weights",action="store_true",help="Ignore QCD generator weights; count every uncut input event")
     args=p.parse_args()
     cfg=config(args.config); ROOT=root(True)
     configure_cleaning(ROOT,cfg)
@@ -41,7 +42,7 @@ def main():
         for file in sample["files"]:
             path=file.get("cached_path",file["url"])
             stats=ROOT.Run3BuildRaw(path,cfg["btag_branch"],cfg["btag_cut"],vector(ROOT,"string",cfg["filters"]),
-                hp,he,hh,vector(ROOT,"TH1F*",responses),vector(ROOT,"TH1F*",priors),args.max_events_per_file,args.split)
+                hp,he,hh,vector(ROOT,"TH1F*",responses),vector(ROOT,"TH1F*",priors),args.max_events_per_file,args.split,args.unit_weights)
             record=summary(stats,["scanned","training","selected","responses","negative","sumw","seconds"])
             record["cleaning"]=cleaning_summary(stats,cfg)
             records.append(dict(file,statistics=record))
@@ -56,9 +57,12 @@ def main():
         if target.exists(): raise FileExistsError(target)
         f=ROOT.TFile(str(target),"RECREATE");f.cd()
         for h in [hp,he,hh]+responses+priors: h.Write()
+        counter=ROOT.TTree("tCount","Uncut source events successfully encountered before any split or selection")
+        counter.SetEntries(sum(r["statistics"]["scanned"] for r in records));counter.Write()
         record=dict(format_version=1,config=cfg,sample=sample,files=records,split=args.split,
                     response_weight="unit per isolated matched jet",
-                    prior_weight="raw genWeight; articulator normalizes each dataset after merging shards")
+                    prior_weight="unit per event; grouped xsec/uncut ntot" if args.unit_weights else "raw genWeight; articulator normalizes each dataset after merging shards",
+                    generator_weight_policy="ignore" if args.unit_weights else "genWeight",normalization_group=sample.get("normalization_group",sample["dataset"]))
         write_metadata(ROOT,record);f.Close();write_json(str(target)+".json",record)
         print("Wrote",target,flush=True)
 

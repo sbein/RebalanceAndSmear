@@ -24,12 +24,14 @@ def main():
     ROOT=root()
     files=sorted(set(path for pattern in args.inputs for path in glob.glob(pattern)))
     if not files: raise ValueError("No raw input files")
-    combined={};records=[];cfg=None;totals={};cross_sections={};seen=set()
+    combined={};records=[];cfg=None;totals={};cross_sections={};seen=set();policies=set()
     for path in files:
         f=open_root(ROOT,path);record=metadata(ROOT,f);f.Close()
         if record.get("format_version")!=1: raise ValueError("Unsupported raw template normalization")
-        dataset=record["sample"]["dataset"]
+        dataset=record.get("normalization_group",record["sample"]["dataset"])
         cross_section=record["sample"]["cross_section_pb"]
+        policies.add(record.get("generator_weight_policy","genWeight"))
+        if len(policies)>1:raise ValueError("Cannot mix unit and genWeight training shards")
         if dataset in cross_sections and cross_sections[dataset]!=cross_section:
             raise ValueError("Conflicting cross sections for "+dataset)
         cross_sections[dataset]=cross_section
@@ -37,7 +39,9 @@ def main():
             identity=(file["lfn"],record["split"])
             if identity in seen: raise ValueError("Duplicate training file: "+file["lfn"])
             seen.add(identity)
-            totals[dataset]=totals.get(dataset,0)+file["statistics"]["sumw"]
+            denominator=file["statistics"]["scanned"] if record.get("generator_weight_policy")=="ignore" else file["statistics"]["sumw"]
+            if record.get("generator_weight_policy")=="ignore" and record["split"]!=2:raise ValueError("Unit-weight full-statistics templates require all input events, split=2")
+            totals[dataset]=totals.get(dataset,0)+denominator
         records.append(record)
     if any(v<=0 for v in totals.values()): raise ValueError("Nonpositive dataset normalization")
     records=[]
@@ -50,7 +54,7 @@ def main():
             if not obj.InheritsFrom("TH1"): continue
             clone=obj.Clone(name);clone.SetDirectory(0)
             if name.startswith("hGenMht"):
-                dataset=record["sample"]["dataset"]
+                dataset=record.get("normalization_group",record["sample"]["dataset"])
                 clone.Scale(cross_sections[dataset]/totals[dataset])
             if name not in combined:
                 combined[name]=clone
@@ -101,7 +105,7 @@ def main():
         donor=response_name(pt,eta,ip,ie,0)
         if donor in templates:
             h=templates[donor].Clone(name);h.SetDirectory(0);templates[name]=h
-    report=dict(config=cfg,training_records=records,raw_files=files,min_entries=args.min_entries,
+    report=dict(config=cfg,generator_weight_policy=next(iter(policies)),normalization_totals=totals,training_records=records,raw_files=files,min_entries=args.min_entries,
                 sparse_pilot=bool(audit),borrowed=audit,deficient=deficient,
                 effective_entries=entries,smoothing=args.smooth,structurally_unused=unused,
                 density_normalization="before smoothing (diagnostic)" if args.legacy_density_normalization else "after smoothing and bounded cubic numerical integral; evaluator uses histogram support",

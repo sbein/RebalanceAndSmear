@@ -28,6 +28,10 @@ def main():
     p.add_argument("--gen-smears",type=int,help="Generator smears per seed; defaults to --smears")
     p.add_argument("--skip-gen-smear",action="store_true",help="Diagnostic regression: disable the alternative prediction")
     p.add_argument("--min-dphi-cut",type=float,help="Use one common minimum-dphi cut for the three diagnostic views; default inverts legacy jet-dependent cuts")
+    p.add_argument("--split",type=int,choices=[0,1,2],default=1)
+    p.add_argument("--unit-weights",action="store_true",help="Ignore QCD generator weights")
+    p.add_argument("--normalization",help="Completed production group counts from uncut tCount trees")
+    p.add_argument("--allow-training-overlap",action="store_true",help="Explicit full-statistics production, not an independent closure test")
     args=p.parse_args()
     if Path(args.output).exists(): raise FileExistsError(args.output)
     if args.smears<1 or args.seed<1: p.error("smears and random seed must be positive")
@@ -50,27 +54,40 @@ def main():
     file=sample["files"][args.file_index]
     for training in record["training_records"]:
         trained={x["lfn"] for x in training["files"]}
-        if file["lfn"] in trained and training["split"]!=0:
+        if file["lfn"] in trained and not args.allow_training_overlap and (args.split==2 or training["split"]==2 or training["split"]==args.split):
             raise ValueError("Closure validation split overlaps template training")
     ROOT.GleanTemplatesFromFile(f)
     Path(args.output).parent.mkdir(parents=True,exist_ok=True)
     stats=ROOT.Run3Closure(file.get("cached_path",file["url"]),cfg["btag_branch"],cfg["btag_cut"],
        vector(ROOT,"string",cfg["filters"]),args.output,args.max_events,args.smears,reb_max,
-       args.seed,not args.uncached_splines,1,smear_max,args.per_seed_random,args.gen_mht_max,
-       0 if args.skip_gen_smear else gen_smears,-1 if args.min_dphi_cut is None else args.min_dphi_cut)
+       args.seed,not args.uncached_splines,args.split,smear_max,args.per_seed_random,args.gen_mht_max,
+       0 if args.skip_gen_smear else gen_smears,-1 if args.min_dphi_cut is None else args.min_dphi_cut,args.unit_weights)
     values=summary(stats,["scanned","validation","selected","fitted","accepted","smears","sumw","seconds",
                          "rejected_rebalanced_mht","nonfinite_rebalanced","rejected_smeared_mht","nonfinite_smears",
                          "gen_seeds","gen_rejected_mht","gen_smears","gen_nonfinite","gen_above_2000"])
     values["cleaning"]=cleaning_summary(stats,cfg)
-    if values["selected"]==0 or values["sumw"]<=0: raise ValueError("No usable validation seeds")
-    norm=sample["cross_section_pb"]/values["sumw"]
+    if values["sumw"]<=0: raise ValueError("No usable uncut input events")
+    production_norm=None
+    if args.normalization:
+        if not args.unit_weights or args.split!=2 or args.max_events!=-1:raise ValueError("Production normalization requires unit weights, split=2 and complete inputs")
+        production_norm=json.loads(Path(args.normalization).read_text())
+        if not production_norm.get("complete"):raise ValueError("Uncut dataset counts are incomplete")
+        group=production_norm["groups"][sample.get("normalization_group",sample["name"])]
+        if group["cross_section_pb"]!=sample["cross_section_pb"]:raise ValueError("Cross section differs from completed inventory")
+        if file["lfn"] not in group["source_lfns"]:raise ValueError("LFN not in normalization group")
+        if values["scanned"]!=file["nevents"]:raise ValueError("Incomplete closure input scan")
+        norm=group["cross_section_pb"]*production_norm["luminosity_pb_inverse"]/group["ntot_uncut"]
+    else:norm=sample["cross_section_pb"]/values["sumw"]
     result=dict(config=cfg,template_file=str(Path(args.templates).resolve()),input=file,sample=sample,
                 statistics=values,smears_per_seed=args.smears,random_seed=args.seed,
-                cached_splines=not args.uncached_splines,split=1,normalization_pb_per_genweight=norm,
+                cached_splines=not args.uncached_splines,split=args.split,normalization_pb_per_genweight=norm,
                 bounded_nonnegative_pdf=bool(ROOT.Run3BoundedPdf),
                 sparse_pilot=record["sparse_pilot"],borrowed_template_count=len(record["borrowed"]),
                 statistical_errors="Seed-cluster second moments; MHT ratio includes paired observed/prediction covariance",
                 baseline="HT>300, NJets>=2, applied independently to observed and every smeared event")
+    result["normalization"]=dict(mode="full-dataset uncut count" if production_norm else "processed split sum of weights",generator_weight_policy="ignore" if args.unit_weights else "genWeight",
+        luminosity_pb_inverse=production_norm["luminosity_pb_inverse"] if production_norm else 1.,ntot_uncut=group["ntot_uncut"] if production_norm else None,
+        event_weight=norm,smear_weight=norm/args.smears,template_overlap_allowed=args.allow_training_overlap)
     result["closure_selection"]=dict(rebalanced_mht_max_GeV=reb_max,smeared_mht_max_GeV=None if args.disable_smear_mht_guard else smear_max,
         random_draws="per event key" if args.per_seed_random else "legacy sequential stream",
         jet_only_regions="Legacy central-jet delta-phi, MHT<HT, Andrews HT-ratio filter, 174-bin mapping and 250-300 sidebands; no lepton/photon/track veto")

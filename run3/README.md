@@ -112,3 +112,7 @@ This first model does not close throughout MHT: R&S/reco is 1.829 +/- 0.068 in 1
 ## Generator-smear and minimum-delta-phi diagnostics
 
 The closure output now includes independent legacy generator smearing (generator MHT<150 GeV), paired seed errors, and complementary Inclusive / High Min Dphi / Low Min Dphi views. The five-cut scan includes 110 GeV while retaining the 160 GeV historical default. See [GEN_SMEAR_DPHI_20261004.md](GEN_SMEAR_DPHI_20261004.md) for definitions, regression checks and reproduction. New plots are exported with plot_three_method_closure.py and review_gen_smear.py; the earlier plots remain historical snapshots.
+
+## Full-statistics production and corrected 95 GeV diagnostic
+
+The active diagnostic now compares 90/95/100 GeV. Full-statistics production uses the entire frozen QCD file inventory, uncut group tCount normalization, ignored generator weights, one smear per seed and a 90 GeV seed cut. See [PRODUCTION_20261004.md](PRODUCTION_20261004.md). The earlier five-cut plots and pilot weights remain historical snapshots.

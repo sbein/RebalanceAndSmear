@@ -22,14 +22,14 @@ struct Run3RawSummary {
 Run3RawSummary Run3BuildRaw(const string &path, const string &tagbranch, double cut,
    const vector<string> &filters, TH1F *hp, TH1F *he, TH1F *hh,
    const vector<TH1F*> &responses, const vector<TH1F*> &priors,
-   Long64_t maxEvents, int split=0) {
+   Long64_t maxEvents, int split=0, bool unitWeights=false) {
   auto start=chrono::steady_clock::now();
   Run3NanoReader n(path,tagbranch,cut,filters);
   Run3RawSummary out;
   while ((maxEvents<0 || out.scanned<maxEvents) && n.next()) {
     ++out.scanned;
     if (split<2 && int(n.splitKey()%2)!=split) continue;
-    ++out.training; double w=*n.genweight; out.sumw+=w;
+    ++out.training; double w=unitWeights?1.0:*n.genweight; out.sumw+=w;
     if (w<0) ++out.negative;
     if (!n.selected()) continue;
     ++out.selected;
@@ -77,7 +77,7 @@ Run3ClosureSummary Run3Closure(const string &path,const string &tagbranch,double
    const vector<string> &filters, const string &output, Long64_t maxEvents,
    int nsmears, double rebMax, unsigned int randomSeed=12345,
    bool cached=true, int split=1,double smearMax=2000,bool perSeedRandom=false,
-   double genMax=150,int genSmears=20,double minDphiCut=-1) {
+   double genMax=150,int genSmears=20,double minDphiCut=-1,bool unitWeights=false) {
   if(nsmears<1 || genSmears<0) throw runtime_error("Invalid smearing count");
   Run3UseCachedSplines=cached;
   gRandom->SetSeed(randomSeed);
@@ -176,7 +176,7 @@ Run3ClosureSummary Run3Closure(const string &path,const string &tagbranch,double
   while((maxEvents<0 || out.scanned<maxEvents) && n.next()) {
     ++out.scanned;
     if(split<2 && int(n.splitKey()%2)!=split) continue;
-    ++out.validation; weight=*n.genweight; out.sumw+=weight;
+    ++out.validation; weight=unitWeights?1.0:*n.genweight; out.sumw+=weight;
     if(!n.selected()) continue;
     ++out.selected;
     event=*n.event;run=*n.run;lumi=*n.lumi;
@@ -279,7 +279,8 @@ Run3ClosureSummary Run3Closure(const string &path,const string &tagbranch,double
   for(auto *region:regions)region->write();
   for(auto &entry:genPairs)entry.second->write();
   for(auto &entry:views)entry.second->write();
-  seeds.Write();f.Close();
+  TTree count("tCount","Uncut source events successfully encountered before any split or selection");
+  count.SetEntries(out.scanned);count.Write();seeds.Write();f.Close();
   out.seconds=chrono::duration<double>(chrono::steady_clock::now()-start).count();
   out.after_filters=n.afterFilters; out.after_jet_id=n.afterJetID; out.after_jet_veto=n.afterVeto;
   out.flag_failed=n.flagFailed; out.flag_cumulative=n.flagCumulative;

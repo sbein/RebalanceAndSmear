@@ -7,7 +7,7 @@ from validate_gen_smear import compare_existing,check_file
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('--directory',default='run3_work/gen_smear_dphi20261004')
-    p.add_argument('--cuts',type=int,nargs='+',default=[90,100,110,120,160]);p.add_argument('--max-events',type=int,default=100000)
+    p.add_argument('--cuts',type=int,nargs='+',default=[90,95,100]);p.add_argument('--max-events',type=int,default=100000)
     p.add_argument('--smears',type=int,default=20);p.add_argument('--manifest',default='run3_work/cleaned2024/cached_manifest.json')
     p.add_argument('--templates',default='run3_work/verified2024/templates_pilot.root');args=p.parse_args()
     directory=Path(args.directory);directory.mkdir(parents=True,exist_ok=True);R=root();report=[];gen_reference=None

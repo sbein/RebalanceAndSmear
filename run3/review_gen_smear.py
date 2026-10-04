@@ -8,7 +8,7 @@ from plot_three_method_closure import LABELS
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('--directory',default='run3_work/gen_smear_dphi20261004')
-    p.add_argument('--cuts',nargs='+',type=int,default=[90,100,110,120,160]);args=p.parse_args()
+    p.add_argument('--cuts',nargs='+',type=int,default=[90,95,100]);args=p.parse_args()
     directory=Path(args.directory);R=root();R.gStyle.SetOptStat(0);files=[];report=[];previous=None
     for cut in args.cuts:
         path=directory/f'closure_rebalance{cut}.root';f=open_root(R,path);files.append(f);meta=metadata(R,f)
@@ -59,13 +59,13 @@ def main():
     reb.SetLineColor(R.kAzure+2);reb.SetLineWidth(2);gen.SetMinimum(.5);gen.SetMaximum(max(gen.GetMaximum(),reb.GetMaximum())*10)
     gen.Draw('HIST');reb.Draw('HIST SAME');leg=R.TLegend(.53,.6,.88,.8);leg.SetBorderSize(0);leg.AddEntry(gen,'Generator seeds (all selected reco events)','l');leg.AddEntry(reb,'Successful rebalanced seeds','l');leg.Draw()
     lines=[]
-    for cut,color in [(110,R.kRed+1),(150,R.kGreen+2)]:
+    for cut,color in [(95,R.kRed+1),(150,R.kGreen+2)]:
         line=R.TLine(cut,.5,cut,gen.GetMaximum());line.SetLineColor(color);line.SetLineStyle(2);line.Draw();lines.append(line)
     t=R.TLatex();t.SetNDC();t.SetTextFont(42);t.SetTextSize(.027);t.DrawLatex(.1,.95,'2024 QCD HT1200-1500; seed recoils before acceptance')
-    t.DrawLatex(.1,.905,'Red: new 110 GeV R&S diagnostic; green: legacy 150 GeV generator cut')
+    t.DrawLatex(.1,.905,'Red: new 95 GeV R&S diagnostic; green: legacy 150 GeV generator cut')
     c.SaveAs(str(out/'GenMHT_vs_RebalancedMHT.png'))
     result=dict(cuts=report,all_seed_fits_identical=True,nested_rebalanced_acceptance=True,
-        gen_smear_identical_across_rebalance_cuts=True,preferred_diagnostic_cut_GeV=110,historical_default_cut_GeV=160,
+        gen_smear_identical_across_rebalance_cuts=True,preferred_diagnostic_cut_GeV=95,production_seed_cut_GeV=90,historical_default_cut_GeV=160,
         definition='Inclusive HT>300, NJets>=2; high requires legacy central-jet delta-phi cuts; Low Min Dphi is the complement. No MHT or HT-ratio cut in these three views.',
         uncertainty_scope='Paired seed errors; no template uncertainty or error on differences between correlated variants.',
         training_rerun=False)
