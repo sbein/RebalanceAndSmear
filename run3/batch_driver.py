@@ -14,7 +14,7 @@ def main():
             for name in ['templates_full.root','normalization.json']:shutil.copy2(scratch/name,run/name)
         subprocess.run(['python3',str(BASE/'production_worker.py'),'--run',str(run),'--job',str(job),'--stage',args.stage],check=True)
         name=args.stage+'_'+payload['id'];source=job/(args.stage+'.root')
-        R=root();f=R.TFile(str(source),'UPDATE');record=metadata(R,f);record['submitted_run']=payload['submitted_run']
+        R=root();f=R.TFile(str(source),'UPDATE');record=metadata(R,f);record['submitted_run']=payload['submitted_run'];record['source_commit']=payload['settings']['source_commit']
         if args.stage=='closure':record['template_file']=payload['submitted_run']+'/templates_full.root'
         f.cd();write_metadata(R,record);f.Close();write_json(str(source)+'.json',record)
         if args.stage=='closure':

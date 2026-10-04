@@ -22,7 +22,7 @@ def main():
     worker.chmod(0o755)
     def jdl(path,stage,payload,inputs,outputs,memory):
         remaps=';'.join(name+'='+str(destination) for name,destination in outputs)
-        path.write_text('universe = vanilla\nexecutable = '+str(worker)+'\narguments = '+stage+' '+payload.name+'\ngetenv = False\nrequest_cpus = 1\nrequest_memory = '+memory+'\nrequest_disk = 4GB\nshould_transfer_files = YES\nwhen_to_transfer_output = ON_SUCCESS\nsuccess_exit_code = 0\ntransfer_input_files = '+','.join(str(p) for p in [archive,payload]+inputs)+'\ntransfer_output_files = '+','.join(name for name,_ in outputs)+'\ntransfer_output_remaps = "'+remaps+'"\nuse_x509userproxy = True\nx509userproxy = '+args.proxy+'\noutput = '+str(path)+'.$(Cluster).out\nerror = '+str(path)+'.$(Cluster).err\nlog = '+str(run)+'/workers.log\nqueue\n')
+        path.write_text('universe = vanilla\n+DesiredOS = "EL9"\nexecutable = '+str(worker)+'\narguments = '+stage+' '+payload.name+'\ngetenv = False\nrequest_cpus = 1\nrequest_memory = '+memory+'\nrequest_disk = 4GB\nshould_transfer_files = YES\nwhen_to_transfer_output = ON_SUCCESS\nsuccess_exit_code = 0\ntransfer_input_files = '+','.join(str(p) for p in [archive,payload]+inputs)+'\ntransfer_output_files = '+','.join(name for name,_ in outputs)+'\ntransfer_output_remaps = "'+remaps+'"\nuse_x509userproxy = True\nx509userproxy = '+args.proxy+'\noutput = '+str(path)+'.$(Cluster).out\nerror = '+str(path)+'.$(Cluster).err\nlog = '+str(run)+'/workers.log\nqueue\n')
     for sample in manifest['samples']:
         for source in sample['files']:
             i=len(jobs);identity=f'{i:05d}';job=run/'jobs'/f'{i//500:03d}'/identity;job.mkdir(parents=True)
