@@ -45,11 +45,45 @@ def merged_histograms(R,paths,output,record):
     counter=R.TTree('tCount','Uncut input events; use group-specific ntot from metadata for normalization');counter.SetEntries(count);counter.Write()
     write_metadata(R,record);out.Close();write_json(str(output)+'.json',record)
 
+def merge_raw(R,records,output):
+    combined={};count=0;files=[];first=records[0][2]
+    for path,_,record in records:
+        f=open_root(R,path);count+=int(f.Get('tCount').GetEntries());files.extend(record['files'])
+        for key in f.GetListOfKeys():
+            name=key.GetName();obj=f.Get(name)
+            if not obj.InheritsFrom('TH1'):continue
+            if name in combined:
+                if name not in ['hPtTemplate','hEtaTemplate','hHtTemplate']:combined[name].Add(obj)
+            else:combined[name]=obj.Clone(name);combined[name].SetDirectory(0)
+        f.Close()
+    out=R.TFile(str(output),'RECREATE');out.cd()
+    for h in combined.values():h.Write()
+    counter=R.TTree('tCount','Uncut encountered source events in this dataset group');counter.SetEntries(count);counter.Write()
+    record=dict(first,files=files);write_metadata(R,record);out.Close();write_json(str(output)+'.json',record)
+
+def grouped_raw_inputs(run):
+    R=root();manifest=json.loads((run/'manifest.json').read_text());groups={};records=[];seen=set()
+    for spec in manifest['samples']:
+        group=spec['normalization_group'];path=run/'grouped_raw'/('rawgroup_'+group+'.root');f=open_root(R,path);m=metadata(R,f)
+        expected={x['lfn']:x for x in spec['files']};got={x['lfn']:x for x in m['files']}
+        if set(got)!=set(expected) or len(got)!=len(m['files']):raise ValueError('Missing or duplicated group source files')
+        if m.get('generator_weight_policy')!='ignore' or m['split']!=2 or m['normalization_group']!=group:raise ValueError('Wrong raw group policy')
+        scanned=0
+        for lfn,file in got.items():
+            if lfn in seen or file['statistics']['scanned']!=expected[lfn]['nevents']:raise ValueError('Duplicated or incomplete source scan')
+            seen.add(lfn);scanned+=file['statistics']['scanned']
+        counter=f.Get('tCount');count=int(counter.GetEntries())
+        if counter.GetListOfBranches().GetEntries() or count!=scanned or count!=spec['expected_uncut_events']:raise ValueError('Group uncut counter mismatch')
+        groups[group]=dict(cross_section_pb=spec['cross_section_pb'],datasets=spec['datasets'],ntot_uncut=count,source_lfns=[x['lfn'] for x in spec['files']])
+        records.append((path,group,m));f.Close()
+    if len(seen)!=manifest['source_files']:raise ValueError('Incomplete full source inventory')
+    return groups,records
+
 def main():
     p=argparse.ArgumentParser();p.add_argument('--run',required=True);p.add_argument('--stage',choices=['templates','predictions'],required=True);args=p.parse_args()
     run=Path(args.run).resolve();settings=json.loads((run/'settings.json').read_text())
     if args.stage=='templates':
-        groups,records=complete_inputs(run,'raw')
+        groups,records=grouped_raw_inputs(run) if (run/'grouped_raw').exists() else complete_inputs(run,'raw')
         norm=dict(complete=True,groups=groups,luminosity_pb_inverse=settings['luminosity_pb_inverse'],generator_weight_policy='ignore',
             denominator='Sum of dynamically encountered uncut tCount entries in all original and extension files; no selection/split/genWeight denominator')
         write_json(run/'normalization.json',norm)
