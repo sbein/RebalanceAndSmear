@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Jet-only closure plots; use stored paired-seed errors and label missing object vetoes."""
 import argparse
+import subprocess
+import sys
 from pathlib import Path
 from common import root,open_root,metadata,write_json
 REGIONS=['MHT_jetOnlyHighDPhi','MHT_jetOnlyLowDPhi','SearchBins_jetOnlyHighDPhi','SearchBins_jetOnlyLowDPhi','MHT_jetOnlyHighDPhiSideband','MHT_jetOnlyLowDPhiSideband']
@@ -8,6 +10,10 @@ REGIONS=['MHT_jetOnlyHighDPhi','MHT_jetOnlyLowDPhi','SearchBins_jetOnlyHighDPhi'
 def main():
     p=argparse.ArgumentParser();p.add_argument('input');p.add_argument('--outdir',required=True)
     args=p.parse_args();R=root();R.gStyle.SetOptStat(0);f=open_root(R,args.input);record=metadata(R,f)
+    if record.get('gen_smearing',{}).get('enabled'):
+        f.Close()
+        subprocess.run([sys.executable,str(Path(__file__).resolve().parent/'plot_three_method_closure.py'),args.input,'--outdir',args.outdir,'--region','Legacy'],check=True)
+        return
     out=Path(args.outdir);out.mkdir(parents=True,exist_ok=True);numbers={}
     cut=record['closure_selection']['rebalanced_mht_max_GeV']
     for name in REGIONS:

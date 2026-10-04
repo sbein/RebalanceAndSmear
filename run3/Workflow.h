@@ -3,9 +3,16 @@
 #include "NanoReader.h"
 #include <TH1D.h>
 #include <TRandom.h>
+#include <TRandom3.h>
+#include <map>
 #include <TTree.h>
 #include <chrono>
 #include "LegacyJetSelection.h"
+struct Run3ScopedRandom {
+  TRandom *saved;
+  explicit Run3ScopedRandom(TRandom *replacement):saved(gRandom) {gRandom=replacement;}
+  ~Run3ScopedRandom() {gRandom=saved;}
+};
 struct Run3RawSummary {
   Long64_t scanned=0, training=0, selected=0, responses=0, negative=0;
   double sumw=0, seconds=0;
@@ -64,12 +71,14 @@ struct Run3ClosureSummary {
   Long64_t after_filters=0, after_jet_id=0, after_jet_veto=0;
   vector<Long64_t> flag_failed, flag_cumulative;
   Long64_t rejected_rebalanced_mht=0,nonfinite_rebalanced=0,rejected_smeared_mht=0,nonfinite_smears=0;
+  Long64_t gen_seeds=0,gen_rejected_mht=0,gen_smears=0,gen_nonfinite=0,gen_above_2000=0;
 };
 Run3ClosureSummary Run3Closure(const string &path,const string &tagbranch,double cut,
    const vector<string> &filters, const string &output, Long64_t maxEvents,
    int nsmears, double rebMax, unsigned int randomSeed=12345,
-   bool cached=true, int split=1,double smearMax=2000,bool perSeedRandom=false) {
-  if(nsmears<1) throw runtime_error("nsmears must be positive");
+   bool cached=true, int split=1,double smearMax=2000,bool perSeedRandom=false,
+   double genMax=150,int genSmears=20,double minDphiCut=-1) {
+  if(nsmears<1 || genSmears<0) throw runtime_error("Invalid smearing count");
   Run3UseCachedSplines=cached;
   gRandom->SetSeed(randomSeed);
   SetRun3FixedObjects(TLorentzVector());
@@ -97,17 +106,60 @@ Run3ClosureSummary Run3Closure(const string &path,const string &tagbranch,double
   Run3ClosurePair highBins("SearchBins_jetOnlyHighDPhi",searchEdges),lowBins("SearchBins_jetOnlyLowDPhi",searchEdges);
   Run3ClosurePair highSide("MHT_jetOnlyHighDPhiSideband",edges),lowSide("MHT_jetOnlyLowDPhiSideband",edges);
   vector<Run3ClosurePair*> regions={&highMht,&lowMht,&highBins,&lowBins,&highSide,&lowSide};
-  auto fillRegions=[&](const Run3LegacyJetFeatures &v,double w,bool observed) {
-    auto fill=[&](Run3ClosurePair &pair,double value) { if(observed) pair.fillObserved(value,w);else pair.fillPrediction(value,w); };
+  // Alternative predictions retain their own seed-cluster covariance with reco.
+  map<string,unique_ptr<Run3ClosurePair>> genPairs,views;
+  auto uniform=[](int count,double low,double high) {
+    vector<double> bins;for(int i=0;i<=count;++i)bins.push_back(low+(high-low)*i/count);return bins;
+  };
+  map<string,vector<double>> observableEdges={{"MHT",edges},{"HT",uniform(50,0,2500)},
+    {"NJets",uniform(16,0,16)},{"BTags",uniform(5,0,5)},{"DPhi1",uniform(32,0,3.2)},
+    {"MinDPhi",uniform(32,0,3.2)}};
+  for(auto &entry:observableEdges)
+    genPairs[entry.first]=make_unique<Run3ClosurePair>(entry.first+"_genSmear",entry.second);
+  for(auto *region:regions) {
+    string name=region->observed.GetName();name.resize(name.size()-string("_observed").size());
+    genPairs[name]=make_unique<Run3ClosurePair>(name+"_genSmear",name.find("SearchBins")==0?searchEdges:edges);
+  }
+  for(const auto &region:{"Inclusive","HighMinDPhi","LowMinDPhi"})
+    for(auto &entry:observableEdges) {
+      string name=entry.first+"_"+region;
+      views[name]=make_unique<Run3ClosurePair>(name,entry.second);
+      genPairs[name]=make_unique<Run3ClosurePair>(name+"_genSmear",entry.second);
+    }
+  auto fillRegions=[&](const Run3LegacyJetFeatures &v,double w,int method) {
+    // method: 0 observed, 1 R&S, 2 generator smearing.
+    auto fill=[&](Run3ClosurePair &pair,double value) {
+      string name=pair.observed.GetName();name.resize(name.size()-string("_observed").size());
+      if(method==0) {pair.fillObserved(value,w);genPairs.at(name)->fillObserved(value,w);}
+      else if(method==1) pair.fillPrediction(value,w);
+      else genPairs.at(name)->fillPrediction(value,w);
+    };
     int bin=v.searchBin();
     if(v.highRegion()) {fill(highMht,v.mht);if(bin>0)fill(highBins,bin);}
     if(v.lowRegion()) {fill(lowMht,v.mht);if(bin>0)fill(lowBins,bin);}
     if(v.sideband(true))fill(highSide,v.mht);
     if(v.sideband(false))fill(lowSide,v.mht);
   };
+  auto fillViews=[&](const Run3LegacyJetFeatures &v,double w,int method) {
+    if(!v.inclusiveDiagnostic())return;
+    map<string,double> values={{"MHT",v.mht},{"HT",v.ht},{"NJets",double(v.nj)},
+      {"BTags",double(v.nb)},{"DPhi1",v.dphi[0]},{"MinDPhi",v.minDeltaPhi()}};
+    bool high=v.highMinDeltaPhi(minDphiCut);
+    for(auto &entry:values) {
+      if(method==0)genPairs.at(entry.first)->fillObserved(entry.second,w);
+      if(method==2)genPairs.at(entry.first)->fillPrediction(entry.second,w);
+      for(const auto &region:{"Inclusive",high?"HighMinDPhi":"LowMinDPhi"}) {
+        string name=entry.first+"_"+region;
+        if(method==0) {views.at(name)->fillObserved(entry.second,w);genPairs.at(name)->fillObserved(entry.second,w);}
+        else if(method==1)views.at(name)->fillPrediction(entry.second,w);
+        else genPairs.at(name)->fillPrediction(entry.second,w);
+      }
+    }
+  };
+  TRandom3 genRandom(randomSeed);
   ULong64_t event; UInt_t run,lumi;
   double weight,ht,mht,gmht,rmht;
-  int nj,nb,np,fit,accepted;
+  int nj,nb,np,fit,accepted,genAccepted;
   TTree seeds("seeds","One row per selected validation seed, including failed fits");
   seeds.SetDirectory(nullptr);
   seeds.Branch("run",&run); seeds.Branch("lumi",&lumi); seeds.Branch("event",&event);
@@ -115,6 +167,7 @@ Run3ClosureSummary Run3Closure(const string &path,const string &tagbranch,double
   seeds.Branch("GenMHT",&gmht);seeds.Branch("RebalancedMHT",&rmht);
   seeds.Branch("NJets",&nj);seeds.Branch("BTags",&nb);seeds.Branch("nparams",&np);
   seeds.Branch("fit",&fit);seeds.Branch("accepted",&accepted);
+  seeds.Branch("genAccepted",&genAccepted);
   Run3ClosureSummary out;
   vector<double> varM(truth.GetNbinsX()+2,0);
   vector<pair<TH1D*,TH1D*>> other={{&httruth,&htpred},{&njtruth,&njpred},{&nbtruth,&nbpred},{&hdpTruth,&hdpPred}};
@@ -130,7 +183,10 @@ Run3ClosureSummary Run3Closure(const string &path,const string &tagbranch,double
     ht=getHT(n.jets,30);mht=getMHT(n.jets,30).Pt();
     gmht=getMHT(n.genjets,30).Pt();nj=countJets(n.jets,30);nb=countBJets_Useful(n.jets,30);
     for(auto *region:regions)region->beginSeed();
-    fillRegions(Run3LegacyJetFeatures(n.jets),weight,true);
+    for(auto &entry:genPairs)entry.second->beginSeed();
+    for(auto &entry:views)entry.second->beginSeed();
+    auto recoFeatures=Run3LegacyJetFeatures(n.jets);
+    fillRegions(recoFeatures,weight,0);fillViews(recoFeatures,weight,0);
     bool baseline=ht>300 && nj>=2;
     int tb=-1;
     if(baseline) {
@@ -139,6 +195,24 @@ Run3ClosureSummary Run3Closure(const string &path,const string &tagbranch,double
       auto lead=find_if(n.jets.begin(),n.jets.end(),[](auto &j){return j.Pt()>30 && fabs(j.Eta())<2.4;});
       if(lead!=n.jets.end()) hdpTruth.Fill(fabs(lead->DeltaPhi(getMHT(n.jets,30))),weight);
     }
+    // Legacy Gen-smearing: generator MHT<150, independent of fit/seed acceptance.
+    genAccepted=genSmears>0 && Run3AcceptRebalancedSeed(true,gmht,genMax);
+    if(genAccepted) {
+      ++out.gen_seeds;
+      auto keyed=n.splitKey() ^ (ULong64_t(randomSeed)*0x9e3779b97f4a7c15ULL) ^ 0xd1b54a32d192ed03ULL;
+      UInt_t genSeed=UInt_t(keyed ^ (keyed>>32));genRandom.SetSeed(genSeed?genSeed:1);
+      // Separate RNG: adding gen-smear must not advance the R&S random stream.
+      Run3ScopedRandom useGenRandom(&genRandom);
+      for(int is=0;is<genSmears;++is) {
+        auto smeared=smearJets_CC(n.genjets,9999);++out.gen_smears;
+        auto v=Run3LegacyJetFeatures(smeared);
+        if(!std::isfinite(v.mht)) {++out.gen_nonfinite;continue;}
+        // The historical gen-smear loop has no individual MHT>2000 veto.
+        if(v.mht>2000)++out.gen_above_2000;
+        fillRegions(v,weight/genSmears,2);fillViews(v,weight/genSmears,2);
+      }
+    } else if(genSmears>0) ++out.gen_rejected_mht;
+    for(auto &entry:genPairs)entry.second->endSeed();
     fit=RebalanceJets_BayesFitter(n.jets);np=_Templates_.nparams;
     rmht=getMHT(_Templates_.dynamicJets,30).Pt();
     accepted=Run3AcceptRebalancedSeed(fit,rmht,rebMax);
@@ -167,7 +241,8 @@ Run3ClosureSummary Run3Closure(const string &path,const string &tagbranch,double
       double sh=getHT(smeared,30), sm=getMHT(smeared,30).Pt();
       if(!std::isfinite(sm)) {++out.nonfinite_smears;continue;}
       if(!Run3AcceptSmearedMht(sm,smearMax)) {++out.rejected_smeared_mht;continue;}
-      fillRegions(Run3LegacyJetFeatures(smeared),weight/nsmears,false);
+      auto smearedFeatures=Run3LegacyJetFeatures(smeared);
+      fillRegions(smearedFeatures,weight/nsmears,1);fillViews(smearedFeatures,weight/nsmears,1);
       int sn=countJets(smeared,30), sb=countBJets_Useful(smeared,30);
       if(sh<=300 || sn<2) continue;
       double sw=weight/nsmears;
@@ -187,6 +262,7 @@ Run3ClosureSummary Run3Closure(const string &path,const string &tagbranch,double
     for(unsigned int k=0;k<other.size();++k)
       for(unsigned int ib=0;ib<extra[k].size();++ib) vars[k][ib]+=extra[k][ib]*extra[k][ib];
     for(auto *region:regions)region->endSeed();
+    for(auto &entry:views)entry.second->endSeed();
   }
   for(unsigned int ib=0;ib<varM.size();++ib) pred.SetBinError(ib,sqrt(varM[ib]));
   for(unsigned int k=0;k<other.size();++k)
@@ -201,6 +277,8 @@ Run3ClosureSummary Run3Closure(const string &path,const string &tagbranch,double
   }
   for(auto h:{&truth,&pred,&rebalanced,&allRebalanced,&cross,&httruth,&htpred,&njtruth,&njpred,&nbtruth,&nbpred,&hdpTruth,&hdpPred,&ratio}) h->Write();
   for(auto *region:regions)region->write();
+  for(auto &entry:genPairs)entry.second->write();
+  for(auto &entry:views)entry.second->write();
   seeds.Write();f.Close();
   out.seconds=chrono::duration<double>(chrono::steady_clock::now()-start).count();
   out.after_filters=n.afterFilters; out.after_jet_id=n.afterJetID; out.after_jet_veto=n.afterVeto;

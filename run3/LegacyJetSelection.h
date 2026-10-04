@@ -35,6 +35,17 @@ struct Run3LegacyJetFeatures {
     for(int i=0;i<std::min(4,nj);++i) if(dphi[i]<limits[i]) return false;
     return true;
   }
+  double minDeltaPhi() const {
+    double result=99;
+    for(int i=0;i<std::min(4,nj);++i) result=std::min(result,dphi[i]);
+    return result;
+  }
+  bool highMinDeltaPhi(double commonCut=-1) const {
+    return commonCut<0 ? highDeltaPhi() : minDeltaPhi()>=commonCut;
+  }
+  bool inclusiveDiagnostic() const {
+    return std::isfinite(ht) && std::isfinite(mht) && ht>300 && nj>=2;
+  }
   bool common() const {
     return std::isfinite(ht) && std::isfinite(mht) && ht>=300 && nj>=2 && mht<ht &&
       Run3PassAndrewsTightHtRatio(dphi[0],ht5,ht);

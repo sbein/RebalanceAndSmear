@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """ROOT-only diagnostic plotting, with correlated MHT ratio uncertainties."""
 import argparse
+import subprocess
+import sys
 from pathlib import Path
 from common import root, open_root, metadata, write_json
 
@@ -8,6 +10,10 @@ def main():
     p=argparse.ArgumentParser();p.add_argument("input");p.add_argument("--outdir",default="run3_work/plots")
     p.add_argument("--label",required=True)
     args=p.parse_args();ROOT=root();f=open_root(ROOT,args.input);record=metadata(ROOT,f)
+    if record.get('gen_smearing',{}).get('enabled'):
+        f.Close()
+        subprocess.run([sys.executable,str(Path(__file__).resolve().parent/'plot_three_method_closure.py'),args.input,'--outdir',args.outdir,'--region','Inclusive'],check=True)
+        return
     outdir=Path(args.outdir);outdir.mkdir(parents=True,exist_ok=True)
     numbers={}
     for plotname in ["MHT","MHT_full","HT","NJets","BTags","DPhi1"]:

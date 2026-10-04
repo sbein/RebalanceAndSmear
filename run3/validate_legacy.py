@@ -34,7 +34,7 @@ def main():
                     point=center[:];point[i]=value
                     assert R.Run3SearchBinNumber2018(*point)==legacy(point),(point,number)
                     checks+=1
-    for cut in [90.,100.,120.,160.]:
+    for cut in [90.,100.,110.,120.,160.]:
         for fit,mht,expected in [(True,math.nextafter(cut,-math.inf),True),(True,cut,False),
                                  (True,math.nextafter(cut,math.inf),False),(False,0.,False),
                                  (True,math.nan,False),(True,math.inf,False)]:
@@ -62,6 +62,10 @@ def main():
       a.ht=1000;a.ht5=1000;a.mht=300;a.dphi={{1,1,1,1}};
       if(!a.highRegion()||a.lowRegion()||!a.sideband(true))return false;
       a.mht=1000;if(a.common())return false;
+      a.nj=4;a.dphi={{.6,.6,.35,.4}};
+      if(!a.highMinDeltaPhi() || a.highMinDeltaPhi(.5) || a.minDeltaPhi()!=.35)return false;
+      a.nj=2;a.dphi={{.5,.5,0,0}};
+      if(!a.highMinDeltaPhi(.5) || a.minDeltaPhi()!=.5)return false;
       Run3ClosurePair pair("regression",{0,1,2});
       pair.beginSeed();pair.fillObserved(.5,2);pair.fillPrediction(.5,.5);pair.fillPrediction(.5,.5);pair.endSeed();
       pair.beginSeed();pair.fillObserved(1.5,3);pair.fillPrediction(.5,2);pair.endSeed();
@@ -71,7 +75,7 @@ def main():
     ''')
     assert R.Run3CheckLegacyJetsAndClusters()
     result=dict(legacy_files_unchanged=True,baseline='fd9821f',search_bins=174,search_bin_boundary_checks=checks,
-                strict_rebalanced_mht_boundaries=[90,100,120,160],inclusive_smeared_mht_guard=2000,
+                strict_rebalanced_mht_boundaries=[90,100,110,120,160],inclusive_smeared_mht_guard=2000,
                 central_jet_dphi=True,missing_jet_dphi_ignored=True,paired_seed_second_moments=True,
                 andrews_filter_exact=True)
     write_json(args.output,result);print(result)

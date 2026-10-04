@@ -108,3 +108,7 @@ RESULTS.json records the first complete pilot. Each of the ten QCD HT datasets c
 For HT1200–1500, the disjoint validation split had 50,356 events and 47,781 selected seeds. 46,333 fits converged; 46,098 also passed the MHT<160 acceptance, generating 921,960 smears at 20 per accepted seed. The C++ closure event loop took 54.34 seconds.
 
 This first model does not close throughout MHT: R&S/reco is 1.829 +/- 0.068 in 160–200 GeV and 1.662 +/- 0.100 in 200–250 GeV, where the quoted uncertainties cover seed statistics and finite smearing only. The 300–400 GeV bin gives 0.980 +/- 0.115. The remaining high tail has limited observed MC statistics. No nonclosure correction has been applied. Resolve the low-pT coverage, review template binning and donors, finalize analysis selections, and perform an independent-file closure before production use.
+
+## Generator-smear and minimum-delta-phi diagnostics
+
+The closure output now includes independent legacy generator smearing (generator MHT<150 GeV), paired seed errors, and complementary Inclusive / High Min Dphi / Low Min Dphi views. The five-cut scan includes 110 GeV while retaining the 160 GeV historical default. See [GEN_SMEAR_DPHI_20261004.md](GEN_SMEAR_DPHI_20261004.md) for definitions, regression checks and reproduction. New plots are exported with plot_three_method_closure.py and review_gen_smear.py; the earlier plots remain historical snapshots.
