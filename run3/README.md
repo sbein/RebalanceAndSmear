@@ -1,6 +1,7 @@
-** Rebalance and Smear
-* * Rebalance and Smear is an old school, data-driven QCD background estimation method for high-MET BSM searches. It was established by the CMS collaboration back in 2011 for SUSY searches in the all-hadronic channel. It has been rebooted and revamped several times for jets+MET and photons+jets+MET final states, and its current form casts Rebalance as a posterior density maximization problem. 
-* * Setup for Run 3 Rebalance and Smear 
+**Rebalance and Smear**
+Rebalance and Smear is an old school, data-driven QCD background estimation method for high-MET BSM searches. It was established by the CMS collaboration back in 2011 for SUSY searches in the all-hadronic channel. It has been rebooted and revamped several times for jets+MET and photons+jets+MET final states, and its current form casts Rebalance as a posterior density maximization problem. 
+
+**Setup for Run 3 Rebalance and Smear** 
 
 This README walks through a full chain unit test for Run 3 R&S, focusing only on one bin of QCD HT1200–1500,
 from the derivation and finalization of the response templates, to the rebalancing and smearing, to the
