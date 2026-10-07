@@ -1,0 +1,13 @@
+{
+  "source_spreadsheet": "https://docs.google.com/spreadsheets/d/1IVNGwR7Iwx5LRmniAmi9ShiL6DZV8mawkmre7q3Om3s/edit#gid=0",
+  "era": "2024",
+  "nano_version": 15,
+  "samples": [
+    {
+      "name": "1200to1500",
+      "dataset": "/QCD-4Jets_Bin-HT-1200to1500_TuneCP5_13p6TeV_madgraphMLM-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM",
+      "cross_section_pb": 384.8,
+      "das_nevents_reference": 107835822
+    }
+  ]
+}

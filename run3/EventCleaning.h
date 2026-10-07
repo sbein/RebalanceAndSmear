@@ -1,0 +1,142 @@
+#ifndef RUN3_EVENT_CLEANING_H
+#define RUN3_EVENT_CLEANING_H
+#include <correction.h>
+#include <TTreeReaderArray.h>
+#include <cmath>
+#include <map>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+
+std::unique_ptr<correction::CorrectionSet> Run3JetIDSet, Run3VetoSet;
+correction::Correction::Ref Run3TightCorrection, Run3LepVetoCorrection, Run3VetoCorrection;
+std::string Run3VetoType;
+bool Run3IsData=false;
+bool Run3AnalysisLepVeto=false;
+std::map<unsigned int,std::vector<std::pair<unsigned int,unsigned int>>> Run3LumiRanges;
+
+void ConfigureRun3Cleaning(const std::string &idpath,const std::string &vetopath,
+                          const std::string &vetoname,const std::string &vetotype,
+                          const std::string &analysisID="AK4PUPPI_Tight") {
+  if(analysisID!="AK4PUPPI_Tight" && analysisID!="AK4PUPPI_TightLeptonVeto")
+    throw std::runtime_error("Unsupported analysis jet-ID working point");
+  Run3AnalysisLepVeto=analysisID=="AK4PUPPI_TightLeptonVeto";
+  Run3JetIDSet=correction::CorrectionSet::from_file(idpath);
+  Run3VetoSet=correction::CorrectionSet::from_file(vetopath);
+  Run3TightCorrection=Run3JetIDSet->at("AK4PUPPI_Tight");
+  Run3LepVetoCorrection=Run3JetIDSet->at("AK4PUPPI_TightLeptonVeto");
+  Run3VetoCorrection=Run3VetoSet->at(vetoname);
+  Run3VetoType=vetotype;
+}
+
+bool Run3JetID(double eta,double chf,double nhf,double cef,double nef,double muf,
+               int nch,int nneutral,bool lepVeto=false) {
+  auto c=lepVeto ? Run3LepVetoCorrection : Run3TightCorrection;
+  if (!c) throw std::runtime_error("ConfigureRun3Cleaning must run before event selection");
+  return c->evaluate({eta,chf,nhf,cef,nef,muf,nch,nneutral,nch+nneutral})>0.5;
+}
+
+bool Run3InVetoMap(double eta,double phi) {
+  if (!Run3VetoCorrection) throw std::runtime_error("Missing jet-veto correction");
+  const double pi=std::acos(-1.0);
+  phi=std::remainder(phi,2*pi);
+  if(phi>=pi) phi=std::nextafter(pi,0.0);
+  return Run3VetoCorrection->evaluate({Run3VetoType,eta,phi})!=0;
+}
+
+bool Run3AnalysisJetID(double eta,double chf,double nhf,double cef,double nef,double muf,
+                       int nch,int nneutral) {
+  return Run3JetID(eta,chf,nhf,cef,nef,muf,nch,nneutral,Run3AnalysisLepVeto);
+}
+
+
+bool Run3VetoEligible(double pt,double eta,double chf,double nhf,double cef,
+                      double nef,double muf,int nch,int nneutral) {
+  return pt>15 && std::abs(eta)<5 && cef+nef<0.9 &&
+         Run3JetID(eta,chf,nhf,cef,nef,muf,nch,nneutral,true);
+}
+
+void Run3ResetLumiMask(bool isData) {Run3IsData=isData; Run3LumiRanges.clear();}
+void Run3AddLumi(unsigned int run,unsigned int first,unsigned int last) {
+  if(first>last) throw std::runtime_error("Invalid golden JSON lumi range");
+  Run3LumiRanges[run].push_back({first,last});
+}
+bool Run3PassLumi(unsigned int run,unsigned int lumi) {
+  if(!Run3IsData) return true;
+  auto it=Run3LumiRanges.find(run);
+  if(it==Run3LumiRanges.end()) return false;
+  for(auto range:it->second) if(lumi>=range.first && lumi<=range.second) return true;
+  return false;
+}
+
+template<class C> auto Run3ArraySize(const C &v)->decltype(v.size()) {return v.size();}
+template<class T> auto Run3ArraySize(const TTreeReaderArray<T> &v) {return v.GetSize();}
+
+template<class F,class I>
+bool Run3PassAnalysisJetID(const F &pt,const F &eta,const F &chf,const F &nhf,
+                          const F &cef,const F &nef,const F &muf,const I &nch,const I &nne,
+                          bool allStoredJets=false) {
+  for(unsigned int i=0;i<Run3ArraySize(pt);++i)
+    if(allStoredJets || (pt[i]>30 && std::abs(eta[i])<5)) {
+      if(!std::isfinite(pt[i]) || !std::isfinite(eta[i]) ||
+         !std::isfinite(chf[i]) || !std::isfinite(nhf[i]) || !std::isfinite(cef[i]) ||
+         !std::isfinite(nef[i]) || !std::isfinite(muf[i]) ||
+         !Run3AnalysisJetID(eta[i],chf[i],nhf[i],cef[i],nef[i],muf[i],nch[i],nne[i])) return false;
+    }
+  return true;
+}
+
+template<class F>
+bool Run3PassQCDHighMETMuon(const F &pt,const F &phi,const F &muf,double metPhi) {
+  if(!std::isfinite(metPhi)) return false;
+  for(unsigned int i=0;i<Run3ArraySize(pt);++i) {
+    if(!std::isfinite(phi[i])) return false;
+    if(pt[i]>200 && muf[i]>0.5 &&
+       std::abs(std::remainder(phi[i]-metPhi,2*std::acos(-1.0)))>3.14159-0.4) return false;
+  }
+  return true;
+}
+
+template<class F>
+bool Run3PassQCDHighMETNeutral(const F &pt,const F &phi,const F &nef,double metPhi) {
+  if(!std::isfinite(metPhi)) return false;
+  if(Run3ArraySize(pt)==0) return true;
+  unsigned int leading=0;
+  for(unsigned int i=1;i<Run3ArraySize(pt);++i) if(pt[i]>pt[leading]) leading=i;
+  return std::isfinite(phi[leading]) && !(nef[leading]<0.03 &&
+    std::abs(std::remainder(phi[leading]-metPhi,2*std::acos(-1.0)))>3.14159-0.4);
+}
+
+bool Run3PassPFCaloMET(double pf,double calo) {
+  return std::isfinite(pf) && std::isfinite(calo) && pf>=0 && calo>0 && pf<5*calo;
+}
+
+template<class F,class I>
+std::vector<float> Run3VetoJetCoordinates(bool usePhi,const F &pt,const F &eta,const F &phi,
+    const F &chf,const F &nhf,const F &cef,const F &nef,const F &muf,const I &nch,const I &nne) {
+  std::vector<float> result;
+  for(unsigned int i=0;i<pt.size();++i)
+    if(Run3VetoEligible(pt[i],eta[i],chf[i],nhf[i],cef[i],nef[i],muf[i],nch[i],nne[i]))
+      result.push_back(usePhi ? phi[i] : eta[i]);
+  return result;
+}
+
+template<class F,class I>
+int Run3CountMaskedVetoJets(const F &pt,const F &eta,const F &phi,const F &chf,const F &nhf,
+                          const F &cef,const F &nef,const F &muf,const I &nch,const I &nne) {
+  int count=0;
+  for(unsigned int i=0;i<pt.size();++i)
+    if(Run3VetoEligible(pt[i],eta[i],chf[i],nhf[i],cef[i],nef[i],muf[i],nch[i],nne[i]) &&
+       Run3InVetoMap(eta[i],phi[i])) ++count;
+  return count;
+}
+template<class F,class I>
+bool Run3PassVetoMap(const F &pt,const F &eta,const F &phi,const F &chf,const F &nhf,
+                     const F &cef,const F &nef,const F &muf,const I &nch,const I &nne) {
+  for(unsigned int i=0;i<pt.size();++i)
+    if(Run3VetoEligible(pt[i],eta[i],chf[i],nhf[i],cef[i],nef[i],muf[i],nch[i],nne[i]) && Run3InVetoMap(eta[i],phi[i])) return false;
+  return true;
+}
+#endif

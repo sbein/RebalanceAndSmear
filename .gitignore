@@ -1,0 +1,7 @@
+/run3_work/
+__pycache__/
+*.pyc
+core.*
+._*
+AutoDict*
+/CMSSW_*/
