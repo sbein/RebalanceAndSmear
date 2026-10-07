@@ -9,9 +9,17 @@ histogram construction (closure tests, validation tests, final prediction). Syst
 ```bash
 git clone --branch run3 https://github.com/sbein/RebalanceAndSmear.git
 cd RebalanceAndSmear
+source /cvmfs/cms.cern.ch/cmsset_default.sh
+export SCRAM_ARCH=el9_amd64_gcc12
+cmsrel CMSSW_15_0_9
+cd CMSSW_15_0_9/src
+cmsenv
+cd ../..
 source run3/setup.sh
 voms-proxy-init --voms cms
 ```
+
+Create the release area once. In a new shell, run `source run3/setup.sh`; workers create their own area in scratch. CMSSW_15_0_9 supplies ROOT 6.32.13.
 
 `--quickrun` specifies to run over  100,000 entries;
 

@@ -4,3 +4,4 @@ __pycache__/
 core.*
 ._*
 AutoDict*
+/CMSSW_*/
