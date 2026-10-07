@@ -1,4 +1,4 @@
-* Rebalance and Smear
+** Rebalance and Smear
 * * Rebalance and Smear is an old school, data-driven QCD background estimation method for high-MET BSM searches. It was established by the CMS collaboration back in 2011 for SUSY searches in the all-hadronic channel. It has been rebooted and revamped several times for jets+MET and photons+jets+MET final states, and its current form casts Rebalance as a posterior density maximization problem. 
 * * Setup for Run 3 Rebalance and Smear 
 
@@ -19,7 +19,7 @@ source run3/setup.sh
 voms-proxy-init --voms cms
 ```
 
-Create the release area once. In a new shell, run `source run3/setup.sh`; workers create their own area in scratch. CMSSW_15_0_9 supplies ROOT 6.32.13.
+Create the release area once. In a new shell, run `source run3/setup.sh`; workers create their own area in scratch.
 
 `--quickrun` specifies to run over  100,000 entries;
 
@@ -35,19 +35,23 @@ python3 run3/closurePlotter.py run3_work/pilot/prediction.root --region LowMinDP
 python3 run3/closurePlotter.py run3_work/pilot/prediction.root --region Legacy --outdir run3_work/pilot/plots/Legacy
 ```
 
-Full sample; submit responses first:
+Submit responses histogram dervivation jobs first:
 
 ```bash
 python3 run3/submitjobs.py --analyzer run3/ResponseMaker.py --fnamekeyword QCD_HT1200 --era 2024 --outdir run3_work/full/response_jobs
 condor_submit run3_work/full/response_jobs/submit.jdl
 ```
 
-After these jobs finish, run R&S:
+After these jobs finish, process the response histograms and smooth with splines:
 
 ```bash
 python3 run3/mergeHistosFinalizeWeights.py run3_work/full/response_jobs --output run3_work/full/responses.root
 python3 run3/articulateSplines.py --inputs run3_work/full/responses.root --output run3_work/full/templates.root --allow-sparse
 python3 run3/plot_templates.py --templates run3_work/full/templates.root --out run3_work/full/plots/templates
+```
+
+Finally, you are ready to rebalance and smear. Warning: do not attempt to smear before rebalancing. It is not good to do, and you will regret i. 
+```
 python3 run3/submitjobs.py --analyzer run3/SkimRandS.py --fnamekeyword QCD_HT1200 --era 2024 --forcetemplates run3_work/full/templates.root --outdir run3_work/full/rands_jobs
 condor_submit run3_work/full/rands_jobs/submit.jdl
 ```
@@ -64,13 +68,3 @@ python3 run3/publish.py --source run3_work/full/plots --host beinsam@naf-cms16.d
 ```
 
 `--fnamekeyword` also accepts a NanoAOD ROOT file, ROOT glob, XRootD URL or text file list for this HT sample. `--nfiles 0` processes all files locally; Condor already defaults to all files. No input cache is made.
-
-Post from a host with SSH access to DESY; on DESY, omit `--host` for a local copy.
-
-`SkimRandS.py` writes a `RandS` tree (`IsRandS`: 0 reco, 1 R&S, 2 gen-smear), closure histograms and uncut `tCount`. Counts and weighting are carried in the ROOT files. Defaults are one smear and 124.0 fb⁻¹; editable constants are in `inputs.py` and `config_2024.json`.
-
-For fixed-photon studies, add `--fixed-photons` to `SkimRandS.py` or its submission command. This uses medium `Photon_cutBased`, pT >20 GeV and |eta| <2.4; it does not impose a diphoton analysis selection.
-
-`--allow-sparse` records borrowed PDFs. The 174 bins remain jet-only; analysis object vetoes, triggers/pileup, additional JEC/JER and template uncertainties remain to be developed. Full-statistics production shares training and prediction events.
-
-Analysis cleaning uses the legacy noise/high-MET cuts and PF/calo MET <5, with an event veto if any stored jet fails ID. Response making keeps its existing selection. Add `--histograms-only` to the R&S command or submission to omit event trees for large closure runs.
