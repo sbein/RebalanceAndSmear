@@ -13,7 +13,7 @@
   "analysis_jet_pt": 30.0,
   "ht_eta": 2.4,
   "mht_eta": 5.0,
-  "rebalance_mht_max": 160.0,
+  "rebalance_mht_max": 95.0,
   "response_match_dr": 0.4,
   "isolation_dr": 0.7,
   "isolation_fraction": 0.98,
@@ -88,5 +88,35 @@
   "jet_veto_selection": "JERC Run 3 minimum; event veto; pT>15, stored |eta|<5 acceptance, AK4PUPPI_TightLeptonVeto, Jet_chEmEF+Jet_neEmEF<0.9",
   "golden_json_policy": "MC: never apply; standalone data cleaning: require explicit golden JSON",
   "additional_jec": false,
-  "spline_pdf_policy": "bounded_nonnegative"
+  "spline_pdf_policy": "bounded_nonnegative",
+  "analysis_cleaning": {
+    "version": 1,
+    "filters": [
+      "Flag_goodVertices",
+      "Flag_globalSuperTightHalo2016Filter",
+      "Flag_EcalDeadCellTriggerPrimitiveFilter",
+      "Flag_BadPFMuonFilter",
+      "Flag_BadPFMuonDzFilter",
+      "Flag_hfNoisyHitsFilter",
+      "Flag_eeBadScFilter",
+      "Flag_ecalBadCalibFilter",
+      "Flag_HBHENoiseFilter",
+      "Flag_HBHENoiseIsoFilter",
+      "Flag_CSCTightHaloFilter",
+      "Flag_BadChargedCandidateFilter",
+      "Flag_chargedHadronTrackResolutionFilter"
+    ],
+    "good_vertex": "PV_npvsGood > 0",
+    "jet_id": "AK4PUPPI_TightLeptonVeto; reject the event if any stored Jet fails, before object removal; no additional pT or eta threshold",
+    "high_met_muon": "Any stored jet with pT >200, muEF >0.5, abs(deltaPhi(jet, PFMET)) >3.14159-0.4 rejects the event",
+    "high_met_neutral": "Leading stored jet with neEmEF <0.03 and abs(deltaPhi(jet, PFMET)) >3.14159-0.4 rejects the event",
+    "pf_calo_met": "Finite PFMET_pt >=0 and CaloMET_pt >0, with PFMET_pt <5*CaloMET_pt",
+    "stage": "Reco seed event; common to observed, R&S and gen-smear; not re-evaluated on synthetic jets",
+    "legacy_source": "RebalanceAndSmear/tools/utils.py: passesUniversalSelection and passQCDHighMETFilter/2",
+    "legacy_flag_equivalents": {
+      "HBHEIsoNoiseFilter": "Flag_HBHENoiseIsoFilter",
+      "ecalBadCalibReducedFilter/ecalBadCalibReducedExtraFilter": "Flag_ecalBadCalibFilter"
+    },
+    "object_vetoes": "Not included; jet-only closure"
+  }
 }

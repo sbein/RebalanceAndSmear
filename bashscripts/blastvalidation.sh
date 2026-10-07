@@ -1,1 +1,0 @@
-python tools/closureDataTrigCorr.py Run2016 && python tools/closureDataTrigCorr.py Run2017 && python tools/closureDataTrigCorr.py Run2018 && python tools/closureDataTrigCorr.py Run2018PreHem && python tools/closureDataTrigCorr.py Run2018PostHem && python tools/closureDataTrigCorr.py Run2

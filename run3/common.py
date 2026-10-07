@@ -5,13 +5,14 @@ from pathlib import Path
 from array import array
 
 BASE = Path(__file__).resolve().parent
+_skim_dictionary_loaded=False
 
 def config(path=None):
     cfg = json.loads(Path(path or BASE / "config_2024.json").read_text())
-    # Current compiled backend retains legacy Ra2/b acceptance and thresholds.
+
     supported = {"input_jet_pt":15, "prior_mht_jet_pt":15, "analysis_jet_pt":30,
                  "ht_eta":2.4, "mht_eta":5, "response_match_dr":0.4,
-                 "isolation_dr":0.7, "isolation_fraction":0.98}
+                 "isolation_dr":0.7, "isolation_fraction":0.98, "rebalance_mht_max":95.0}
     for key, value in supported.items():
         if cfg[key] != value:
             raise ValueError(f"{key}={cfg[key]} is not supported by this backend; edit and validate C++ too")
@@ -24,6 +25,7 @@ def config(path=None):
     return cfg
 
 def root(load_core=False):
+    global _skim_dictionary_loaded
     import ROOT
     ROOT.gROOT.SetBatch(True)
     ROOT.TH1.AddDirectory(False)
@@ -37,7 +39,12 @@ def root(load_core=False):
         ROOT.gInterpreter.ProcessLine(".O 2")
         if not ROOT.gInterpreter.Declare('#include "run3/Workflow.h"'):
             raise RuntimeError("Run 3 C++ compilation failed")
-        ROOT.BTAG_CSV = 0.5  # NanoReader maps the configured discriminator cut to 0/1.
+        ROOT.BTAG_CSV = 0.5
+        if not _skim_dictionary_loaded:
+            ROOT.gInterpreter.GenerateDictionary('vector<TLorentzVector>','vector;TLorentzVector.h')
+            if not ROOT.TClass.GetClass('vector<TLorentzVector>').IsLoaded():
+                raise RuntimeError('Cannot compile the skim four-vector dictionary')
+            _skim_dictionary_loaded=True
     return ROOT
 
 def configure_cleaning(ROOT, cfg, is_data=False, golden_json=None):
@@ -57,10 +64,15 @@ def configure_cleaning(ROOT, cfg, is_data=False, golden_json=None):
     elif golden_json:
         raise ValueError("Golden JSON is data-only; omit it for MC")
 
-def cleaning_summary(stats, cfg):
-    return dict(after_filters=stats.after_filters,after_jet_id=stats.after_jet_id,after_jet_veto=stats.after_jet_veto,
+def cleaning_summary(stats, cfg, analysis=False):
+    result=dict(after_filters=stats.after_filters,after_jet_id=stats.after_jet_id,after_jet_veto=stats.after_jet_veto,
                 flags=[dict(name=name,failed_independently=int(stats.flag_failed[i]),
-                            passed_cumulative=int(stats.flag_cumulative[i])) for i,name in enumerate(cfg["filters"])])
+                            passed_cumulative=int(stats.flag_cumulative[i])) for i,name in enumerate(
+                                cfg['analysis_cleaning']['filters'] if analysis else cfg["filters"])])
+    if analysis:
+        result.update({name:int(getattr(stats,name)) for name in
+            ['after_vertex','after_high_met_muon','after_high_met_neutral','after_pf_calo']})
+    return result
 
 def vector(ROOT, typename, items):
     out = ROOT.std.vector(typename)()
@@ -95,8 +107,11 @@ def write_metadata(ROOT, data, key="run3_metadata"):
 def summary(obj, fields):
     return {field:getattr(obj,field) for field in fields}
 
-def require_compatible(record, cfg):
-    if record.get("config") != cfg:
+def require_compatible(record, cfg, analysis=False):
+    ignored={'analysis_cleaning'} | ({'rebalance_mht_max'} if analysis else set())
+    training={k:v for k,v in record.get('config',{}).items() if k not in ignored}
+    requested={k:v for k,v in cfg.items() if k not in ignored}
+    if training != requested:
         raise ValueError("Configuration differs from template training configuration")
 
 def open_root(ROOT, path):

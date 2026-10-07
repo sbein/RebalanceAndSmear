@@ -1,8 +1,7 @@
 #ifndef RUN3_SEARCH_BINS_2018_H
 #define RUN3_SEARCH_BINS_2018_H
-// Verbatim intervals from tools/utils.py: loadSearchBins2018 at fd9821f.
-// Preserve the original lower-exclusive, upper-inclusive windows and sentinels.
-// This is bin assignment only: event selection is a separate requirement.
+
+
 struct Run3SearchBin2018 { double ht0,ht1,mht0,mht1,nj0,nj1,nb0,nb1; int number; };
 static const Run3SearchBin2018 Run3SearchBins2018[] = {
   {300.0,600.0,300.0,350.0,1.0,3.0,-1.0,0.0,1},

@@ -3,28 +3,28 @@
 #include <array>
 #include "SearchBins2018.h"
 
-// From tools/utils.py: passAndrewsTightHtRatio. Retain the exact boundaries.
+
 bool Run3PassAndrewsTightHtRatio(double dphi1,double ht5,double ht) {
   if(ht==0) return true;
   if(ht5/ht>1.2 && dphi1<5.3*ht5/ht-4.78) return false;
   return true;
 }
 bool Run3AcceptRebalancedSeed(bool fit,double mht,double maximum) {
-  // tools/RebalanceAndSmear.py: hope = (fitsucceed and mMhtPt<160)
+
   return fit && std::isfinite(mht) && mht<maximum;
 }
 bool Run3AcceptSmearedMht(double mht,double maximum) {
-  // Original: "this is a safeguard against mystery"; reject only >2000.
+
   return std::isfinite(mht) && mht<=maximum;
 }
 struct Run3LegacyJetFeatures {
   double ht,ht5,mht;
   int nj,nb;
   std::array<double,4> dphi{{99,99,99,99}};
-  explicit Run3LegacyJetFeatures(const vector<UsefulJet> &jets) {
+  explicit Run3LegacyJetFeatures(const vector<UsefulJet> &jets,const TLorentzVector &fixed=TLorentzVector()) {
     ht=getHT(jets,30);ht5=getHT(jets,30,5);nj=countJets(jets,30);nb=countBJets_Useful(jets,30);
-    auto recoil=getMHT(jets,30);mht=recoil.Pt();
-    // Original reminder: "Delta phis need some attention - only use central jets".
+    auto recoil=getMHT(jets,30);recoil-=fixed;mht=recoil.Pt();
+
     vector<const UsefulJet*> central;
     for(const auto &j:jets) if(j.Pt()>30 && fabs(j.Eta())<2.4) central.push_back(&j);
     sort(central.begin(),central.end(),[](const auto *a,const auto *b){return a->Pt()>b->Pt();});
@@ -56,7 +56,7 @@ struct Run3LegacyJetFeatures {
   int searchBin() const { return Run3SearchBinNumber2018(ht,mht,nj,nb); }
 };
 
-// Cluster repeated smears by seed, including observed-predicted covariance.
+
 struct Run3ClosurePair {
   TH1D observed,prediction,cross,ratio;
   vector<double> contributions,variance;

@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Source this file on an LPC EL9 node. Use installed CMSSW; no project build needed.
 source /cvmfs/cms.cern.ch/cmsset_default.sh
 export SCRAM_ARCH=el9_amd64_gcc12
 _rands_cmssw="${RANDS_CMSSW:-/cvmfs/cms.cern.ch/el9_amd64_gcc12/cms/cmssw/CMSSW_15_0_9}"

@@ -8,6 +8,12 @@
 #include <TTree.h>
 #include <chrono>
 #include "LegacyJetSelection.h"
+#include "SkimTree.h"
+constexpr double Run3FixedRebalanceMhtMaximum = 95.0;
+inline void Run3RequireFixedRebalanceMht(double maximum) {
+  if(maximum!=Run3FixedRebalanceMhtMaximum)
+    throw runtime_error("Run 3 rebalanced MHT is fixed at 95 GeV");
+}
 struct Run3ScopedRandom {
   TRandom *saved;
   explicit Run3ScopedRandom(TRandom *replacement):saved(gRandom) {gRandom=replacement;}
@@ -69,6 +75,7 @@ struct Run3ClosureSummary {
   Long64_t scanned=0, validation=0, selected=0, fitted=0, accepted=0, smears=0;
   double sumw=0, seconds=0;
   Long64_t after_filters=0, after_jet_id=0, after_jet_veto=0;
+  Long64_t after_vertex=0,after_high_met_muon=0,after_high_met_neutral=0,after_pf_calo=0;
   vector<Long64_t> flag_failed, flag_cumulative;
   Long64_t rejected_rebalanced_mht=0,nonfinite_rebalanced=0,rejected_smeared_mht=0,nonfinite_smears=0;
   Long64_t gen_seeds=0,gen_rejected_mht=0,gen_smears=0,gen_nonfinite=0,gen_above_2000=0;
@@ -77,15 +84,18 @@ Run3ClosureSummary Run3Closure(const string &path,const string &tagbranch,double
    const vector<string> &filters, const string &output, Long64_t maxEvents,
    int nsmears, double rebMax, unsigned int randomSeed=12345,
    bool cached=true, int split=1,double smearMax=2000,bool perSeedRandom=false,
-   double genMax=150,int genSmears=20,double minDphiCut=-1,bool unitWeights=false) {
+   double genMax=150,int genSmears=20,double minDphiCut=-1,bool unitWeights=false,bool fixedPhotons=false,
+   bool writeTrees=true) {
+  Run3RequireFixedRebalanceMht(rebMax);
   if(nsmears<1 || genSmears<0) throw runtime_error("Invalid smearing count");
   Run3UseCachedSplines=cached;
   gRandom->SetSeed(randomSeed);
   SetRun3FixedObjects(TLorentzVector());
   auto start=chrono::steady_clock::now();
-  Run3NanoReader n(path,tagbranch,cut,filters);
+  Run3NanoReader n(path,tagbranch,cut,filters,fixedPhotons,true);
   TFile f(output.c_str(),"RECREATE");
   if(f.IsZombie()) throw runtime_error("Cannot create closure output");
+  Run3SkimTree skim;
   vector<double> edges={0,30,60,90,120,160,200,250,300,400,500,700,1000,1500,2500};
   TH1D truth("MHT_observed","Observed reco QCD;MHT [GeV];weighted seeds",edges.size()-1,edges.data());
   TH1D pred("MHT_prediction","R&S QCD;MHT [GeV];weighted seeds",edges.size()-1,edges.data());
@@ -106,7 +116,7 @@ Run3ClosureSummary Run3Closure(const string &path,const string &tagbranch,double
   Run3ClosurePair highBins("SearchBins_jetOnlyHighDPhi",searchEdges),lowBins("SearchBins_jetOnlyLowDPhi",searchEdges);
   Run3ClosurePair highSide("MHT_jetOnlyHighDPhiSideband",edges),lowSide("MHT_jetOnlyLowDPhiSideband",edges);
   vector<Run3ClosurePair*> regions={&highMht,&lowMht,&highBins,&lowBins,&highSide,&lowSide};
-  // Alternative predictions retain their own seed-cluster covariance with reco.
+
   map<string,unique_ptr<Run3ClosurePair>> genPairs,views;
   auto uniform=[](int count,double low,double high) {
     vector<double> bins;for(int i=0;i<=count;++i)bins.push_back(low+(high-low)*i/count);return bins;
@@ -127,7 +137,7 @@ Run3ClosureSummary Run3Closure(const string &path,const string &tagbranch,double
       genPairs[name]=make_unique<Run3ClosurePair>(name+"_genSmear",entry.second);
     }
   auto fillRegions=[&](const Run3LegacyJetFeatures &v,double w,int method) {
-    // method: 0 observed, 1 R&S, 2 generator smearing.
+
     auto fill=[&](Run3ClosurePair &pair,double value) {
       string name=pair.observed.GetName();name.resize(name.size()-string("_observed").size());
       if(method==0) {pair.fillObserved(value,w);genPairs.at(name)->fillObserved(value,w);}
@@ -180,12 +190,12 @@ Run3ClosureSummary Run3Closure(const string &path,const string &tagbranch,double
     if(!n.selected()) continue;
     ++out.selected;
     event=*n.event;run=*n.run;lumi=*n.lumi;
-    ht=getHT(n.jets,30);mht=getMHT(n.jets,30).Pt();
-    gmht=getMHT(n.genjets,30).Pt();nj=countJets(n.jets,30);nb=countBJets_Useful(n.jets,30);
+    ht=getHT(n.jets,30);mht=(getMHT(n.jets,30)-n.fixedSum).Pt();
+    gmht=(getMHT(n.genjets,30)-n.fixedSum).Pt();nj=countJets(n.jets,30);nb=countBJets_Useful(n.jets,30);
     for(auto *region:regions)region->beginSeed();
     for(auto &entry:genPairs)entry.second->beginSeed();
     for(auto &entry:views)entry.second->beginSeed();
-    auto recoFeatures=Run3LegacyJetFeatures(n.jets);
+    auto recoFeatures=Run3LegacyJetFeatures(n.jets,n.fixedSum);
     fillRegions(recoFeatures,weight,0);fillViews(recoFeatures,weight,0);
     bool baseline=ht>300 && nj>=2;
     int tb=-1;
@@ -193,39 +203,43 @@ Run3ClosureSummary Run3Closure(const string &path,const string &tagbranch,double
       truth.Fill(mht,weight);tb=truth.FindBin(mht);
       httruth.Fill(ht,weight);njtruth.Fill(nj,weight);nbtruth.Fill(nb,weight);
       auto lead=find_if(n.jets.begin(),n.jets.end(),[](auto &j){return j.Pt()>30 && fabs(j.Eta())<2.4;});
-      if(lead!=n.jets.end()) hdpTruth.Fill(fabs(lead->DeltaPhi(getMHT(n.jets,30))),weight);
+      if(lead!=n.jets.end()) hdpTruth.Fill(fabs(lead->DeltaPhi(getMHT(n.jets,30)-n.fixedSum)),weight);
     }
-    // Legacy Gen-smearing: generator MHT<150, independent of fit/seed acceptance.
+
     genAccepted=genSmears>0 && Run3AcceptRebalancedSeed(true,gmht,genMax);
     if(genAccepted) {
       ++out.gen_seeds;
       auto keyed=n.splitKey() ^ (ULong64_t(randomSeed)*0x9e3779b97f4a7c15ULL) ^ 0xd1b54a32d192ed03ULL;
       UInt_t genSeed=UInt_t(keyed ^ (keyed>>32));genRandom.SetSeed(genSeed?genSeed:1);
-      // Separate RNG: adding gen-smear must not advance the R&S random stream.
+
       Run3ScopedRandom useGenRandom(&genRandom);
       for(int is=0;is<genSmears;++is) {
         auto smeared=smearJets_CC(n.genjets,9999);++out.gen_smears;
-        auto v=Run3LegacyJetFeatures(smeared);
+        auto v=Run3LegacyJetFeatures(smeared,n.fixedSum);
         if(!std::isfinite(v.mht)) {++out.gen_nonfinite;continue;}
-        // The historical gen-smear loop has no individual MHT>2000 veto.
+
         if(v.mht>2000)++out.gen_above_2000;
         fillRegions(v,weight/genSmears,2);fillViews(v,weight/genSmears,2);
+        if(writeTrees) skim.fill(n,smeared,{},2,genSmears,-1);
       }
     } else if(genSmears>0) ++out.gen_rejected_mht;
     for(auto &entry:genPairs)entry.second->endSeed();
     fit=RebalanceJets_BayesFitter(n.jets);np=_Templates_.nparams;
-    rmht=getMHT(_Templates_.dynamicJets,30).Pt();
+    rmht=(getMHT(_Templates_.dynamicJets,30)-n.fixedSum).Pt();
     accepted=Run3AcceptRebalancedSeed(fit,rmht,rebMax);
     if(fit) {
       ++out.fitted;
       if(!std::isfinite(rmht))++out.nonfinite_rebalanced;
       else {allRebalanced.Fill(rmht,weight);if(rmht>=rebMax)++out.rejected_rebalanced_mht;}
     }
-    seeds.Fill();
+    if(writeTrees) {
+      seeds.Fill();
+      skim.fill(n,n.jets,fit?_Templates_.dynamicJets:vector<UsefulJet>{},0,nsmears,fit);
+    }
     if(!accepted) continue;
     ++out.accepted;
     if(perSeedRandom) {
-      // Common random draws for the same accepted seed across threshold scans.
+
       auto keyed=n.splitKey() ^ (ULong64_t(randomSeed)*0x9e3779b97f4a7c15ULL);
       UInt_t seed=UInt_t(keyed ^ (keyed>>32));gRandom->SetSeed(seed?seed:1);
     }
@@ -238,17 +252,18 @@ Run3ClosureSummary Run3Closure(const string &path,const string &tagbranch,double
       // Original CMS script: "one key difference between the golden and space ages".
       auto smeared=smearJets_CC(balanced,99+_Templates_.nparams);
       ++out.smears;
-      double sh=getHT(smeared,30), sm=getMHT(smeared,30).Pt();
+      double sh=getHT(smeared,30), sm=(getMHT(smeared,30)-n.fixedSum).Pt();
       if(!std::isfinite(sm)) {++out.nonfinite_smears;continue;}
       if(!Run3AcceptSmearedMht(sm,smearMax)) {++out.rejected_smeared_mht;continue;}
-      auto smearedFeatures=Run3LegacyJetFeatures(smeared);
+      auto smearedFeatures=Run3LegacyJetFeatures(smeared,n.fixedSum);
       fillRegions(smearedFeatures,weight/nsmears,1);fillViews(smearedFeatures,weight/nsmears,1);
+      if(writeTrees) skim.fill(n,smeared,balanced,1,nsmears,fit);
       int sn=countJets(smeared,30), sb=countBJets_Useful(smeared,30);
       if(sh<=300 || sn<2) continue;
       double sw=weight/nsmears;
       pred.Fill(sm,sw);contrib[pred.FindBin(sm)]+=sw;
       auto lead=find_if(smeared.begin(),smeared.end(),[](auto &j){return j.Pt()>30 && fabs(j.Eta())<2.4;});
-      double dphi=lead==smeared.end()?0:fabs(lead->DeltaPhi(getMHT(smeared,30)));
+      double dphi=lead==smeared.end()?0:fabs(lead->DeltaPhi(getMHT(smeared,30)-n.fixedSum));
       vector<double> values={sh,double(sn),double(sb),dphi};
       for(unsigned int k=0;k<other.size();++k) {
         other[k].second->Fill(values[k],sw);
@@ -277,12 +292,15 @@ Run3ClosureSummary Run3Closure(const string &path,const string &tagbranch,double
   }
   for(auto h:{&truth,&pred,&rebalanced,&allRebalanced,&cross,&httruth,&htpred,&njtruth,&njpred,&nbtruth,&nbpred,&hdpTruth,&hdpPred,&ratio}) h->Write();
   for(auto *region:regions)region->write();
+  if(writeTrees) skim.tree.Write();
   for(auto &entry:genPairs)entry.second->write();
   for(auto &entry:views)entry.second->write();
   TTree count("tCount","Uncut source events successfully encountered before any split or selection");
-  count.SetEntries(out.scanned);count.Write();seeds.Write();f.Close();
+  count.SetEntries(out.scanned);count.Write();if(writeTrees) seeds.Write();f.Close();
   out.seconds=chrono::duration<double>(chrono::steady_clock::now()-start).count();
   out.after_filters=n.afterFilters; out.after_jet_id=n.afterJetID; out.after_jet_veto=n.afterVeto;
+  out.after_vertex=n.afterVertex;out.after_high_met_muon=n.afterHighMETMuon;
+  out.after_high_met_neutral=n.afterHighMETNeutral;out.after_pf_calo=n.afterPFCalo;
   out.flag_failed=n.flagFailed; out.flag_cumulative=n.flagCumulative;
   return out;
 }

@@ -14,11 +14,11 @@
 #include <memory>
 #include <unordered_map>
 #include <TFile.h>
-// Derived from src/BayesRandS.h at fd9821f; legacy files stay untouched.
-// Cache exactly the cubic spline constructed by TGraph::Eval(x,0,"S").
+
+
 std::unordered_map<TGraph*, std::unique_ptr<TSpline3>> Run3SplineCache;
 bool Run3UseCachedSplines = true;
-bool Run3BoundedPdf = false; // Explicitly enabled by the Run 3 configuration.
+bool Run3BoundedPdf = false;
 std::unordered_map<TGraph*, std::pair<double,double>> Run3PdfDomains;
 TGraph* Run3LoadPdfGraph(TFile* file,const char* path) {
   auto graph=static_cast<TGraph*>(file->Get(path));
@@ -26,12 +26,12 @@ TGraph* Run3LoadPdfGraph(TFile* file,const char* path) {
   name=name.substr(name.find_last_of('/')+1);
   auto histogram=static_cast<TH1*>(file->Get(name.substr(0,name.size()-6).c_str()));
   if(!graph || !histogram) throw std::runtime_error("Missing PDF graph/histogram: "+name);
-  // ROOT may deserialize a fresh TGraph on every Get: register the exact returned pointer.
+
   Run3PdfDomains[graph]={histogram->GetXaxis()->GetXmin(),histogram->GetXaxis()->GetXmax()};
   return graph;
 }
 double Run3PriorHtHigh(TAxis* axis,int bin) {
-  // Explicit overflow naming matches common.prior_name on this nonuniform HT grid.
+
   return bin>axis->GetNbins() ? axis->GetXmax()+axis->GetBinWidth(axis->GetNbins()) : axis->GetBinUpEdge(bin);
 }
 double Run3EvalCubic(TGraph* graph, double x) {
@@ -45,7 +45,7 @@ double Run3Eval(TGraph* graph, double x) {
   auto domain=Run3PdfDomains.find(graph);
   if(domain==Run3PdfDomains.end()) throw std::runtime_error("Missing PDF support");
   if(!std::isfinite(x) || x<domain->second.first || x>=domain->second.second) return 0;
-  // Constant extension only across the outer half-bin; zero outside stored support.
+
   x=std::clamp(x,graph->GetX()[0],graph->GetX()[graph->GetN()-1]);
   double value=Run3EvalCubic(graph,x);
   if(!std::isfinite(value)) throw std::runtime_error("Nonfinite spline density");
@@ -88,7 +88,7 @@ void findJetToPin(std::vector<UsefulJet> jetVec, int nparams, int & ipin, double
         return;
       }
     }
-  // An all-unity start remains the legacy fallback.
+
   ipin = -2; cstart = 1.0;
   return;
 }
@@ -176,7 +176,7 @@ void fcn(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
         }
       _ActiveLikelihood_*=_interpolatedFactor_;
     }
-  // Jets beyond the legacy 12-parameter cap are fixed, but still enter the prior.
+
   for (unsigned int i=_Templates_.nparams; i<_Templates_.dynamicJets.size(); ++i) {
     auto &j = _Templates_.dynamicJets[i];
     if (j.Pt()>_LeadJetPt_) { _iLeadJet_=i; _LeadJetPt_=j.Pt(); }
@@ -272,7 +272,7 @@ bool RebalanceJets_BayesFitter(std::vector<UsefulJet> originalJets){
   gMinuit->mnexcm( "MINIMIZE", arglist, 2, ierflg );
   //cout << "minimized" << endl;
   if (ierflg!=0){
-    // Failure is counted by the closure driver.
+
     TLorentzVector omhtVec = getMHT(originalJets, JET_PT_THRESH);
     TLorentzVector rmhtVec = getMHT(_Templates_.dynamicJets, JET_PT_THRESH);
     return false;

@@ -1,6 +1,7 @@
 #ifndef RUN3_EVENT_CLEANING_H
 #define RUN3_EVENT_CLEANING_H
 #include <correction.h>
+#include <TTreeReaderArray.h>
 #include <cmath>
 #include <map>
 #include <memory>
@@ -8,7 +9,7 @@
 #include <string>
 #include <vector>
 
-// Payloads are loaded once. All event-level work remains in compiled C++.
+
 std::unique_ptr<correction::CorrectionSet> Run3JetIDSet, Run3VetoSet;
 correction::Correction::Ref Run3TightCorrection, Run3LepVetoCorrection, Run3VetoCorrection;
 std::string Run3VetoType;
@@ -50,8 +51,7 @@ bool Run3AnalysisJetID(double eta,double chf,double nhf,double cef,double nef,do
   return Run3JetID(eta,chf,nhf,cef,nef,muf,nch,nneutral,Run3AnalysisLepVeto);
 }
 
-// JERC Run 3 minimum: pT>15, TightLeptonVeto ID, EM fraction <0.9.
-// Use the stored |eta|<5 jet acceptance. Reject the entire event.
+
 bool Run3VetoEligible(double pt,double eta,double chf,double nhf,double cef,
                       double nef,double muf,int nch,int nneutral) {
   return pt>15 && std::abs(eta)<5 && cef+nef<0.9 &&
@@ -71,12 +71,46 @@ bool Run3PassLumi(unsigned int run,unsigned int lumi) {
   return false;
 }
 
+template<class C> auto Run3ArraySize(const C &v)->decltype(v.size()) {return v.size();}
+template<class T> auto Run3ArraySize(const TTreeReaderArray<T> &v) {return v.GetSize();}
+
 template<class F,class I>
 bool Run3PassAnalysisJetID(const F &pt,const F &eta,const F &chf,const F &nhf,
-                          const F &cef,const F &nef,const F &muf,const I &nch,const I &nne) {
-  for(unsigned int i=0;i<pt.size();++i)
-    if(pt[i]>30 && std::abs(eta[i])<5 && !Run3AnalysisJetID(eta[i],chf[i],nhf[i],cef[i],nef[i],muf[i],nch[i],nne[i])) return false;
+                          const F &cef,const F &nef,const F &muf,const I &nch,const I &nne,
+                          bool allStoredJets=false) {
+  for(unsigned int i=0;i<Run3ArraySize(pt);++i)
+    if(allStoredJets || (pt[i]>30 && std::abs(eta[i])<5)) {
+      if(!std::isfinite(pt[i]) || !std::isfinite(eta[i]) ||
+         !std::isfinite(chf[i]) || !std::isfinite(nhf[i]) || !std::isfinite(cef[i]) ||
+         !std::isfinite(nef[i]) || !std::isfinite(muf[i]) ||
+         !Run3AnalysisJetID(eta[i],chf[i],nhf[i],cef[i],nef[i],muf[i],nch[i],nne[i])) return false;
+    }
   return true;
+}
+
+template<class F>
+bool Run3PassQCDHighMETMuon(const F &pt,const F &phi,const F &muf,double metPhi) {
+  if(!std::isfinite(metPhi)) return false;
+  for(unsigned int i=0;i<Run3ArraySize(pt);++i) {
+    if(!std::isfinite(phi[i])) return false;
+    if(pt[i]>200 && muf[i]>0.5 &&
+       std::abs(std::remainder(phi[i]-metPhi,2*std::acos(-1.0)))>3.14159-0.4) return false;
+  }
+  return true;
+}
+
+template<class F>
+bool Run3PassQCDHighMETNeutral(const F &pt,const F &phi,const F &nef,double metPhi) {
+  if(!std::isfinite(metPhi)) return false;
+  if(Run3ArraySize(pt)==0) return true;
+  unsigned int leading=0;
+  for(unsigned int i=1;i<Run3ArraySize(pt);++i) if(pt[i]>pt[leading]) leading=i;
+  return std::isfinite(phi[leading]) && !(nef[leading]<0.03 &&
+    std::abs(std::remainder(phi[leading]-metPhi,2*std::acos(-1.0)))>3.14159-0.4);
+}
+
+bool Run3PassPFCaloMET(double pf,double calo) {
+  return std::isfinite(pf) && std::isfinite(calo) && pf>=0 && calo>0 && pf<5*calo;
 }
 
 template<class F,class I>

@@ -1,118 +1,68 @@
-# Run 3 NanoAODv15 Rebalance and Smear
+* Rebalance and Smear
+* * Rebalance and Smear is an old school, data-driven QCD background estimation method for high-MET BSM searches. It was established by the CMS collaboration back in 2011 for SUSY searches in the all-hadronic channel. It has been rebooted and revamped several times for jets+MET and photons+jets+MET final states, and its current form casts Rebalance as a posterior density maximization problem. 
+* * Setup for Run 3 Rebalance and Smear 
 
-This branch adds a NanoAOD input layer and a first 2024 QCD closure workflow. All pre-existing code and response files in src/, tools/, bashscripts/ and usefulthings/ remain unchanged. The Run 3 fitter is an explicitly maintained derivative of the legacy C++ header; inspect its differences with:
+This README walks through a full chain unit test for Run 3 R&S, focusing only on one bin of QCD HT1200–1500,
+from the derivation and finalization of the response templates, to the rebalancing and smearing, to the
+histogram construction (closure tests, validation tests, final prediction). Systematics need to be added.
 
-    diff -u src/BayesRandS.h run3/BayesRandSRun3.h
+```bash
+git clone --branch run3 https://github.com/sbein/RebalanceAndSmear.git
+cd RebalanceAndSmear
+source run3/setup.sh
+voms-proxy-init --voms cms
+```
 
-## Scope and provenance
+`--quickrun` specifies to run over  100,000 entries;
 
-- CMS R&S baseline: sbein/RebalanceAndSmear commit fd9821f (the repository's final journal version).
-- Fixed-object precedent: sbein/SusyPhotons commit 0b79d87ff1a8a13168cb2ce37acf0fe2fbf683fb.
-- Paper and independent implementation: [2206.09583](https://arxiv.org/abs/2206.09583), sbein/BayesQcd commit 1d3f0b7231766ddd9f04aa33e90de7441ade8ac0.
-- TreeMaker definitions inspected at sbein/TreeMaker commit 29f75e937540127083d5c9c85ff506a0b1d1a5b1.
-- Input datasets and cross sections: [Run 3 MC sheet, rows 15–24](https://docs.google.com/spreadsheets/d/1IVNGwR7Iwx5LRmniAmi9ShiL6DZV8mawkmre7q3Om3s/edit#gid=0), recorded in qcd_2024.json.
-- Verified runtime: CMSSW_15_0_9, el9_amd64_gcc12, ROOT 6.32.13, on cmslpc342.fnal.gov.
+```bash
+python3 run3/ResponseMaker.py --fnamekeyword QCD_HT1200 --era 2024 --quickrun --outdir run3_work/pilot/responses
+python3 run3/articulateSplines.py --inputs "run3_work/pilot/responses/*.root" --output run3_work/pilot/templates.root --allow-sparse
+python3 run3/plot_templates.py --templates run3_work/pilot/templates.root --out run3_work/pilot/plots/templates
+python3 run3/SkimRandS.py --fnamekeyword QCD_HT1200 --era 2024 --quickrun --forcetemplates run3_work/pilot/templates.root --outdir run3_work/pilot/skims
+python3 run3/mergeHistosFinalizeWeights.py run3_work/pilot/skims --output run3_work/pilot/prediction.root
+python3 run3/closurePlotter.py run3_work/pilot/prediction.root --region Inclusive --outdir run3_work/pilot/plots/Inclusive
+python3 run3/closurePlotter.py run3_work/pilot/prediction.root --region HighMinDPhi --outdir run3_work/pilot/plots/HighMinDPhi
+python3 run3/closurePlotter.py run3_work/pilot/prediction.root --region LowMinDPhi --outdir run3_work/pilot/plots/LowMinDPhi
+python3 run3/closurePlotter.py run3_work/pilot/prediction.root --region Legacy --outdir run3_work/pilot/plots/Legacy
+```
 
-The historical workflow consists of raw response/prior filling in ResponseMaker.py, smoothing and spline-graph creation in articulateSplines.py, the C++ Bayesian fit, and histogram sampling for smearing. The paper supplies the method description; the code's empirical choices are retained where possible. The likelihood uses the reco/true jet pT ratio with fixed jet directions, multiplied by generator-MHT magnitude and azimuthal priors in HT and b-tag categories. Each seed is unfolded once and smeared repeatedly with weight 1/nsmears.
+Full sample; submit responses first:
 
-## Physics choices for this pilot
+```bash
+python3 run3/submitjobs.py --analyzer run3/ResponseMaker.py --fnamekeyword QCD_HT1200 --era 2024 --outdir run3_work/full/response_jobs
+condor_submit run3_work/full/response_jobs/submit.jdl
+```
 
-config_2024.json is authoritative and is embedded in every output. It uses stored, JEC-corrected AK4 PUPPI Jet four-vectors without additional JER smearing or regression. Templates and closure therefore describe the same MC jet definition. These choices need review before predictions on data.
+After these jobs finish, run R&S:
 
-The initial pT grid is coarser than the legacy fine grid to obtain usable pilot statistics, and extends above 1 TeV. Its last bin extends to 10 TeV for lookup coverage, not as a claim of measured response at that scale. Reassess the binning, conditioning variables and high-pT support with a larger training sample.
+```bash
+python3 run3/mergeHistosFinalizeWeights.py run3_work/full/response_jobs --output run3_work/full/responses.root
+python3 run3/articulateSplines.py --inputs run3_work/full/responses.root --output run3_work/full/templates.root --allow-sparse
+python3 run3/plot_templates.py --templates run3_work/full/templates.root --out run3_work/full/plots/templates
+python3 run3/submitjobs.py --analyzer run3/SkimRandS.py --fnamekeyword QCD_HT1200 --era 2024 --forcetemplates run3_work/full/templates.root --outdir run3_work/full/rands_jobs
+condor_submit run3_work/full/rands_jobs/submit.jdl
+```
 
-Real v15 files lack Jet_jetId. The reader evaluates the official CAT Summer24 `AK4PUPPI_TightLeptonVeto` correction using constituent fractions and Jet_chMultiplicity + Jet_neMultiplicity. This follows current JMAR guidance for the inclusive pilot without dedicated jet-lepton cleaning. The configurable `analysis_jet_id_wp` can select Tight when appropriate; omitting it reproduces the earlier Tight configuration. Events are rejected if a jet above 30 GeV and within |eta|<5 fails ID. Lower-pT seed jets are retained. The pinned `Summer24Prompt24_RunBCDEFGHI_V1` map rejects entire events containing eligible jets in masked regions. All eight noise flags and map eligibility are now verified against authenticated current JME documentation; see [SOURCES.md](SOURCES.md). The current 2024 BTV JSON provides UParTAK4_wp_values:M=0.1272; this cut is used for response and prior categories. B tagging is restricted to |eta|<2.4 to maintain the legacy acceptance, and scores are mapped to binary 0/1 internally.
+After the R&S jobs finish:
 
-Analysis HT and jet counts use pT>30 GeV and |eta|<2.4. Analysis MHT uses pT>30 and |eta|<5. The fit and generator prior use pT>15 and |eta|<5, retaining the legacy prior threshold. Priors require two central gen jets above 30 GeV, or three for the >=3 b-tag category, as in the CMS code. The fit retains its 12-jet parameter cap, initialization target min(120,HT/3), parameter bounds [0.3,3.5], step 0.05 and legacy negative absolute posterior objective. A converged fit must give rebalanced analysis MHT<160 GeV to be smeared.
+```bash
+python3 run3/mergeHistosFinalizeWeights.py run3_work/full/rands_jobs --output run3_work/full/prediction.root
+python3 run3/closurePlotter.py run3_work/full/prediction.root --region Inclusive --outdir run3_work/full/plots/Inclusive
+python3 run3/closurePlotter.py run3_work/full/prediction.root --region HighMinDPhi --outdir run3_work/full/plots/HighMinDPhi
+python3 run3/closurePlotter.py run3_work/full/prediction.root --region LowMinDPhi --outdir run3_work/full/plots/LowMinDPhi
+python3 run3/closurePlotter.py run3_work/full/prediction.root --region Legacy --outdir run3_work/full/plots/Legacy
+python3 run3/publish.py --source run3_work/full/plots --host beinsam@naf-cms16.desy.de --destination /afs/desy.de/user/b/beinsam/www/Ra2slashB2026/run3-riley-ht1200
+```
 
-The current closure has an inclusive QCD selection with eight required event-cleaning flags, official jet ID and the 2024 detector veto map. It does not yet reproduce the full Ra2/b electron, muon, photon, isolated-track, exceptional QCD-MET, trigger or pileup-weighting selections. Supplemental jet-only high/low-delta-phi regions now apply MHT<HT and the legacy Andrews HT-ratio filter, fill the original 174 search bins, and provide 250–300 GeV sidebands. These histograms are explicitly labelled jet-only; they are not full signal-region yields. Its diagnostic baseline is HT>300 and NJets>=2, applied separately to reco and smeared events. There is no cut on unrebalanced seed MHT. The default discards individual smears with MHT>2000 GeV, restoring the original CMS safeguard; it retains the 1/nsmears denominator. Runtime closure-only overrides are recorded separately from the unchanged training configuration. See [LEGACY_REVIEW_20261004.md](LEGACY_REVIEW_20261004.md).
+`--fnamekeyword` also accepts a NanoAOD ROOT file, ROOT glob, XRootD URL or text file list for this HT sample. `--nfiles 0` processes all files locally; Condor already defaults to all files. No input cache is made.
 
-Response filling retains the legacy unit weighting of isolated matched jets. Matching uses nearest DeltaR<0.4; gen and reco isolation use a 0.7 cone and pT/sum-pT>0.98. The older CMS script allowed matching up to 0.5, with a break below 0.4, and mixed a CSV discriminator with a DeepCSV threshold in one response-filling path. The Nano port uses one consistent configured tagger and an explicit 0.4 matching requirement.
+Post from a host with SSH access to DESY; on DESY, omit `--host` for a local copy.
 
-Priors are filled with raw genWeight, grouped across all shards of each dataset, then scaled once by sigma / processed-training-sumgenWeight. This normalization includes rejected events in the denominator and prevents a per-file normalization bias. Negative-weight training is rejected pending a positive density model. Closure spectra use sigma / processed-validation-sumgenWeight.
+`SkimRandS.py` writes a `RandS` tree (`IsRandS`: 0 reco, 1 R&S, 2 gen-smear), closure histograms and uncut `tCount`. Counts and weighting are carried in the ROOT files. Defaults are one smear and 124.0 fb⁻¹; editable constants are in `inputs.py` and `config_2024.json`.
 
-## Important template limitation
+For fixed-photon studies, add `--fixed-photons` to `SkimRandS.py` or its submission command. This uses medium `Photon_cutBased`, pT >20 GeV and |eta| <2.4; it does not impose a diphoton analysis selection.
 
-NanoAOD stores Jet_pt>15 GeV. Matched response distributions at low generator pT consequently miss jets that would have reconstructed below that storage threshold. Low-pT response tails and jet reconstruction inefficiency cannot be recovered by smoothing the stored jets. CorrT1METJet has reduced information and is not silently substituted as a complete jet collection. Before production use, measure this effect and choose a validated treatment, potentially deriving low-pT templates from MiniAOD or a dedicated jet table.
+`--allow-sparse` records borrowed PDFs. The 174 bins remain jet-only; analysis object vetoes, triggers/pileup, additional JEC/JER and template uncertainties remain to be developed. Full-statistics production shares training and prediction events.
 
-The default articulator fails when a reachable bin lacks the required effective entries. Tagged forward-jet slots are structurally unused because of the central b-tag acceptance; they are explicitly listed and populated with the corresponding untagged distribution only for file compatibility. --allow-sparse is an explicit pilot approximation: it borrows a populated distribution in the same flavour/observable category and records the donor for every substitution in the coverage JSON. No extrapolated bin should be mistaken for a measured density. Histograms retain the legacy smoothing count and ROOT cubic interpolation. Densities are normalized after smoothing; the configured evaluator clips negative cubic undershoots and returns zero outside histogram support. Histogram sampling remains unchanged. The raw graphs and all sparse donors remain inspectable.
-
-## Reproduce the pilot on FNAL
-
-Earlier products below are historical and retain their configuration in metadata. Selection version 3 uses the authenticated JME guidance and TightLeptonVeto ID. Reuse the existing version 2 caches; jet ID is evaluated during processing. Use fresh output names:
-
-    source run3/setup.sh
-    python3 run3/response_maker.py --manifest run3_work/cleaned2024/cached_manifest.json --output-dir run3_work/verified2024/raw
-    python3 run3/articulate_splines.py --inputs 'run3_work/verified2024/raw/*.root' --output run3_work/verified2024/templates_pilot.root --allow-sparse
-    python3 run3/audit_splines.py --templates run3_work/verified2024/templates_pilot.root --out run3_work/verified2024/spline_audit
-    python3 run3/validate_cleaning.py --output run3_work/verified2024/cleaning_validation.json
-    python3 run3/validate.py --templates run3_work/verified2024/templates_pilot.root --nano run3_work/cleaned2024/cache/HT1200to1500_0.root --output run3_work/verified2024/validation.json
-    python3 run3/closure.py --manifest run3_work/cleaned2024/cached_manifest.json --templates run3_work/verified2024/templates_pilot.root --bin 1200to1500 --max-events 100000 --smears 20 --allow-sparse --output run3_work/verified2024/closure_HT1200.root
-    python3 run3/plot_closure.py run3_work/verified2024/closure_HT1200.root --outdir run3_work/verified2024/plots
-    python3 run3/audit_selection.py --nano run3_work/cleaned2024/cache/HT1200to1500_0.root --output run3_work/verified2024/selection_HT1200.json --jet-map-dir run3_work/verified2024/jet_maps
-
-Use `audit_selection.py --nano INPUT --output REPORT.json` for a standalone MC cutflow, or add `--is-data --golden-json PATH` for data. `--jet-map-dir DIR` saves unit-count eligible-jet eta/phi maps before/after the event veto and checks that no masked eligible jets survive. `--snapshot OUTPUT.root` optionally writes an Events-only cleaned file without requiring generator branches. It preserves original event weights and does not copy Runs/LuminosityBlocks. The template and closure programs remain MC-only.
-
-Historical first-run commands (use the first-run source archive/commit for exact reproduction):
-
-From /uscms_data/d3/sbein/Ra2slashB2026/RebalanceAndSmear:
-
-    source run3/setup.sh
-    python3 run3/discover.py --out run3_work/manifest.json --files-per-bin 1
-    python3 run3/cache.py --manifest run3_work/manifest.json --out run3_work/cached_manifest.json --max-events-per-file 100000
-    python3 run3/response_maker.py --manifest run3_work/cached_manifest.json --max-events-per-file 100000
-    python3 run3/articulate_splines.py --inputs 'run3_work/raw/*.root' --output run3_work/templates_pilot.root --allow-sparse
-    python3 run3/validate.py --templates run3_work/templates_pilot.root --nano run3_work/cache/HT1200to1500_0.root
-    python3 run3/closure.py --manifest run3_work/cached_manifest.json --templates run3_work/templates_pilot.root --bin 1200to1500 --max-events 100000 --smears 20 --allow-sparse
-    python3 run3/plot_closure.py run3_work/closure_HT1200.root
-
-Commands refuse to overwrite their main outputs. Use a fresh output name or directory for a new pass. Caches contain only the required branches and record their types and exact LFNs. The stored hashes split events deterministically into training (0) and validation (1), avoiding dependence on event ordering. Training and validation may use the same source file but have disjoint event keys. The closure command rejects overlapping training splits.
-
-ROOT files preserve the histogram/graph names expected by GleanTemplatesFromFile. They also contain metadata, coverage, failed-fit information and one seeds TTree row per selected validation seed. Prediction errors are computed from per-seed contributions, treating repeated smears as correlated. The MHT ratio includes the covariance with the paired observed seeds. Other plotting ratios currently use an explicitly labelled uncorrelated approximation. These errors describe finite seed statistics and finite smearing, not template uncertainty; an independent-file closure and a bootstrap/template-uncertainty study are still needed for production.
-
-## Historical batch prototype (superseded)
-
-    python3 run3/discover.py --out run3_work/full/manifest.json --files-per-bin 0
-    python3 run3/make_condor.py --manifest run3_work/full/manifest.json --outdir run3_work/full/condor
-    condor_submit run3_work/full/condor/templates.jdl
-    python3 run3/articulate_splines.py --inputs 'run3_work/full/condor/*/raw/*.root' --output run3_work/templates_production.root
-
-The earlier make_condor.py shared-filesystem launcher is unsuitable for current LPC worker nodes. It remains a historical prototype. Use production_inventory.py and prepare_production.py for the portable full-statistics workflow described in PRODUCTION_20261004.md; workers transfer their inputs and outputs and run inside EL9 scratch space.
-
-## Core changes and speed checks
-
-BayesRandSRun3.h differs from the baseline in these ways:
-
-- Cache TSpline3 objects with the same construction as [ROOT TGraph::Eval(x,0,"S")](https://root.cern/doc/v632/TGraph_8cxx_source.html); --uncached-splines is the numerical reference path.
-- Current Run 3 policy adds bounded, nonnegative evaluation; `--legacy-pdf-evaluation` provides an explicit diagnostic comparison on the same templates.
-- Free Minuit and fit-parameter allocations after each event.
-- Bound response lookup and interpolation to valid template bins.
-- Include jets beyond the 12-parameter cap in recoil and HT as fixed jets.
-- Apply central acceptance consistently when choosing the leading tagged jet.
-- Support SetRun3FixedObjects for fixed photon/lepton recoil, following the photon extension's sign convention. This API is tested, but the all-hadronic Nano reader does not yet construct a photon control sample.
-
-validate.py compares every cached density, paired cached/uncached fits on real jets, and fixed recoil with more than 12 jets. These checks establish the optimization's numerical behavior; they do not replace physics closure. Global Minuit/template state remains single-threaded. Scale across independent processes rather than sharing the fitter across threads. ML response modelling is left for a subsequent development.
-
-Initial benchmark: on 2,000 scanned HT800–1000 events (986 validation events, 934 selected seeds, 5 smears per accepted seed), the cached C++ event loop took 0.802 seconds versus 57.112 seconds for the uncached path. Every closure histogram's bin contents and errors was identical. The separate regression checked 28,512 spline evaluations and 100 paired fits, also with zero observed difference. The approximately 71x timing improvement applies to this benchmark and excludes interpreter startup and remote I/O.
-
-## First executed result (2026-10-03)
-
-The current authenticated-recipe result is recorded in `RESULTS_VERIFIED_2024.json` and `run3_work/verified2024`. One million scanned events yielded 396,975 selected training events and 1,121,247 isolated matched responses. The 352-slot audit contains 255 measured, 77 borrowed and 20 unused PDFs; bounded integrals agree with unity to about 0.002%. This remains a sparse pilot, without a convergence claim for every response bin.
-
-HT1200 closure selected 39,116 validation seeds, accepted 37,863 fits and generated 757,260 smears in a 50.25-second C++ loop. Ratios remain 2.002 +/- 0.090 at MHT 160-200 GeV and 1.837 +/- 0.147 at 200-250 GeV. TightLeptonVeto changes selected seeds by about 0.5% relative to the preceding cleaned Tight pilot. In the full 100,000-event HT1200 selection audit, 94,413 events pass noise filters and analysis jet ID, then 77,626 survive the map. Eligible-jet maps contain 18,355 masked jets before the event veto and zero afterward. These are unweighted diagnostics. Additional JEC/JER and MC golden-JSON certification remain disabled.
-
-Historical first execution:
-
-RESULTS.json records the first complete pilot. Each of the ten QCD HT datasets contributed a 100,000-event prefix from one DAS-selected file. The training split contained 499,532 events, of which 470,172 passed the inclusive pilot selection, yielding 1,350,924 isolated matched jet responses. The template audit found 76 deficient reachable bins and 20 structurally unused forward-tag slots. The pilot records all donors; strict mode rejected the deficient bins as intended.
-
-For HT1200–1500, the disjoint validation split had 50,356 events and 47,781 selected seeds. 46,333 fits converged; 46,098 also passed the MHT<160 acceptance, generating 921,960 smears at 20 per accepted seed. The C++ closure event loop took 54.34 seconds.
-
-This first model does not close throughout MHT: R&S/reco is 1.829 +/- 0.068 in 160–200 GeV and 1.662 +/- 0.100 in 200–250 GeV, where the quoted uncertainties cover seed statistics and finite smearing only. The 300–400 GeV bin gives 0.980 +/- 0.115. The remaining high tail has limited observed MC statistics. No nonclosure correction has been applied. Resolve the low-pT coverage, review template binning and donors, finalize analysis selections, and perform an independent-file closure before production use.
-
-## Generator-smear and minimum-delta-phi diagnostics
-
-The closure output now includes independent legacy generator smearing (generator MHT<150 GeV), paired seed errors, and complementary Inclusive / High Min Dphi / Low Min Dphi views. The five-cut scan includes 110 GeV while retaining the 160 GeV historical default. See [GEN_SMEAR_DPHI_20261004.md](GEN_SMEAR_DPHI_20261004.md) for definitions, regression checks and reproduction. New plots are exported with plot_three_method_closure.py and review_gen_smear.py; the earlier plots remain historical snapshots.
-
-## Full-statistics production and corrected 95 GeV diagnostic
-
-The active diagnostic now compares 90/95/100 GeV. Full-statistics production uses the entire frozen QCD file inventory, uncut group tCount normalization, ignored generator weights, one smear per seed and a 90 GeV seed cut. See [PRODUCTION_20261004.md](PRODUCTION_20261004.md). The earlier five-cut plots and pilot weights remain historical snapshots.
+Analysis cleaning uses the legacy noise/high-MET cuts and PF/calo MET <5, with an event veto if any stored jet fails ID. Response making keeps its existing selection. Add `--histograms-only` to the R&S command or submission to omit event trees for large closure runs.

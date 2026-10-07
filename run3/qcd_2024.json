@@ -4,64 +4,10 @@
   "nano_version": 15,
   "samples": [
     {
-      "name": "70to100",
-      "dataset": "/QCD-4Jets_Bin-HT-70to100_TuneCP5_13p6TeV_madgraphMLM-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM",
-      "cross_section_pb": 58470000,
-      "das_nevents_reference": 108584880
-    },
-    {
-      "name": "100to200",
-      "dataset": "/QCD-4Jets_Bin-HT-100to200_TuneCP5_13p6TeV_madgraphMLM-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM",
-      "cross_section_pb": 25310000,
-      "das_nevents_reference": 120453600
-    },
-    {
-      "name": "200to400",
-      "dataset": "/QCD-4Jets_Bin-HT-200to400_TuneCP5_13p6TeV_madgraphMLM-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM",
-      "cross_section_pb": 1960000,
-      "das_nevents_reference": 115255250
-    },
-    {
-      "name": "400to600",
-      "dataset": "/QCD-4Jets_Bin-HT-400to600_TuneCP5_13p6TeV_madgraphMLM-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM",
-      "cross_section_pb": 97400,
-      "das_nevents_reference": 106725734
-    },
-    {
-      "name": "600to800",
-      "dataset": "/QCD-4Jets_Bin-HT-600to800_TuneCP5_13p6TeV_madgraphMLM-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM",
-      "cross_section_pb": 13560,
-      "das_nevents_reference": 128235651
-    },
-    {
-      "name": "800to1000",
-      "dataset": "/QCD-4Jets_Bin-HT-800to1000_TuneCP5_13p6TeV_madgraphMLM-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM",
-      "cross_section_pb": 3010,
-      "das_nevents_reference": 124956604
-    },
-    {
-      "name": "1000to1200",
-      "dataset": "/QCD-4Jets_Bin-HT-1000to1200_TuneCP5_13p6TeV_madgraphMLM-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM",
-      "cross_section_pb": 890.3,
-      "das_nevents_reference": 114436708
-    },
-    {
       "name": "1200to1500",
       "dataset": "/QCD-4Jets_Bin-HT-1200to1500_TuneCP5_13p6TeV_madgraphMLM-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM",
       "cross_section_pb": 384.8,
       "das_nevents_reference": 107835822
-    },
-    {
-      "name": "1500to2000",
-      "dataset": "/QCD-4Jets_Bin-HT-1500to2000_TuneCP5_13p6TeV_madgraphMLM-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM",
-      "cross_section_pb": 127.3,
-      "das_nevents_reference": 113208234
-    },
-    {
-      "name": "2000",
-      "dataset": "/QCD-4Jets_Bin-HT-2000_TuneCP5_13p6TeV_madgraphMLM-pythia8/RunIII2024Summer24NanoAODv15-150X_mcRun3_2024_realistic_v2-v2/NANOAODSIM",
-      "cross_section_pb": 26.26,
-      "das_nevents_reference": 91953615
     }
   ]
 }
